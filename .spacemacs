@@ -91,7 +91,7 @@ values."
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      helm
-     ;; auto-completion
+     auto-completion
      ;; better-defaults
      emacs-lisp
      git
@@ -825,7 +825,8 @@ you should place your code here."
 
   (dolist
       (r `((?i (file . "~/.spacemacs"))
-           (?a (file . "~/.emacs.d/.abbrev_defs"))
+           ;; (?a (file . "~/.emacs.d/.abbrev_defs"))
+           (?a (file . "~/Box/projects/ace_communications/website_administration_and_deployment_charter.org"))
            (?b (file . "~/.profile"))
            (?B (file . "~/.bashrc"))
            (?e (file . "~/"))
@@ -837,7 +838,10 @@ you should place your code here."
            (?r (file . "~/src/drupal_scripts/release.sh"))
            (?G (file . "~/.emacs.d/gnus-settings.el"))
            (?u (file . "~/.emacs.d/site-lisp/xmsi-math-symbols-input.el"))
-           (?z (file . "~/.zshrc"))))
+           (?z (file . "~/.zshrc"))
+           (?h (file . "~/Box/projects/computational-science-general-home-page.org"))
+           (?S (file . "~/Box/projects/standup.org"))
+           ))
     (set-register (car r) (cadr r)))
 
   (setq w3m-home-page "https://www.google.com")
@@ -873,8 +877,28 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
  '(browse-url-browser-function (quote browse-url-default-browser))
+ '(custom-safe-themes
+   (quote
+    ("285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default)))
  '(docker-image-run-arguments (quote ("-i" "-t" "--rm")) t)
  '(evil-want-Y-yank-to-eol nil)
+ '(hl-todo-keyword-faces
+   (quote
+    (("TODO" . "#dc752f")
+     ("NEXT" . "#dc752f")
+     ("THEM" . "#2d9574")
+     ("PROG" . "#3a81c3")
+     ("OKAY" . "#3a81c3")
+     ("DONT" . "#f2241f")
+     ("FAIL" . "#f2241f")
+     ("DONE" . "#42ae2c")
+     ("NOTE" . "#b1951d")
+     ("KLUDGE" . "#b1951d")
+     ("HACK" . "#b1951d")
+     ("TEMP" . "#b1951d")
+     ("FIXME" . "#dc752f")
+     ("XXX+" . "#dc752f")
+     ("\\?\\?\\?+" . "#dc752f"))))
  '(mac-command-modifier (quote hyper))
  '(mac-function-modifier (quote hyper))
  '(mac-option-modifier (quote meta))
@@ -1048,6 +1072,15 @@ This function is called at the very end of Spacemacs initialization."
  '(org-archive-location "%s_archive::* Archived Tasks")
  '(org-archive-save-context-info (quote (time category itags)))
  '(org-attach-method (quote mv))
+ '(org-babel-load-languages
+   (quote
+    ((php . t)
+     (python . t)
+     (js . t)
+     (ruby . t)
+     (shell . t)
+     (sql . t)
+     (emacs-lisp . t))))
  '(org-babel-results-keyword "results")
  '(org-beamer-frame-default-options "fragile")
  '(org-blank-before-new-entry (quote ((heading) (plain-list-item . auto))))
@@ -1236,7 +1269,9 @@ SCHEDULED: %t
  '(org-mobile-files (quote ("/Users/dhaley/Box/projects/todo.txt")))
  '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
  '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
- '(org-modules (quote (org-gnus org-id org-info org-habit org-depend org-tempo)))
+ '(org-modules
+   (quote
+    (org-gnus org-id org-info org-habit org-depend org-tempo)))
  '(org-odd-levels-only nil)
  '(org-outline-path-complete-in-steps nil)
  '(org-plantuml-jar-path nil)
@@ -1314,30 +1349,34 @@ SCHEDULED: %t
  '(org-startup-folded t)
  '(org-startup-indented t)
  '(org-startup-with-inline-images nil)
- '(org-structure-template-alist (quote (("a" . "export ascii")
-                                         ("C" . "comment")
-                                         ("E" . "export")
-                                         ("c" . "center")
-                                         ("ditaa" . "src ditaa :file")
-                                         ("dot" . "src dot :file")
-                                         ("e" . "example")
-                                         ("el" . "src emacs-lisp")
-                                         ("h" . "export html")
-                                         ("hs" . "src haskell")
-                                         ("http" . "src http")
-                                         ("ipy" . "src ipython :results output")
-                                         ("js" . "src js")
-                                         ("l" . "export latex")
-                                         ("laeq" . "latex \n\\begin{equation} \\label{eq-sinh}\ny=\\sinh x\n\\end{equation}")
-                                         ("n" . "notes")
-                                         ("plantuml" . "src plantuml :file")
-                                         ("py" . "src python :results output")
-                                         ("q" . "quote")
-                                         ("r" . "src R")
-                                         ("rp" . "src R :results output graphics :file ")
-                                         ("s" . "src")
-                                         ;; ("sh" . "src sh")
-                                         ("v" . "verse"))))
+ '(org-structure-template-alist
+   (quote
+    (("a" . "export ascii")
+     ("C" . "comment")
+     ("E" . "export")
+     ("c" . "center")
+     ("ditaa" . "src ditaa :file")
+     ("dot" . "src dot :file")
+     ("e" . "example")
+     ("el" . "src emacs-lisp")
+     ("h" . "export html")
+     ("hs" . "src haskell")
+     ("http" . "src http")
+     ("ipy" . "src ipython :results output")
+     ("js" . "src js")
+     ("l" . "export latex")
+     ("laeq" . "latex 
+\\begin{equation} \\label{eq-sinh}
+y=\\sinh x
+\\end{equation}")
+     ("n" . "notes")
+     ("plantuml" . "src plantuml :file")
+     ("py" . "src python :results output")
+     ("q" . "quote")
+     ("r" . "src R")
+     ("rp" . "src R :results output graphics :file ")
+     ("s" . "src")
+     ("v" . "verse"))))
  '(org-stuck-projects (quote ("TODO=\"PROJECT\"" nil nil "SCHEDULED:")))
  '(org-table-convert-region-max-lines 99999)
  '(org-tag-alist
@@ -1422,7 +1461,7 @@ SCHEDULED: %t
  '(org-yank-adjusted-subtrees t)
  '(package-selected-packages
    (quote
-    (yapfify stickyfunc-enhance pytest pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode importmagic epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired paredit pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git winum org-mime docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data smeargle orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet drupal-mode php-mode ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
+    (yapfify stickyfunc-enhance pytest pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired paredit pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git winum org-mime docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data smeargle orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet drupal-mode php-mode ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
  '(php-mode-coding-style (quote pear))
  '(user-full-name "Damon Haley")
  '(user-initials "dkh")

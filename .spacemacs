@@ -111,7 +111,9 @@ values."
      ;; my additons bellow 
      osx
      themes-megapack
-     python
+     (python :variables
+             python-fill-column 99
+             )
      w3m
      ;;
      ;; elfeed and the rss file
@@ -520,6 +522,7 @@ you should place your code here."
   ;;   :commands (dired-sidebar-toggle-sidebar))
 
   (use-package dired-sidebar
+    :disabled t
     :bind (("C-x C-n" . dired-sidebar-toggle-sidebar))
     :ensure t
     :commands (dired-sidebar-toggle-sidebar)
@@ -856,6 +859,7 @@ you should place your code here."
   ;; Browse url function use w3m
   (setq w3m-view-this-url-new-session-in-background t)
   ;; W3M view url new session in background
+  (setq flycheck-python-flake8-executable "flake8")
   )
 
 
@@ -876,15 +880,13 @@ This function is called at the very end of Spacemacs initialization."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
- '(browse-url-browser-function (quote browse-url-default-browser))
+ '(browse-url-browser-function 'browse-url-default-browser)
  '(custom-safe-themes
-   (quote
-    ("285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default)))
- '(docker-image-run-arguments (quote ("-i" "-t" "--rm")) t)
+   '("7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
+ '(docker-image-run-arguments '("-i" "-t" "--rm") t)
  '(evil-want-Y-yank-to-eol nil)
  '(hl-todo-keyword-faces
-   (quote
-    (("TODO" . "#dc752f")
+   '(("TODO" . "#dc752f")
      ("NEXT" . "#dc752f")
      ("THEM" . "#2d9574")
      ("PROG" . "#3a81c3")
@@ -898,13 +900,13 @@ This function is called at the very end of Spacemacs initialization."
      ("TEMP" . "#b1951d")
      ("FIXME" . "#dc752f")
      ("XXX+" . "#dc752f")
-     ("\\?\\?\\?+" . "#dc752f"))))
- '(mac-command-modifier (quote hyper))
- '(mac-function-modifier (quote hyper))
- '(mac-option-modifier (quote meta))
+     ("\\?\\?\\?+" . "#dc752f")))
+ '(mac-command-modifier 'hyper)
+ '(mac-function-modifier 'hyper)
+ '(mac-option-modifier 'meta)
  '(mac-pass-command-to-system nil)
  '(magit-auto-revert-mode nil)
- '(magit-completing-read-function (quote my-ivy-completing-read))
+ '(magit-completing-read-function 'my-ivy-completing-read)
  '(magit-diff-options nil)
  '(magit-fetch-arguments nil)
  '(magit-highlight-trailing-whitespace nil)
@@ -917,28 +919,23 @@ This function is called at the very end of Spacemacs initialization."
  '(magit-stage-all-confirm nil)
  '(magit-unstage-all-confirm nil)
  '(magit-use-overlays nil)
- '(org-M-RET-may-split-line (quote ((headline) (default . t))))
+ '(org-M-RET-may-split-line '((headline) (default . t)))
  '(org-adapt-indentation nil)
- '(org-agenda-auto-exclude-function (quote org-my-auto-exclude-function))
+ '(org-agenda-auto-exclude-function 'org-my-auto-exclude-function)
  '(org-agenda-clock-consistency-checks
-   (quote
-    (:max-duration "4:00" :min-duration 0 :max-gap 0 :gap-ok-around
-                   ("4:00"))))
- '(org-agenda-clockreport-parameter-plist
-   (quote
-    (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
- '(org-agenda-cmp-user-defined (quote bh/agenda-sort))
+   '(:max-duration "4:00" :min-duration 0 :max-gap 0 :gap-ok-around
+                   ("4:00")))
+ '(org-agenda-clockreport-parameter-plist '(:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80))
+ '(org-agenda-cmp-user-defined 'bh/agenda-sort)
  '(org-agenda-compact-blocks t)
  '(org-agenda-custom-commands
-   (quote
-    (("N" "Notes" tags "NOTE"
+   '(("N" "Notes" tags "NOTE"
       ((org-agenda-overriding-header "Notes")
        (org-tags-match-list-sublevels t)))
      ("h" "Habits" tags-todo "STYLE=\"habit\""
       ((org-agenda-overriding-header "Habits")
        (org-agenda-sorting-strategy
-        (quote
-         (todo-state-down effort-up category-keep)))))
+        '(todo-state-down effort-up category-keep))))
      (" " "Agenda"
       ((agenda "" nil)
        (tags "REFILE"
@@ -946,98 +943,82 @@ This function is called at the very end of Spacemacs initialization."
               (org-tags-match-list-sublevels nil)))
        (tags-todo "-CANCELLED/!"
                   ((org-agenda-overriding-header "Stuck Projects")
-                   (org-agenda-skip-function
-                    (quote bh/skip-non-stuck-projects))
+                   (org-agenda-skip-function 'bh/skip-non-stuck-projects)
                    (org-agenda-sorting-strategy
-                    (quote
-                     (category-keep)))))
+                    '(category-keep))))
        (tags-todo "-HOLD-CANCELLED/!"
                   ((org-agenda-overriding-header "Projects")
-                   (org-agenda-skip-function
-                    (quote bh/skip-non-projects))
-                   (org-tags-match-list-sublevels
-                    (quote indented))
+                   (org-agenda-skip-function 'bh/skip-non-projects)
+                   (org-tags-match-list-sublevels 'indented)
                    (org-agenda-sorting-strategy
-                    (quote
-                     (category-keep)))))
+                    '(category-keep))))
        (tags-todo "-CANCELLED/!NEXT"
                   ((org-agenda-overriding-header
                     (concat "Project Next Tasks"
                             (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function
-                    (quote bh/skip-projects-and-habits-and-single-tasks))
+                   (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
                    (org-tags-match-list-sublevels t)
                    (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-sorting-strategy
-                    (quote
-                     (todo-state-down effort-up category-keep)))))
+                    '(todo-state-down effort-up category-keep))))
        (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
                   ((org-agenda-overriding-header
                     (concat "Project Subtasks"
                             (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function
-                    (quote bh/skip-non-project-tasks))
+                   (org-agenda-skip-function 'bh/skip-non-project-tasks)
                    (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-sorting-strategy
-                    (quote
-                     (category-keep)))))
+                    '(category-keep))))
        (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
                   ((org-agenda-overriding-header
                     (concat "Standalone Tasks"
                             (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function
-                    (quote bh/skip-project-tasks))
+                   (org-agenda-skip-function 'bh/skip-project-tasks)
                    (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-sorting-strategy
-                    (quote
-                     (category-keep)))))
+                    '(category-keep))))
        (tags-todo "-CANCELLED+WAITING|HOLD/!"
                   ((org-agenda-overriding-header
                     (concat "Waiting and Postponed Tasks"
                             (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function
-                    (quote bh/skip-non-tasks))
+                   (org-agenda-skip-function 'bh/skip-non-tasks)
                    (org-tags-match-list-sublevels nil)
                    (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
                    (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)))
        (tags "-REFILE/"
              ((org-agenda-overriding-header "Tasks to Archive")
-              (org-agenda-skip-function
-               (quote bh/skip-non-archivable-tasks))
+              (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
               (org-tags-match-list-sublevels nil))))
-      nil))))
- '(org-agenda-deadline-leaders (quote ("!D!: " "D%02d: ")))
+      nil)))
+ '(org-agenda-deadline-leaders '("!D!: " "D%02d: "))
  '(org-agenda-default-appointment-duration 60)
  '(org-agenda-diary-file "/Users/dhaley/Box/projects/diary.org")
  '(org-agenda-dim-blocked-tasks nil)
  '(org-agenda-exporter-settings
-   (quote
-    ((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda"))))
+   '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
  '(org-agenda-files
-   (quote
-    ("/Users/dhaley/Box/projects/todo.txt" "/Users/dhaley/Box/projects/from-mobile.org")))
+   '("/Users/dhaley/Box/projects/todo.txt" "/Users/dhaley/Box/projects/from-mobile.org"))
  '(org-agenda-fontify-priorities t)
  '(org-agenda-include-diary t)
  '(org-agenda-inhibit-startup t)
  '(org-agenda-insert-diary-extract-time t)
- '(org-agenda-log-mode-items (quote (closed clock state)))
+ '(org-agenda-log-mode-items '(closed clock state))
  '(org-agenda-ndays 1)
  '(org-agenda-persistent-filter t)
  '(org-agenda-prefix-format
-   (quote
-    ((agenda . "  %-11c%?-12t% s")
+   '((agenda . "  %-11c%?-12t% s")
      (timeline . "  % s")
      (todo . "  %-11c")
-     (tags . "  %-11c"))))
+     (tags . "  %-11c")))
  '(org-agenda-repeating-timestamp-show-all t)
  '(org-agenda-restriction-lock-highlight-subtree nil)
- '(org-agenda-scheduled-leaders (quote ("" "S%d: ")))
+ '(org-agenda-scheduled-leaders '("" "S%d: "))
  '(org-agenda-scheduled-relative-text "S%d: ")
  '(org-agenda-scheduled-text "")
  '(org-agenda-show-all-dates t)
@@ -1048,60 +1029,56 @@ This function is called at the very end of Spacemacs initialization."
  '(org-agenda-skip-timestamp-if-done t)
  '(org-agenda-skip-unavailable-files t)
  '(org-agenda-sorting-strategy
-   (quote
-    ((agenda habit-down time-up user-defined-up effort-up category-keep)
+   '((agenda habit-down time-up user-defined-up effort-up category-keep)
      (todo category-up effort-up)
      (tags category-up effort-up)
-     (search category-up))))
- '(org-agenda-span (quote day))
+     (search category-up)))
+ '(org-agenda-span 'day)
  '(org-agenda-start-on-weekday nil)
  '(org-agenda-start-with-log-mode nil)
  '(org-agenda-sticky t)
  '(org-agenda-tags-column -100)
  '(org-agenda-tags-todo-honor-ignore-options t)
- '(org-agenda-text-search-extra-files (quote (agenda-archives)))
+ '(org-agenda-text-search-extra-files '(agenda-archives))
  '(org-agenda-time-grid
-   (quote
-    ((daily today remove-match)
+   '((daily today remove-match)
      #("----------------" 0 16
        (org-heading t))
-     (900 1100 1300 1500 1700))))
+     (900 1100 1300 1500 1700)))
  '(org-agenda-todo-ignore-with-date nil)
  '(org-agenda-use-time-grid nil)
- '(org-agenda-window-setup (quote current-window))
+ '(org-agenda-window-setup 'current-window)
  '(org-archive-location "%s_archive::* Archived Tasks")
- '(org-archive-save-context-info (quote (time category itags)))
- '(org-attach-method (quote mv))
+ '(org-archive-save-context-info '(time category itags))
+ '(org-attach-method 'mv)
  '(org-babel-load-languages
-   (quote
-    ((php . t)
+   '((php . t)
      (python . t)
      (js . t)
      (ruby . t)
      (shell . t)
      (sql . t)
-     (emacs-lisp . t))))
+     (emacs-lisp . t)))
  '(org-babel-results-keyword "results")
  '(org-beamer-frame-default-options "fragile")
- '(org-blank-before-new-entry (quote ((heading) (plain-list-item . auto))))
+ '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
  '(org-capture-templates
-   (quote
-    (("t" "Task" entry
+   '(("t" "Task" entry
       (file+headline "/Users/dhaley/Box/projects/todo.txt" "Inbox")
       "* TODO %?
 SCHEDULED: %t
 :PROPERTIES:
 :ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U
-:END:" :prepend t))))
- '(org-catch-invisible-edits (quote error))
- '(org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+:END:" :prepend t)))
+ '(org-catch-invisible-edits 'error)
+ '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
  '(org-clock-clocked-in-display nil)
  '(org-clock-history-length 23)
  '(org-clock-idle-time 10)
  '(org-clock-in-resume t)
- '(org-clock-in-switch-to-state (quote bh/clock-in-to-next))
+ '(org-clock-in-switch-to-state 'bh/clock-in-to-next)
  '(org-clock-into-drawer t)
- '(org-clock-mode-line-total (quote current))
+ '(org-clock-mode-line-total 'current)
  '(org-clock-out-remove-zero-time-clocks t)
  '(org-clock-out-switch-to-state nil)
  '(org-clock-out-when-done t)
@@ -1130,12 +1107,11 @@ SCHEDULED: %t
  '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
  '(org-edit-src-content-indentation 0)
  '(org-emphasis-alist
-   (quote
-    (("*" bold "<b>" "</b>")
+   '(("*" bold "<b>" "</b>")
      ("/" italic "<i>" "</i>")
      ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
      ("=" org-code "<code>" "</code>" verbatim)
-     ("~" org-verbatim "<code>" "</code>" verbatim))))
+     ("~" org-verbatim "<code>" "</code>" verbatim)))
  '(org-enable-bootstrap-support t t)
  '(org-enable-github-support t t)
  '(org-enable-priority-commands t)
@@ -1146,14 +1122,12 @@ SCHEDULED: %t
    "<link rel=\"stylesheet\" href=\"http://doc.norang.ca/org.css\" type=\"text/css\" />")
  '(org-export-html-style-include-default nil)
  '(org-export-html-xml-declaration
-   (quote
-    (("html" . "")
+   '(("html" . "")
      ("was-html" . "<?xml version=\"1.0\" encoding=\"%s\"?>")
-     ("php" . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>"))))
- '(org-export-htmlize-output-type (quote css))
+     ("php" . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>")))
+ '(org-export-htmlize-output-type 'css)
  '(org-export-latex-classes
-   (quote
-    (("article" "\\documentclass[11pt]{article}"
+   '(("article" "\\documentclass[11pt]{article}"
       ("\\section{%s}" . "\\section*{%s}")
       ("\\subsection{%s}" . "\\subsection*{%s}")
       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -1181,42 +1155,39 @@ SCHEDULED: %t
       ("\\section{%s}" . "\\section*{%s}")
       ("\\subsection{%s}" . "\\subsection*{%s}")
       ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-     ("beamer" "\\documentclass{beamer}" org-beamer-sectioning))))
+     ("beamer" "\\documentclass{beamer}" org-beamer-sectioning)))
  '(org-export-latex-listings t)
  '(org-export-use-babel nil)
  '(org-export-with-section-numbers nil)
- '(org-export-with-sub-superscripts (quote {}))
+ '(org-export-with-sub-superscripts '{})
  '(org-export-with-timestamps nil)
  '(org-extend-today-until 7)
- '(org-fast-tag-selection-single-key (quote expert))
+ '(org-fast-tag-selection-single-key 'expert)
  '(org-file-apps
-   (quote
-    ((auto-mode . emacs)
+   '((auto-mode . emacs)
      ("\\.mm\\'" . system)
      ("\\.x?html?\\'" . system)
-     ("\\.pdf\\'" . system))))
+     ("\\.pdf\\'" . system)))
  '(org-fontify-done-headline t)
  '(org-footnote-section nil)
  '(org-global-properties
-   (quote
-    (("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
+   '(("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
      ("Confidence_ALL" . "low medium high")
-     ("STYLE_ALL" . "habit"))))
+     ("STYLE_ALL" . "habit")))
  '(org-habit-graph-column 50)
  '(org-habit-preceding-days 42)
  '(org-habit-today-glyph 45)
  '(org-hide-leading-stars t)
  '(org-html-checkbox-type "unicode")
- '(org-id-link-to-org-use-id (quote create-if-interactive-and-no-custom-id))
+ '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
  '(org-id-locations-file "~/.emacs.d/data/org-id-locations")
- '(org-id-method (quote uuidgen))
- '(org-image-actual-width (quote (800)))
- '(org-indirect-buffer-display (quote current-window))
+ '(org-id-method 'uuidgen)
+ '(org-image-actual-width '(800))
+ '(org-indirect-buffer-display 'current-window)
  '(org-insert-heading-respect-content t)
  '(org-irc-link-to-logs t t)
  '(org-latex-default-packages-alist
-   (quote
-    (("T1" "fontenc" t)
+   '(("T1" "fontenc" t)
      ("" "fixltx2e" nil)
      ("" "graphicx" t)
      ("" "longtable" nil)
@@ -1230,25 +1201,22 @@ SCHEDULED: %t
      ("" "wasysym" t)
      ("" "amssymb" t)
      ("" "hyperref" nil)
-     "\\tolerance=1000")))
+     "\\tolerance=1000"))
  '(org-link-abbrev-alist
-   (quote
-    (("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
+   '(("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
      ("google" . "http://www.google.com/search?q=%s")
      ("map" . "http://maps.google.com/maps?q=%s")
      ("github_nrel" . "https://github.nrel.gov")
      ("github" . "https://github.com")
-     ("ndg" . "https://github.nrel.gov/NrelDrupal/%s"))))
+     ("ndg" . "https://github.nrel.gov/NrelDrupal/%s")))
  '(org-link-frame-setup
-   (quote
-    ((vm . vm-visit-folder)
+   '((vm . vm-visit-folder)
      (gnus . org-gnus-no-new-news)
-     (file . find-file))))
- '(org-link-mailto-program (quote (compose-mail "%a" "%s")))
+     (file . find-file)))
+ '(org-link-mailto-program '(compose-mail "%a" "%s"))
  '(org-list-allow-alphabetical t)
  '(org-list-demote-modify-bullet
-   (quote
-    (("+" . "-")
+   '(("+" . "-")
      ("*" . "-")
      ("1." . "-")
      ("1)" . "-")
@@ -1259,42 +1227,35 @@ SCHEDULED: %t
      ("A." . "-")
      ("B." . "-")
      ("a." . "-")
-     ("b." . "-"))))
- '(org-log-done (quote time))
+     ("b." . "-")))
+ '(org-log-done 'time)
  '(org-log-into-drawer t)
  '(org-log-state-notes-insert-after-drawers nil)
  '(org-lowest-priority 69)
- '(org-mobile-agendas (quote ("Z")))
+ '(org-mobile-agendas '("Z"))
  '(org-mobile-directory "~/Dropbox/Apps/MobileOrg")
- '(org-mobile-files (quote ("/Users/dhaley/Box/projects/todo.txt")))
+ '(org-mobile-files '("/Users/dhaley/Box/projects/todo.txt"))
  '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
  '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
- '(org-modules
-   (quote
-    (org-gnus org-id org-info org-habit org-depend org-tempo)))
+ '(org-modules '(org-gnus org-id org-info org-habit org-depend org-tempo))
  '(org-odd-levels-only nil)
  '(org-outline-path-complete-in-steps nil)
  '(org-plantuml-jar-path nil)
  '(org-priority-faces
-   (quote
-    ((65 :foreground "ForestGreen" :weight bold)
-     (67 :foreground "dark gray" :slant italic))))
- '(org-refile-allow-creating-parent-nodes (quote confirm))
- '(org-refile-target-verify-function (quote bh/verify-refile-target))
- '(org-refile-targets
-   (quote
-    ((nil :maxlevel . 9)
-     (org-agenda-files :maxlevel . 9))))
+   '((65 :foreground "ForestGreen" :weight bold)
+     (67 :foreground "dark gray" :slant italic)))
+ '(org-refile-allow-creating-parent-nodes 'confirm)
+ '(org-refile-target-verify-function 'bh/verify-refile-target)
+ '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
  '(org-refile-use-outline-path t)
  '(org-remove-highlights-with-change t)
  '(org-return-follows-link t)
  '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")
  '(org-reverse-note-order t)
- '(org-special-ctrl-a/e (quote reversed))
+ '(org-special-ctrl-a/e 'reversed)
  '(org-special-ctrl-k t)
  '(org-speed-commands-user
-   (quote
-    (("0" . ignore)
+   '(("0" . ignore)
      ("1" . ignore)
      ("2" . ignore)
      ("3" . ignore)
@@ -1309,8 +1270,7 @@ SCHEDULED: %t
      ("h" . bh/hide-other)
      ("i" progn
       (forward-char 1)
-      (call-interactively
-       (quote org-insert-heading-respect-content)))
+      (call-interactively 'org-insert-heading-respect-content))
      ("k" . org-kill-note-or-show-branches)
      ("l" . ignore)
      ("m" . ignore)
@@ -1342,16 +1302,15 @@ SCHEDULED: %t
      ("W" . bh/widen)
      ("X" . ignore)
      ("Y" . ignore)
-     ("Z" . ignore))))
+     ("Z" . ignore)))
  '(org-src-fontify-natively t)
  '(org-src-preserve-indentation nil)
- '(org-src-window-setup (quote current-window))
+ '(org-src-window-setup 'current-window)
  '(org-startup-folded t)
  '(org-startup-indented t)
  '(org-startup-with-inline-images nil)
  '(org-structure-template-alist
-   (quote
-    (("a" . "export ascii")
+   '(("a" . "export ascii")
      ("C" . "comment")
      ("E" . "export")
      ("c" . "center")
@@ -1376,12 +1335,11 @@ y=\\sinh x
      ("r" . "src R")
      ("rp" . "src R :results output graphics :file ")
      ("s" . "src")
-     ("v" . "verse"))))
- '(org-stuck-projects (quote ("TODO=\"PROJECT\"" nil nil "SCHEDULED:")))
+     ("v" . "verse")))
+ '(org-stuck-projects '("TODO=\"PROJECT\"" nil nil "SCHEDULED:"))
  '(org-table-convert-region-max-lines 99999)
  '(org-tag-alist
-   (quote
-    ((:startgroup)
+   '((:startgroup)
      ("@errand" . 101)
      ("@net" . 110)
      ("@home" . 72)
@@ -1393,26 +1351,22 @@ y=\\sinh x
      ("ORG" . 79)
      ("NOTE" . 78)
      ("CANCELLED" . 99)
-     ("FLAGGED" . 63))))
+     ("FLAGGED" . 63)))
  '(org-tags-column -97)
- '(org-tags-exclude-from-inheritance (quote ("crypt")))
+ '(org-tags-exclude-from-inheritance '("crypt"))
  '(org-tags-match-list-sublevels t)
  '(org-time-clocksum-format
-   (quote
-    (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
+   '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
  '(org-time-clocksum-use-fractional t)
  '(org-todo-keyword-faces
-   (quote
-    (("TODO" :inherit org-todo)
-     ("PHONE" :foreground "forest green" :weight bold))))
+   '(("TODO" :inherit org-todo)
+     ("PHONE" :foreground "forest green" :weight bold)))
  '(org-todo-keywords
-   (quote
-    ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-     (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+   '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+     (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING")))
  '(org-todo-repeat-to-state "TODO")
  '(org-todo-state-tags-triggers
-   (quote
-    (("CANCELLED"
+   '(("CANCELLED"
       ("CANCELLED" . t))
      ("WAITING"
       ("WAITING" . t))
@@ -1433,36 +1387,34 @@ y=\\sinh x
      ("DONE"
       ("WAITING")
       ("CANCELLED")
-      ("HOLD")))))
+      ("HOLD"))))
  '(org-treat-S-cursor-todo-selection-as-state-change nil)
  '(org-trello-current-prefix-keybinding "C-c o")
  '(org-use-fast-todo-selection t)
- '(org-use-property-inheritance (quote ("AREA")))
+ '(org-use-property-inheritance '("AREA"))
  '(org-use-speed-commands t)
- '(org-use-sub-superscripts (quote {}))
+ '(org-use-sub-superscripts '{})
  '(org-use-tag-inheritance nil)
  '(org-velocity-always-use-bucket t)
  '(org-velocity-bucket "/Users/dhaley/Box/projects/notes.txt")
  '(org-velocity-capture-templates
-   (quote
-    (("v" "Velocity" entry
+   '(("v" "Velocity" entry
       (file "/Users/dhaley/Box/projects/notes.txt")
       "* NOTE %:search
 %i%?
 :PROPERTIES:
 :ID:       %(shell-command-to-string \\\"uuidgen\\\"):CREATED:  %U
-:END:" :prepend t))))
+:END:" :prepend t)))
  '(org-velocity-exit-on-match t)
  '(org-velocity-force-new t)
- '(org-velocity-search-method (quote regexp))
- '(org-x-backends (quote (ox-org ox-redmine)))
- '(org-x-redmine-title-prefix-function (quote org-x-redmine-title-prefix))
- '(org-x-redmine-title-prefix-match-function (quote org-x-redmine-title-prefix-match))
+ '(org-velocity-search-method 'regexp)
+ '(org-x-backends '(ox-org ox-redmine))
+ '(org-x-redmine-title-prefix-function 'org-x-redmine-title-prefix)
+ '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
  '(org-yank-adjusted-subtrees t)
  '(package-selected-packages
-   (quote
-    (yapfify stickyfunc-enhance pytest pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired paredit pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git winum org-mime docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data smeargle orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet drupal-mode php-mode ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme)))
- '(php-mode-coding-style (quote pear))
+   '(yapfify stickyfunc-enhance pytest pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired paredit pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git winum org-mime docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data smeargle orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet drupal-mode php-mode ws-butler which-key window-numbering  volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
+ '(php-mode-coding-style 'pear)
  '(user-full-name "Damon Haley")
  '(user-initials "dkh")
  '(user-mail-address "damon.haley@nrel.gov"))

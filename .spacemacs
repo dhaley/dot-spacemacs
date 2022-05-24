@@ -114,10 +114,6 @@ values."
      (python :variables
              python-fill-column 99
              )
-     w3m
-     ;;
-     ;; elfeed and the rss file
-     ;; (elfeed :variables rmh-elfeed-org-files (list "~/Dropbox/Org/elfeed.org"))
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -484,7 +480,7 @@ you should place your code here."
 
   (use-package dot-org
   :load-path "~/.emacs.d"
-  :ensure org-plus-contrib
+  :ensure org-contrib
   :commands my-org-startup
   :bind (("M-C"   . jump-to-org-agenda)
          ("H-M-S-RET" . org-smart-capture)
@@ -536,7 +532,7 @@ you should place your code here."
     (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
 
     (setq dired-sidebar-subtree-line-prefix "__")
-    (setq dired-sidebar-theme 'vscode)
+    ;; (setq dired-sidebar-theme 'vscode)
     (setq dired-sidebar-use-term-integration t)
     (setq dired-sidebar-use-custom-font t))
 
@@ -668,6 +664,7 @@ you should place your code here."
            ("<M-down>" .  shift-text-down)))
 
   (use-package vscode-icon
+    :disabled t
     :ensure t
     :commands (vscode-icon-for-file))
 
@@ -833,7 +830,7 @@ you should place your code here."
            (?b (file . "~/.profile"))
            (?B (file . "~/.bashrc"))
            (?e (file . "~/"))
-           (?t (file . "/Users/dhaley/Box/projects/todo.txt"))
+           (?t (file . "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"))
            (?s (file . "~/.emacs.d/settings.el"))
            (?o (file . "~/.emacs.d/dot-org.el"))
            (?g (file . "~/.emacs.d/dot-gnus.el"))
@@ -882,7 +879,7 @@ This function is called at the very end of Spacemacs initialization."
  '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
  '(browse-url-browser-function 'browse-url-default-browser)
  '(custom-safe-themes
-   '("7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
+   '("e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9" "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
  '(docker-image-run-arguments '("-i" "-t" "--rm") t)
  '(evil-want-Y-yank-to-eol nil)
  '(hl-todo-keyword-faces
@@ -1003,9 +1000,9 @@ This function is called at the very end of Spacemacs initialization."
  '(org-agenda-exporter-settings
    '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
  '(org-agenda-files
-   '("/Users/dhaley/Box/projects/todo.txt" "/Users/dhaley/Box/projects/from-mobile.org"))
+   '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"))
  '(org-agenda-fontify-priorities t)
- '(org-agenda-include-diary t)
+ '(org-agenda-include-diary nil)
  '(org-agenda-inhibit-startup t)
  '(org-agenda-insert-diary-extract-time t)
  '(org-agenda-log-mode-items '(closed clock state))
@@ -1064,7 +1061,7 @@ This function is called at the very end of Spacemacs initialization."
  '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
  '(org-capture-templates
    '(("t" "Task" entry
-      (file+headline "/Users/dhaley/Box/projects/todo.txt" "Inbox")
+      (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
       "* TODO %?
 SCHEDULED: %t
 :PROPERTIES:
@@ -1093,16 +1090,14 @@ SCHEDULED: %t
    "%80ITEM(Task) %10Effort(Effort){:} %10Confidence(Confidence) %10CLOCKSUM")
  '(org-completion-use-ido t)
  '(org-confirm-babel-evaluate nil)
- '(org-confirm-elisp-link-function nil)
- '(org-confirm-shell-link-function nil)
  '(org-crypt-disable-auto-save nil)
  '(org-crypt-key "F0B66B40")
  '(org-cycle-global-at-bob t)
  '(org-cycle-include-plain-lists t)
  '(org-cycle-separator-lines 0)
  '(org-deadline-warning-days 14)
- '(org-default-notes-file "/Users/dhaley/Box/projects/todo.txt")
- '(org-default-priority 69)
+ '(org-default-notes-file
+   "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
  '(org-directory "/Users/dhaley/Box/projects")
  '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
  '(org-edit-src-content-indentation 0)
@@ -1114,7 +1109,6 @@ SCHEDULED: %t
      ("~" org-verbatim "<code>" "</code>" verbatim)))
  '(org-enable-bootstrap-support t t)
  '(org-enable-github-support t t)
- '(org-enable-priority-commands t)
  '(org-enforce-todo-dependencies t)
  '(org-export-allow-BIND t)
  '(org-export-html-inline-images t)
@@ -1209,11 +1203,13 @@ SCHEDULED: %t
      ("github_nrel" . "https://github.nrel.gov")
      ("github" . "https://github.com")
      ("ndg" . "https://github.nrel.gov/NrelDrupal/%s")))
+ '(org-link-elisp-confirm-function nil)
  '(org-link-frame-setup
    '((vm . vm-visit-folder)
      (gnus . org-gnus-no-new-news)
      (file . find-file)))
  '(org-link-mailto-program '(compose-mail "%a" "%s"))
+ '(org-link-shell-confirm-function nil)
  '(org-list-allow-alphabetical t)
  '(org-list-demote-modify-bullet
    '(("+" . "-")
@@ -1231,19 +1227,22 @@ SCHEDULED: %t
  '(org-log-done 'time)
  '(org-log-into-drawer t)
  '(org-log-state-notes-insert-after-drawers nil)
- '(org-lowest-priority 69)
  '(org-mobile-agendas '("Z"))
  '(org-mobile-directory "~/Dropbox/Apps/MobileOrg")
- '(org-mobile-files '("/Users/dhaley/Box/projects/todo.txt"))
+ '(org-mobile-files
+   '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"))
  '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
  '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
- '(org-modules '(org-gnus org-id org-info org-habit org-depend org-tempo))
+ '(org-modules '(org-id org-habit org-depend org-tempo))
  '(org-odd-levels-only nil)
  '(org-outline-path-complete-in-steps nil)
  '(org-plantuml-jar-path nil)
+ '(org-priority-default 69)
+ '(org-priority-enable-commands t)
  '(org-priority-faces
    '((65 :foreground "ForestGreen" :weight bold)
      (67 :foreground "dark gray" :slant italic)))
+ '(org-priority-lowest 69)
  '(org-refile-allow-creating-parent-nodes 'confirm)
  '(org-refile-target-verify-function 'bh/verify-refile-target)
  '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
@@ -1413,7 +1412,7 @@ y=\\sinh x
  '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
  '(org-yank-adjusted-subtrees t)
  '(package-selected-packages
-   '(yapfify stickyfunc-enhance pytest pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired paredit pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git winum org-mime docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode skewer-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data smeargle orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet drupal-mode php-mode ws-butler which-key window-numbering  volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump f s diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed dash aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
+   '(ox-twbs ox-gfm yapfify stickyfunc-enhance pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data orgit pcache alert log4e gntp mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet php-mode ws-butler which-key window-numbering volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree highlight elisp-slime-nav dumb-jump f s define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
  '(php-mode-coding-style 'pear)
  '(user-full-name "Damon Haley")
  '(user-initials "dkh")
@@ -1423,5 +1422,6 @@ y=\\sinh x
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(highlight-parentheses-highlight ((nil (:weight ultra-bold))) t)
  '(org-mode-line-clock ((t (:foreground "red" :box (:line-width -1 :style released-button))))))
 )

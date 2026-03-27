@@ -119,7 +119,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode)
+   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -188,6 +188,13 @@ values."
    dotspacemacs-startup-buffer-responsive t
    ;; Default major mode of the scratch buffer (default `text-mode')
    dotspacemacs-scratch-mode 'text-mode
+   ;; If non-nil, *scratch* buffer will be persistent. Things you write down in
+   ;; *scratch* buffer will be saved and restored automatically.
+   dotspacemacs-scratch-buffer-persistent t
+
+   ;; If non-nil, `kill-buffer' on *scratch* buffer
+   ;; will bury it instead of killing.
+   dotspacemacs-scratch-buffer-unkillable t
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
@@ -365,6 +372,20 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (require 'org-tempo)
+  (require 'ob-php)
+
+  ;; Suppress auto-evilification remap warnings for org-agenda
+  (with-eval-after-load 'org-agenda
+    (evil-define-key 'motion org-agenda-mode-map
+      "j" 'org-agenda-next-line
+      "G" 'org-agenda-toggle-time-grid
+      "|" 'org-agenda-filter-remove-all
+      "\\" 'org-agenda-filter-by-tag))
+
+  ;; Prevent repeated recentf saves during startup
+  (with-eval-after-load 'recentf
+    (setq recentf-auto-cleanup 'never))
+
 ;;; Load customization settings
 
   (defvar running-alternate-emacs nil)
@@ -444,10 +465,6 @@ you should place your code here."
 
   (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
-  (use-package persistent-scratch
-    :if (and window-system (not running-alternate-emacs)
-             (not noninteractive)))
-
   (defvar lisp-modes '(emacs-lisp-mode
                        inferior-emacs-lisp-mode
                        ielm-mode
@@ -479,8 +496,9 @@ you should place your code here."
 ;;; Delayed configuration
 
   (use-package dot-org
-  :load-path "~/.emacs.d"
-  :ensure org-contrib
+  :pin gnu
+  :load-path "~/.emacs.d/lisp"
+  ;; :ensure org-contrib
   :commands my-org-startup
   :bind (("M-C"   . jump-to-org-agenda)
          ("H-M-S-RET" . org-smart-capture)
@@ -539,7 +557,7 @@ you should place your code here."
   (eval-after-load 'drupal-mode
     '(progn
        (add-hook 'drupal-mode-hook
-                 '(lambda ()
+                 #'(lambda ()
                     (yas-activate-extra-mode 'drupal-mode)))))
 
   (use-package dockerfile-mode
@@ -879,7 +897,7 @@ This function is called at the very end of Spacemacs initialization."
  '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
  '(browse-url-browser-function 'browse-url-default-browser)
  '(custom-safe-themes
-   '("e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9" "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
+   '("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9" "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
  '(docker-image-run-arguments '("-i" "-t" "--rm") t)
  '(evil-want-Y-yank-to-eol nil)
  '(hl-todo-keyword-faces
@@ -1412,7 +1430,7 @@ y=\\sinh x
  '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
  '(org-yank-adjusted-subtrees t)
  '(package-selected-packages
-   '(ox-twbs ox-gfm yapfify stickyfunc-enhance pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data orgit pcache alert log4e gntp mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet php-mode ws-butler which-key window-numbering volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree highlight elisp-slime-nav dumb-jump f s define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
+   '(ob-php pacmacs calfw-cal ox-twbs ox-gfm yapfify stickyfunc-enhance pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data orgit pcache alert log4e gntp mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet php-mode ws-butler which-key window-numbering volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree highlight elisp-slime-nav dumb-jump f s define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
  '(php-mode-coding-style 'pear)
  '(user-full-name "Damon Haley")
  '(user-initials "dkh")

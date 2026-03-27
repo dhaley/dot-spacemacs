@@ -368,9 +368,9 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  ;; Ensure exec-path-from-shell copies NODE_EXTRA_CA_CERTS for ORG SSL interception
+  ;; Ensure exec-path-from-shell copies ORG SSL cert vars for Copilot
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "NODE_EXTRA_CA_CERTS"))
+        '("PATH" "MANPATH" "NODE_OPTIONS" "SSL_CERT_FILE" "SSL_CERT_DIR"))
   )
 
 (defun dotspacemacs/user-config ()

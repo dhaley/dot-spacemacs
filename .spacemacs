@@ -367,6 +367,10 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
+  ;; Use nvm default node
+  (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node/v24.14.1/bin")))
+    (setenv "PATH" (concat nvm-node-dir ":" (getenv "PATH")))
+    (add-to-list 'exec-path nvm-node-dir))
   )
 
 (defun dotspacemacs/user-config ()

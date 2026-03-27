@@ -111,9 +111,14 @@ values."
      ;; my additons bellow 
      osx
      themes-megapack
+     lsp
+     terraform
      (python :variables
              python-fill-column 99
-             )
+             python-backend 'lsp
+             python-lsp-server 'pylsp)
+     (github-copilot :variables
+                     github-copilot-enable-commit-messages 'golem)
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these

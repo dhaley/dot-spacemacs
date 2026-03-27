@@ -370,10 +370,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
   ;; Ensure exec-path-from-shell copies ORG SSL cert vars for Copilot
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "NODE_OPTIONS" "SSL_CERT_FILE" "SSL_CERT_DIR"))
+        '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"))
   ;; Set ORG SSL trust directly in case exec-path-from-shell doesn't run (batch mode)
   (setenv "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
+  (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
   )
 
 (defun dotspacemacs/user-config ()

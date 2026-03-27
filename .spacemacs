@@ -95,10 +95,10 @@ values."
      ;; better-defaults
      emacs-lisp
      git
-     latex
-     (latex :variables latex-build-command "LaTeX")
-     (latex :variables latex-enable-auto-fill t)
-     (latex :variables latex-enable-folding t)
+     (latex :variables
+            latex-build-command "LaTeX"
+            latex-enable-auto-fill t
+            latex-enable-folding t)
      markdown
      org
      ;; (shell :variables
@@ -119,7 +119,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -342,7 +342,7 @@ values."
    ;; List of search tool executable names. Spacemacs uses the first installed
    ;; tool of the list. Supported tools are `ag', `pt', `ack' and `grep'.
    ;; (default '("ag" "pt" "ack" "grep"))
-   dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
+   dotspacemacs-search-tools '("rg" "ag" "ack" "grep")
    ;; The default package repository used if no explicit repository has been
    ;; specified with an installed package.
    ;; Not used for now. (default nil)
@@ -582,104 +582,6 @@ you should place your code here."
   ;;   :after eshell
   ;;   :config
   ;;   (add-hook 'eshell-mode-hook #'eshell-bookmark-setup))
-
-  (use-package ivy
-    :diminish
-    :disabled t
-    :demand t
-
-    :bind (("C-x b" . ivy-switch-buffer)
-           ("C-x B" . ivy-switch-buffer-other-window)
-           ("M-H"   . ivy-resume))
-
-    :bind (:map ivy-minibuffer-map
-                ("<tab>" . ivy-alt-done)
-                ("SPC"   . ivy-alt-done-or-space)
-                ("C-d"   . ivy-done-or-delete-char)
-                ("C-i"   . ivy-partial-or-done)
-                ("C-r"   . ivy-previous-line-or-history)
-                ("M-r"   . ivy-reverse-i-search))
-
-    :bind (:map ivy-switch-buffer-map
-                ("C-k" . ivy-switch-buffer-kill))
-
-    :custom
-    (ivy-dynamic-exhibit-delay-ms 200)
-    (ivy-height 10)
-    (ivy-initial-inputs-alist nil t)
-    (ivy-magic-tilde nil)
-    (ivy-re-builders-alist '((t . ivy--regex-ignore-order)))
-    (ivy-use-virtual-buffers t)
-    (ivy-wrap t)
-
-    :preface
-    (defun ivy-done-or-delete-char ()
-      (interactive)
-      (call-interactively
-       (if (eolp)
-           #'ivy-immediate-done
-         #'ivy-delete-char)))
-
-    (defun ivy-alt-done-or-space ()
-      (interactive)
-      (call-interactively
-       (if (= ivy--length 1)
-           #'ivy-alt-done
-         #'self-insert-command)))
-
-    (defun ivy-switch-buffer-kill ()
-      (interactive)
-      (debug)
-      (let ((bn (ivy-state-current ivy-last)))
-        (when (get-buffer bn)
-          (kill-buffer bn))
-        (unless (buffer-live-p (ivy-state-buffer ivy-last))
-          (setf (ivy-state-buffer ivy-last)
-                (with-ivy-window (current-buffer))))
-        (setq ivy--all-candidates (delete bn ivy--all-candidates))
-        (ivy--exhibit)))
-
-    ;; This is the value of `magit-completing-read-function', so that we see
-    ;; Magit's own sorting choices.
-    (defun my-ivy-completing-read (&rest args)
-      (let ((ivy-sort-functions-alist '((t . nil))))
-        (apply 'ivy-completing-read args)))
-
-    :config
-    (ivy-mode 1)
-    (ivy-set-occur 'ivy-switch-buffer 'ivy-switch-buffer-occur))
-
-  (use-package ivy-bibtex
-    :commands ivy-bibtex)
-
-  (use-package ivy-hydra
-    :after (ivy hydra)
-    :defer t)
-
-  (use-package ivy-pass
-    :commands ivy-pass)
-
-  (use-package ivy-rich
-    :disabled t
-    :after ivy
-    :demand t
-    :config
-    (ivy-rich-mode 1)
-    (setq ivy-virtual-abbreviate 'full
-          ivy-rich-switch-buffer-align-virtual-buffer t
-          ivy-rich-path-style 'abbrev))
-
-  (use-package ivy-rtags
-    :disabled t
-    :load-path "~/.nix-profile/share/emacs/site-lisp/rtags"
-    :after (ivy rtags))
-
-  (use-package shift-text
-    :commands (shfit-text-right shfit-text-left shift-text-up shift-text-down)
-    :bind (("<M-right>" . shift-text-right)
-           ("<M-left>" .  shift-text-left)
-           ("<M-up>" .  shift-text-up)
-           ("<M-down>" .  shift-text-down)))
 
   (use-package vscode-icon
     :disabled t

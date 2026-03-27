@@ -118,7 +118,8 @@ values."
              python-backend 'lsp
              python-lsp-server 'pylsp)
      (github-copilot :variables
-                     github-copilot-enable-commit-messages 'golem)
+                     github-copilot-enable-commit-messages 'golem
+                     :packages (not copilot-chat mcp))
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these

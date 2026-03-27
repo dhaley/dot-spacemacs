@@ -387,13 +387,14 @@ you should place your code here."
   (require 'org-tempo)
   (require 'ob-php)
 
-  ;; Copilot: set default indentation offset and increase max buffer size
+  ;; Copilot: set default indentation offset, disable in large org files
   (with-eval-after-load 'copilot
     (add-to-list 'copilot-indentation-alist '(org-mode 2))
     (add-to-list 'copilot-indentation-alist '(text-mode 2))
     (add-to-list 'copilot-indentation-alist '(fundamental-mode 2))
     (add-to-list 'copilot-indentation-alist '(markdown-mode 2))
-    (setq copilot-max-char 1000000))
+    (add-to-list 'copilot-disable-predicates
+                 (lambda () (> (buffer-size) 100000))))
 
   ;; Suppress auto-evilification remap warnings for org-agenda
   (with-eval-after-load 'org-agenda

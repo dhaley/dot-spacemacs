@@ -8,6 +8,7 @@
 (add-to-list 'load-path "~/.emacs.d/lisp")
 
 ;; (defun add-to-load-path (path &optional dir)
+
 ;;   (setq load-path
 ;;         (cons (expand-file-name path (or dir user-emacs-directory)) load-path)))
 
@@ -36,7 +37,7 @@
 ;;                    "\n")))))))
 
 (eval-and-compile
-  (defvar use-package-verbose t)
+  (defvar use-package-verbose nil)
   ;; (defvar use-package-expand-minimally t)
   (eval-after-load 'advice
     `(setq ad-redefinition-action 'accept))
@@ -108,7 +109,7 @@ values."
      syntax-checking
      ;; version-control
      ;;
-     ;; my additons bellow 
+     ;; my additons bellow
      osx
      themes-megapack
      lsp
@@ -125,11 +126,11 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -295,7 +296,7 @@ values."
    ;; If non nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil to boost the loading time. (default t)
-   dotspacemacs-loading-progress-bar t
+   dotspacemacs-loading-progress-bar nil
    ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
    ;; (Emacs 24.4+ only)
    dotspacemacs-fullscreen-at-startup nil
@@ -373,6 +374,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"))
   ;; Set ORG SSL trust directly in case exec-path-from-shell doesn't run (batch mode)
   (setenv "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem"))
+  (setenv "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
+  (setenv "CURL_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
   (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
   )
@@ -384,6 +387,9 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  ;; Copy current buffer's full file path to kill ring
+  (global-set-key (kbd "C-c f") (lambda () (interactive) (let ((path (or (buffer-file-name) default-directory))) (kill-new path) (message "%s" path))))
+
   (require 'org-tempo)
   (require 'ob-php)
 
@@ -518,19 +524,19 @@ you should place your code here."
 ;;; Delayed configuration
 
   (use-package dot-org
-  :pin gnu
-  :load-path "~/.emacs.d/lisp"
-  ;; :ensure org-contrib
-  :commands my-org-startup
-  :bind (("M-C"   . jump-to-org-agenda)
-         ("H-M-S-RET" . org-smart-capture)
-         ("M-M"   . org-inline-note)
-         ("C-c a" . org-agenda)
-         ("C-c S" . org-store-link)
-         ("C-c l" . org-insert-link)
-         ("C-. n" . org-velocity-read))
-  :defer 30
-  :config
+    :pin gnu
+    :load-path "~/.emacs.d/lisp"
+    ;; :ensure org-contrib
+    :commands my-org-startup
+    :bind (("M-C"   . jump-to-org-agenda)
+           ("H-M-S-RET" . org-smart-capture)
+           ("M-M"   . org-inline-note)
+           ("C-c a" . org-agenda)
+           ("C-c S" . org-store-link)
+           ("C-c l" . org-insert-link)
+           ("C-. n" . org-velocity-read))
+    :defer 30
+    :config
     (my-org-startup))
 
   (defun web-mode-hook ()
@@ -580,13 +586,13 @@ you should place your code here."
     '(progn
        (add-hook 'drupal-mode-hook
                  #'(lambda ()
-                    (yas-activate-extra-mode 'drupal-mode)))))
+                     (yas-activate-extra-mode 'drupal-mode)))))
 
   (use-package dockerfile-mode
-                :mode "Dockerfile\\'"
-                :config
-                (put 'dockerfile-image-name 'safe-local-variable #'stringp)
-                )
+    :mode "Dockerfile\\'"
+    :config
+    (put 'dockerfile-image-name 'safe-local-variable #'stringp)
+    )
 
   ;; (use-package docker
   ;;   :ensure t
@@ -799,6 +805,54 @@ you should place your code here."
   (setq w3m-view-this-url-new-session-in-background t)
   ;; W3M view url new session in background
   (setq flycheck-python-flake8-executable "flake8")
+  (setq lsp-warn-no-matched-clients nil)
+  (with-eval-after-load 'with-editor
+    (setq with-editor-emacsclient-executable (executable-find "emacsclient")))
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-enabled-clients 'pylsp))
+
+  ;; ── gptel: Bedrock Sonnet 4.6 via Appfleet Agentic inference profiles ──
+  (use-package gptel
+    :ensure t
+    :bind (("C-c g" . gptel)
+           ("C-c G" . gptel-send)
+           ("C-c M-g" . gptel-menu))
+    :config
+    ;; Use Homebrew curl >= 8.9 for Bedrock sigv4 signing
+    (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+
+    ;; Register Bedrock backend with your inference profiles
+    (setq gptel-model 'claude-sonnet-4-20250514
+          gptel-backend
+          (gptel-make-bedrock "Appfleet-Agentic"
+            :stream t
+            :region "us-west-2"
+            :models '(claude-sonnet-4-20250514
+                      claude-3-5-haiku-20241022)
+            :model-region 'us))
+
+    ;; System prompt matching the agent
+    (setq gptel-directives
+          '((default . "You are Appfleet Agentic, an AI operations assistant for Stratus Cloud infrastructure at ORG. You help with AWS infrastructure, ECS deployments, Jenkins pipelines, and Appfleet application management.")
+            (code . "You are a senior software engineer. Write clean, minimal code with brief explanations.")
+            (terraform . "You are a Terraform expert for AWS. Follow least-privilege IAM, use modules, and tag all resources with billingId, org, owner, manifest.")
+            (writing . "You are a technical writer. Be concise and direct.")))
+
+    ;; Tool-use confirmation
+    (setq gptel-confirm-tool-calls t))
+
+  ;; ── mcp.el: Connect gptel to Cloud MCP servers ──
+  (use-package mcp
+    :ensure t
+    :after gptel
+    :config
+    (setq mcp-hub-servers
+          '(("appfleet-config" . (:url "https://cloud-mcp-appfleet-dev.cloud.example.com/mcp"))
+            ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
+            ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))
+            ("portal-costs"    . (:url "https://cloud-mcp-costs.cloud.example.com/mcp"))))
+    ;; Auto-register MCP tools with gptel
+    (add-hook 'gptel-mode-hook #'mcp-hub-start))
   )
 
 
@@ -813,557 +867,518 @@ you should place your code here."
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
- '(browse-url-browser-function 'browse-url-default-browser)
- '(custom-safe-themes
-   '("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9" "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4" "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3" "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c" "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
- '(docker-image-run-arguments '("-i" "-t" "--rm") t)
- '(evil-want-Y-yank-to-eol nil)
- '(hl-todo-keyword-faces
-   '(("TODO" . "#dc752f")
-     ("NEXT" . "#dc752f")
-     ("THEM" . "#2d9574")
-     ("PROG" . "#3a81c3")
-     ("OKAY" . "#3a81c3")
-     ("DONT" . "#f2241f")
-     ("FAIL" . "#f2241f")
-     ("DONE" . "#42ae2c")
-     ("NOTE" . "#b1951d")
-     ("KLUDGE" . "#b1951d")
-     ("HACK" . "#b1951d")
-     ("TEMP" . "#b1951d")
-     ("FIXME" . "#dc752f")
-     ("XXX+" . "#dc752f")
-     ("\\?\\?\\?+" . "#dc752f")))
- '(mac-command-modifier 'hyper)
- '(mac-function-modifier 'hyper)
- '(mac-option-modifier 'meta)
- '(mac-pass-command-to-system nil)
- '(magit-auto-revert-mode nil)
- '(magit-completing-read-function 'my-ivy-completing-read)
- '(magit-diff-options nil)
- '(magit-fetch-arguments nil)
- '(magit-highlight-trailing-whitespace nil)
- '(magit-highlight-whitespace nil)
- '(magit-log-section-commit-count 10)
- '(magit-pre-refresh-hook nil)
- '(magit-process-popup-time 15)
- '(magit-push-always-verify nil)
- '(magit-refresh-status-buffer nil)
- '(magit-stage-all-confirm nil)
- '(magit-unstage-all-confirm nil)
- '(magit-use-overlays nil)
- '(org-M-RET-may-split-line '((headline) (default . t)))
- '(org-adapt-indentation nil)
- '(org-agenda-auto-exclude-function 'org-my-auto-exclude-function)
- '(org-agenda-clock-consistency-checks
-   '(:max-duration "4:00" :min-duration 0 :max-gap 0 :gap-ok-around
-                   ("4:00")))
- '(org-agenda-clockreport-parameter-plist '(:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80))
- '(org-agenda-cmp-user-defined 'bh/agenda-sort)
- '(org-agenda-compact-blocks t)
- '(org-agenda-custom-commands
-   '(("N" "Notes" tags "NOTE"
-      ((org-agenda-overriding-header "Notes")
-       (org-tags-match-list-sublevels t)))
-     ("h" "Habits" tags-todo "STYLE=\"habit\""
-      ((org-agenda-overriding-header "Habits")
-       (org-agenda-sorting-strategy
-        '(todo-state-down effort-up category-keep))))
-     (" " "Agenda"
-      ((agenda "" nil)
-       (tags "REFILE"
-             ((org-agenda-overriding-header "Tasks to Refile")
-              (org-tags-match-list-sublevels nil)))
-       (tags-todo "-CANCELLED/!"
-                  ((org-agenda-overriding-header "Stuck Projects")
-                   (org-agenda-skip-function 'bh/skip-non-stuck-projects)
-                   (org-agenda-sorting-strategy
-                    '(category-keep))))
-       (tags-todo "-HOLD-CANCELLED/!"
-                  ((org-agenda-overriding-header "Projects")
-                   (org-agenda-skip-function 'bh/skip-non-projects)
-                   (org-tags-match-list-sublevels 'indented)
-                   (org-agenda-sorting-strategy
-                    '(category-keep))))
-       (tags-todo "-CANCELLED/!NEXT"
-                  ((org-agenda-overriding-header
-                    (concat "Project Next Tasks"
-                            (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
-                   (org-tags-match-list-sublevels t)
-                   (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-sorting-strategy
-                    '(todo-state-down effort-up category-keep))))
-       (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
-                  ((org-agenda-overriding-header
-                    (concat "Project Subtasks"
-                            (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function 'bh/skip-non-project-tasks)
-                   (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-sorting-strategy
-                    '(category-keep))))
-       (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
-                  ((org-agenda-overriding-header
-                    (concat "Standalone Tasks"
-                            (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function 'bh/skip-project-tasks)
-                   (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-sorting-strategy
-                    '(category-keep))))
-       (tags-todo "-CANCELLED+WAITING|HOLD/!"
-                  ((org-agenda-overriding-header
-                    (concat "Waiting and Postponed Tasks"
-                            (if bh/hide-scheduled-and-waiting-next-tasks "" " (including WAITING and SCHEDULED tasks)")))
-                   (org-agenda-skip-function 'bh/skip-non-tasks)
-                   (org-tags-match-list-sublevels nil)
-                   (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                   (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)))
-       (tags "-REFILE/"
-             ((org-agenda-overriding-header "Tasks to Archive")
-              (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
-              (org-tags-match-list-sublevels nil))))
-      nil)))
- '(org-agenda-deadline-leaders '("!D!: " "D%02d: "))
- '(org-agenda-default-appointment-duration 60)
- '(org-agenda-diary-file "/Users/dhaley/Box/projects/diary.org")
- '(org-agenda-dim-blocked-tasks nil)
- '(org-agenda-exporter-settings
-   '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
- '(org-agenda-files
-   '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"))
- '(org-agenda-fontify-priorities t)
- '(org-agenda-include-diary nil)
- '(org-agenda-inhibit-startup t)
- '(org-agenda-insert-diary-extract-time t)
- '(org-agenda-log-mode-items '(closed clock state))
- '(org-agenda-ndays 1)
- '(org-agenda-persistent-filter t)
- '(org-agenda-prefix-format
-   '((agenda . "  %-11c%?-12t% s")
-     (timeline . "  % s")
-     (todo . "  %-11c")
-     (tags . "  %-11c")))
- '(org-agenda-repeating-timestamp-show-all t)
- '(org-agenda-restriction-lock-highlight-subtree nil)
- '(org-agenda-scheduled-leaders '("" "S%d: "))
- '(org-agenda-scheduled-relative-text "S%d: ")
- '(org-agenda-scheduled-text "")
- '(org-agenda-show-all-dates t)
- '(org-agenda-skip-additional-timestamps-same-entry t)
- '(org-agenda-skip-deadline-if-done t)
- '(org-agenda-skip-scheduled-if-deadline-is-shown t)
- '(org-agenda-skip-scheduled-if-done t)
- '(org-agenda-skip-timestamp-if-done t)
- '(org-agenda-skip-unavailable-files t)
- '(org-agenda-sorting-strategy
-   '((agenda habit-down time-up user-defined-up effort-up category-keep)
-     (todo category-up effort-up)
-     (tags category-up effort-up)
-     (search category-up)))
- '(org-agenda-span 'day)
- '(org-agenda-start-on-weekday nil)
- '(org-agenda-start-with-log-mode nil)
- '(org-agenda-sticky t)
- '(org-agenda-tags-column -100)
- '(org-agenda-tags-todo-honor-ignore-options t)
- '(org-agenda-text-search-extra-files '(agenda-archives))
- '(org-agenda-time-grid
-   '((daily today remove-match)
-     #("----------------" 0 16
-       (org-heading t))
-     (900 1100 1300 1500 1700)))
- '(org-agenda-todo-ignore-with-date nil)
- '(org-agenda-use-time-grid nil)
- '(org-agenda-window-setup 'current-window)
- '(org-archive-location "%s_archive::* Archived Tasks")
- '(org-archive-save-context-info '(time category itags))
- '(org-attach-method 'mv)
- '(org-babel-load-languages
-   '((php . t)
-     (python . t)
-     (js . t)
-     (ruby . t)
-     (shell . t)
-     (sql . t)
-     (emacs-lisp . t)))
- '(org-babel-results-keyword "results")
- '(org-beamer-frame-default-options "fragile")
- '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
- '(org-capture-templates
-   '(("t" "Task" entry
-      (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
-      "* TODO %?
-SCHEDULED: %t
-:PROPERTIES:
-:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U
-:END:" :prepend t)))
- '(org-catch-invisible-edits 'error)
- '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
- '(org-clock-clocked-in-display nil)
- '(org-clock-history-length 23)
- '(org-clock-idle-time 10)
- '(org-clock-in-resume t)
- '(org-clock-in-switch-to-state 'bh/clock-in-to-next)
- '(org-clock-into-drawer t)
- '(org-clock-mode-line-total 'current)
- '(org-clock-out-remove-zero-time-clocks t)
- '(org-clock-out-switch-to-state nil)
- '(org-clock-out-when-done t)
- '(org-clock-persist t)
- '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el")
- '(org-clock-persist-query-resume nil)
- '(org-clock-report-include-clocking-task t)
- '(org-clock-resolve-expert t)
- '(org-clock-sound "/usr/local/lib/tngchime.wav")
- '(org-clone-delete-id t)
- '(org-columns-default-format
-   "%80ITEM(Task) %10Effort(Effort){:} %10Confidence(Confidence) %10CLOCKSUM")
- '(org-completion-use-ido t)
- '(org-confirm-babel-evaluate nil)
- '(org-crypt-disable-auto-save nil)
- '(org-crypt-key "F0B66B40")
- '(org-cycle-global-at-bob t)
- '(org-cycle-include-plain-lists t)
- '(org-cycle-separator-lines 0)
- '(org-deadline-warning-days 14)
- '(org-default-notes-file
-   "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
- '(org-directory "/Users/dhaley/Box/projects")
- '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
- '(org-edit-src-content-indentation 0)
- '(org-emphasis-alist
-   '(("*" bold "<b>" "</b>")
-     ("/" italic "<i>" "</i>")
-     ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
-     ("=" org-code "<code>" "</code>" verbatim)
-     ("~" org-verbatim "<code>" "</code>" verbatim)))
- '(org-enable-bootstrap-support t t)
- '(org-enable-github-support t t)
- '(org-enforce-todo-dependencies t)
- '(org-export-allow-BIND t)
- '(org-export-html-inline-images t)
- '(org-export-html-style-extra
-   "<link rel=\"stylesheet\" href=\"http://doc.norang.ca/org.css\" type=\"text/css\" />")
- '(org-export-html-style-include-default nil)
- '(org-export-html-xml-declaration
-   '(("html" . "")
-     ("was-html" . "<?xml version=\"1.0\" encoding=\"%s\"?>")
-     ("php" . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>")))
- '(org-export-htmlize-output-type 'css)
- '(org-export-latex-classes
-   '(("article" "\\documentclass[11pt]{article}"
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-      ("\\paragraph{%s}" . "\\paragraph*{%s}")
-      ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-     ("linalg" "\\documentclass{article}
-\\usepackage{linalgjh}
-[DEFAULT-PACKAGES]
-[EXTRA]
-`[PACKAGES]"
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-      ("\\paragraph{%s}" . "\\paragraph*{%s}")
-      ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-     ("report" "\\documentclass[11pt]{report}"
-      ("\\part{%s}" . "\\part*{%s}")
-      ("\\chapter{%s}" . "\\chapter*{%s}")
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-     ("book" "\\documentclass[11pt]{book}"
-      ("\\part{%s}" . "\\part*{%s}")
-      ("\\chapter{%s}" . "\\chapter*{%s}")
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-     ("beamer" "\\documentclass{beamer}" org-beamer-sectioning)))
- '(org-export-latex-listings t)
- '(org-export-use-babel nil)
- '(org-export-with-section-numbers nil)
- '(org-export-with-sub-superscripts '{})
- '(org-export-with-timestamps nil)
- '(org-extend-today-until 7)
- '(org-fast-tag-selection-single-key 'expert)
- '(org-file-apps
-   '((auto-mode . emacs)
-     ("\\.mm\\'" . system)
-     ("\\.x?html?\\'" . system)
-     ("\\.pdf\\'" . system)))
- '(org-fontify-done-headline t)
- '(org-footnote-section nil)
- '(org-global-properties
-   '(("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
-     ("Confidence_ALL" . "low medium high")
-     ("STYLE_ALL" . "habit")))
- '(org-habit-graph-column 50)
- '(org-habit-preceding-days 42)
- '(org-habit-today-glyph 45)
- '(org-hide-leading-stars t)
- '(org-html-checkbox-type "unicode")
- '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
- '(org-id-locations-file "~/.emacs.d/data/org-id-locations")
- '(org-id-method 'uuidgen)
- '(org-image-actual-width '(800))
- '(org-indirect-buffer-display 'current-window)
- '(org-insert-heading-respect-content t)
- '(org-irc-link-to-logs t t)
- '(org-latex-default-packages-alist
-   '(("T1" "fontenc" t)
-     ("" "fixltx2e" nil)
-     ("" "graphicx" t)
-     ("" "longtable" nil)
-     ("" "float" nil)
-     ("" "wrapfig" nil)
-     ("" "rotating" nil)
-     ("normalem" "ulem" t)
-     ("" "amsmath" t)
-     ("" "textcomp" t)
-     ("" "marvosym" t)
-     ("" "wasysym" t)
-     ("" "amssymb" t)
-     ("" "hyperref" nil)
-     "\\tolerance=1000"))
- '(org-link-abbrev-alist
-   '(("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
-     ("google" . "http://www.google.com/search?q=%s")
-     ("map" . "http://maps.google.com/maps?q=%s")
-     ("github_org" . "https://github.example.com")
-     ("github" . "https://github.com")
-     ("ndg" . "https://github.example.com/ExampleDrupal/%s")))
- '(org-link-elisp-confirm-function nil)
- '(org-link-frame-setup
-   '((vm . vm-visit-folder)
-     (gnus . org-gnus-no-new-news)
-     (file . find-file)))
- '(org-link-mailto-program '(compose-mail "%a" "%s"))
- '(org-link-shell-confirm-function nil)
- '(org-list-allow-alphabetical t)
- '(org-list-demote-modify-bullet
-   '(("+" . "-")
-     ("*" . "-")
-     ("1." . "-")
-     ("1)" . "-")
-     ("A)" . "-")
-     ("B)" . "-")
-     ("a)" . "-")
-     ("b)" . "-")
-     ("A." . "-")
-     ("B." . "-")
-     ("a." . "-")
-     ("b." . "-")))
- '(org-log-done 'time)
- '(org-log-into-drawer t)
- '(org-log-state-notes-insert-after-drawers nil)
- '(org-mobile-agendas '("Z"))
- '(org-mobile-directory "~/Dropbox/Apps/MobileOrg")
- '(org-mobile-files
-   '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"))
- '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
- '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
- '(org-modules '(org-id org-habit org-depend org-tempo))
- '(org-odd-levels-only nil)
- '(org-outline-path-complete-in-steps nil)
- '(org-plantuml-jar-path nil)
- '(org-priority-default 69)
- '(org-priority-enable-commands t)
- '(org-priority-faces
-   '((65 :foreground "ForestGreen" :weight bold)
-     (67 :foreground "dark gray" :slant italic)))
- '(org-priority-lowest 69)
- '(org-refile-allow-creating-parent-nodes 'confirm)
- '(org-refile-target-verify-function 'bh/verify-refile-target)
- '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
- '(org-refile-use-outline-path t)
- '(org-remove-highlights-with-change t)
- '(org-return-follows-link t)
- '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")
- '(org-reverse-note-order t)
- '(org-special-ctrl-a/e 'reversed)
- '(org-special-ctrl-k t)
- '(org-speed-commands-user
-   '(("0" . ignore)
-     ("1" . ignore)
-     ("2" . ignore)
-     ("3" . ignore)
-     ("4" . ignore)
-     ("5" . ignore)
-     ("6" . ignore)
-     ("7" . ignore)
-     ("8" . ignore)
-     ("9" . ignore)
-     ("a" . ignore)
-     ("d" . ignore)
-     ("h" . bh/hide-other)
-     ("i" progn
-      (forward-char 1)
-      (call-interactively 'org-insert-heading-respect-content))
-     ("k" . org-kill-note-or-show-branches)
-     ("l" . ignore)
-     ("m" . ignore)
-     ("q" . bh/show-org-agenda)
-     ("r" . ignore)
-     ("s" . org-save-all-org-buffers)
-     ("w" . org-refile)
-     ("x" . ignore)
-     ("y" . ignore)
-     ("z" . org-add-note)
-     ("A" . ignore)
-     ("B" . ignore)
-     ("E" . ignore)
-     ("F" . bh/restrict-to-file-or-follow)
-     ("G" . ignore)
-     ("H" . ignore)
-     ("J" . org-clock-goto)
-     ("K" . ignore)
-     ("L" . ignore)
-     ("M" . ignore)
-     ("N" . bh/narrow-to-org-subtree)
-     ("P" . bh/narrow-to-org-project)
-     ("Q" . ignore)
-     ("R" . ignore)
-     ("S" . ignore)
-     ("T" . bh/org-todo)
-     ("U" . bh/narrow-up-one-org-level)
-     ("V" . ignore)
-     ("W" . bh/widen)
-     ("X" . ignore)
-     ("Y" . ignore)
-     ("Z" . ignore)))
- '(org-src-fontify-natively t)
- '(org-src-preserve-indentation nil)
- '(org-src-window-setup 'current-window)
- '(org-startup-folded t)
- '(org-startup-indented t)
- '(org-startup-with-inline-images nil)
- '(org-structure-template-alist
-   '(("a" . "export ascii")
-     ("C" . "comment")
-     ("E" . "export")
-     ("c" . "center")
-     ("ditaa" . "src ditaa :file")
-     ("dot" . "src dot :file")
-     ("e" . "example")
-     ("el" . "src emacs-lisp")
-     ("h" . "export html")
-     ("hs" . "src haskell")
-     ("http" . "src http")
-     ("ipy" . "src ipython :results output")
-     ("js" . "src js")
-     ("l" . "export latex")
-     ("laeq" . "latex 
-\\begin{equation} \\label{eq-sinh}
-y=\\sinh x
-\\end{equation}")
-     ("n" . "notes")
-     ("plantuml" . "src plantuml :file")
-     ("py" . "src python :results output")
-     ("q" . "quote")
-     ("r" . "src R")
-     ("rp" . "src R :results output graphics :file ")
-     ("s" . "src")
-     ("v" . "verse")))
- '(org-stuck-projects '("TODO=\"PROJECT\"" nil nil "SCHEDULED:"))
- '(org-table-convert-region-max-lines 99999)
- '(org-tag-alist
-   '((:startgroup)
-     ("@errand" . 101)
-     ("@net" . 110)
-     ("@home" . 72)
-     (:endgroup)
-     ("WAITING" . 119)
-     ("HOLD" . 104)
-     ("PERSONAL" . 80)
-     ("WORK" . 87)
-     ("ORG" . 79)
-     ("NOTE" . 78)
-     ("CANCELLED" . 99)
-     ("FLAGGED" . 63)))
- '(org-tags-column -97)
- '(org-tags-exclude-from-inheritance '("crypt"))
- '(org-tags-match-list-sublevels t)
- '(org-time-clocksum-format
-   '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
- '(org-time-clocksum-use-fractional t)
- '(org-todo-keyword-faces
-   '(("TODO" :inherit org-todo)
-     ("PHONE" :foreground "forest green" :weight bold)))
- '(org-todo-keywords
-   '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-     (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING")))
- '(org-todo-repeat-to-state "TODO")
- '(org-todo-state-tags-triggers
-   '(("CANCELLED"
-      ("CANCELLED" . t))
-     ("WAITING"
-      ("WAITING" . t))
-     ("HOLD"
-      ("WAITING")
-      ("HOLD" . t))
-     (done
-      ("WAITING")
-      ("HOLD"))
-     ("TODO"
-      ("WAITING")
-      ("CANCELLED")
-      ("HOLD"))
-     ("NEXT"
-      ("WAITING")
-      ("CANCELLED")
-      ("HOLD"))
-     ("DONE"
-      ("WAITING")
-      ("CANCELLED")
-      ("HOLD"))))
- '(org-treat-S-cursor-todo-selection-as-state-change nil)
- '(org-trello-current-prefix-keybinding "C-c o")
- '(org-use-fast-todo-selection t)
- '(org-use-property-inheritance '("AREA"))
- '(org-use-speed-commands t)
- '(org-use-sub-superscripts '{})
- '(org-use-tag-inheritance nil)
- '(org-velocity-always-use-bucket t)
- '(org-velocity-bucket "/Users/dhaley/Box/projects/notes.txt")
- '(org-velocity-capture-templates
-   '(("v" "Velocity" entry
-      (file "/Users/dhaley/Box/projects/notes.txt")
-      "* NOTE %:search
-%i%?
-:PROPERTIES:
-:ID:       %(shell-command-to-string \\\"uuidgen\\\"):CREATED:  %U
-:END:" :prepend t)))
- '(org-velocity-exit-on-match t)
- '(org-velocity-force-new t)
- '(org-velocity-search-method 'regexp)
- '(org-x-backends '(ox-org ox-redmine))
- '(org-x-redmine-title-prefix-function 'org-x-redmine-title-prefix)
- '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
- '(org-yank-adjusted-subtrees t)
- '(package-selected-packages
-   '(ob-php pacmacs calfw-cal ox-twbs ox-gfm yapfify stickyfunc-enhance pyenv-mode py-isort pippel pipenv pyvenv pip-requirements lsp-python-ms live-py-mode epc ctable concurrent deferred helm-pydoc helm-gtags helm-cscope xcscope ggtags dap-mode lsp-treemacs bui lsp-mode cython-mode counsel-gtags counsel ivy company-anaconda blacken anaconda-mode pythonic ztree writeroom-mode wrap-region workgroups2 workgroups weblogger wand visual-regexp visual-fill-column visible-mark vimish-fold unicode-enbox twittering-mode transpose-mark tiny theme-changer tbx2org swiper sudden-death sublimity stripe-buffer sort-words smex smart-shift smart-mode-line smart-forward smart-dash smart-cursor-color smart-compile slime session ssass-mode runner restclient redshank rainbow-mode python-mode puppet-mode prodigy pretty-mode po-mode php-eldoc php-boris-minor-mode php-boris perspective persistent-soft peep-dired pandoc-mode page-break-lines pabbrev owdriver ov outshine outorg osx-trash orgbox org-trello org-repo-todo org-present-remote org-pdfview org-link-minor-mode org-caldav org-autolist on-screen olivetti ob-http oauth nyan-mode nlinum nix-mode nameless multifiles multi-web-mode multi-term move-dup minimap mic-paren manage-minor-mode memory-usage math-symbol-lists magit-gerrit magit-find-file magit-annex lua-mode log4j-mode loccur lentic know-your-http-well key-chord jist ipretty interaction-log iflipb ido-hacks ibuffer-git docker-compose-mode nginx-mode go-guru go-eldoc go-mode ede-php-autoload-composer-installers ede-php-autoload-drupal sql-indent jinja2-mode ansible-doc ansible rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby csv-mode geben-helm-projectile geben wgrep yaml-mode shift-text company-auctex ebib parsebib seq auctex persistent-scratch web-beautify livid-mode simple-httpd json-mode json-snatcher json-reformat js2-refactor multiple-cursors js2-mode js-doc company-tern dash-functional tern coffee-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data orgit pcache alert log4e gntp mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup company-statistics company auto-yasnippet auto-dictionary ac-ispell auto-complete phpunit phpcbf php-extras php-auto-yasnippets yasnippet php-mode ws-butler which-key window-numbering volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide ido-vertical-mode hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree highlight elisp-slime-nav dumb-jump f s define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async quelpa package-build spacemacs-theme))
- '(php-mode-coding-style 'pear)
- '(user-full-name "Damon Haley")
- '(user-initials "dkh")
- '(user-mail-address "damon.haley@example.com"))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(highlight-parentheses-highlight ((nil (:weight ultra-bold))) t)
- '(org-mode-line-clock ((t (:foreground "red" :box (:line-width -1 :style released-button))))))
-)
+  (custom-set-variables
+   ;; custom-set-variables was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
+   '(browse-url-browser-function 'browse-url-default-browser)
+   '(custom-safe-themes
+     '("9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0"
+       "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476"
+       "e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9"
+       "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4"
+       "8dce5b23232d0a490f16d62112d3abff6babeef86ae3853241a85856f9b0a6e7"
+       "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
+       "285efd6352377e0e3b68c71ab12c43d2b72072f64d436584f9159a58c4ff545a"
+       "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7"
+       "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773"
+       "76c5b2592c62f6b48923c00f97f74bcb7ddb741618283bdb2be35f3c0e1030e3"
+       "732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3"
+       "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a"
+       "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3"
+       "7023f8768081cd1275f7fd1cd567277e44402c65adfe4dc10a3a908055ed634d"
+       "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088"
+       "c1fb68aa00235766461c7e31ecfc759aa2dd905899ae6d95097061faeb72f9ee"
+       "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358"
+       "00445e6f15d31e9afaa23ed0d765850e9cd5e929be5e8e63b114a3346236c44c"
+       "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904"
+       "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
+       "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
+   '(docker-image-run-arguments '("-i" "-t" "--rm") t)
+   '(evil-want-Y-yank-to-eol nil)
+   '(hl-todo-keyword-faces
+     '(("TODO" . "#dc752f") ("NEXT" . "#dc752f") ("THEM" . "#2d9574")
+       ("PROG" . "#3a81c3") ("OKAY" . "#3a81c3") ("DONT" . "#f2241f")
+       ("FAIL" . "#f2241f") ("DONE" . "#42ae2c") ("NOTE" . "#b1951d")
+       ("KLUDGE" . "#b1951d") ("HACK" . "#b1951d") ("TEMP" . "#b1951d")
+       ("FIXME" . "#dc752f") ("XXX+" . "#dc752f") ("\\?\\?\\?+" . "#dc752f")))
+   '(mac-command-modifier 'hyper)
+   '(mac-function-modifier 'hyper)
+   '(mac-option-modifier 'meta)
+   '(mac-pass-command-to-system nil)
+   '(magit-auto-revert-mode nil)
+   '(magit-completing-read-function 'my-ivy-completing-read)
+   '(magit-diff-options nil)
+   '(magit-fetch-arguments nil)
+   '(magit-highlight-trailing-whitespace nil)
+   '(magit-highlight-whitespace nil)
+   '(magit-log-section-commit-count 10)
+   '(magit-pre-refresh-hook nil)
+   '(magit-process-popup-time 15)
+   '(magit-push-always-verify nil)
+   '(magit-refresh-status-buffer nil)
+   '(magit-stage-all-confirm nil)
+   '(magit-unstage-all-confirm nil)
+   '(magit-use-overlays nil)
+   '(org-M-RET-may-split-line '((headline) (default . t)))
+   '(org-adapt-indentation nil)
+   '(org-agenda-auto-exclude-function 'org-my-auto-exclude-function)
+   '(org-agenda-clock-consistency-checks
+     '(:max-duration "4:00" :min-duration 0 :max-gap 0 :gap-ok-around ("4:00")))
+   '(org-agenda-clockreport-parameter-plist '(:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80))
+   '(org-agenda-cmp-user-defined 'bh/agenda-sort)
+   '(org-agenda-compact-blocks t)
+   '(org-agenda-custom-commands
+     '(("N" "Notes" tags "NOTE"
+        ((org-agenda-overriding-header "Notes") (org-tags-match-list-sublevels t)))
+       ("h" "Habits" tags-todo "STYLE=\"habit\""
+        ((org-agenda-overriding-header "Habits")
+         (org-agenda-sorting-strategy '(todo-state-down effort-up category-keep))))
+       (" " "Agenda"
+        ((agenda "" nil)
+         (tags "REFILE"
+               ((org-agenda-overriding-header "Tasks to Refile")
+                (org-tags-match-list-sublevels nil)))
+         (tags-todo "-CANCELLED/!"
+                    ((org-agenda-overriding-header "Stuck Projects")
+                     (org-agenda-skip-function 'bh/skip-non-stuck-projects)
+                     (org-agenda-sorting-strategy '(category-keep))))
+         (tags-todo "-HOLD-CANCELLED/!"
+                    ((org-agenda-overriding-header "Projects")
+                     (org-agenda-skip-function 'bh/skip-non-projects)
+                     (org-tags-match-list-sublevels 'indented)
+                     (org-agenda-sorting-strategy '(category-keep))))
+         (tags-todo "-CANCELLED/!NEXT"
+                    ((org-agenda-overriding-header
+                      (concat "Project Next Tasks"
+                              (if bh/hide-scheduled-and-waiting-next-tasks ""
+                                " (including WAITING and SCHEDULED tasks)")))
+                     (org-agenda-skip-function
+                      'bh/skip-projects-and-habits-and-single-tasks)
+                     (org-tags-match-list-sublevels t)
+                     (org-agenda-todo-ignore-scheduled
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-deadlines
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-with-date
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-sorting-strategy
+                      '(todo-state-down effort-up category-keep))))
+         (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
+                    ((org-agenda-overriding-header
+                      (concat "Project Subtasks"
+                              (if bh/hide-scheduled-and-waiting-next-tasks ""
+                                " (including WAITING and SCHEDULED tasks)")))
+                     (org-agenda-skip-function 'bh/skip-non-project-tasks)
+                     (org-agenda-todo-ignore-scheduled
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-deadlines
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-with-date
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-sorting-strategy '(category-keep))))
+         (tags-todo "-REFILE-CANCELLED-WAITING-HOLD/!"
+                    ((org-agenda-overriding-header
+                      (concat "Standalone Tasks"
+                              (if bh/hide-scheduled-and-waiting-next-tasks ""
+                                " (including WAITING and SCHEDULED tasks)")))
+                     (org-agenda-skip-function 'bh/skip-project-tasks)
+                     (org-agenda-todo-ignore-scheduled
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-deadlines
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-with-date
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-sorting-strategy '(category-keep))))
+         (tags-todo "-CANCELLED+WAITING|HOLD/!"
+                    ((org-agenda-overriding-header
+                      (concat "Waiting and Postponed Tasks"
+                              (if bh/hide-scheduled-and-waiting-next-tasks ""
+                                " (including WAITING and SCHEDULED tasks)")))
+                     (org-agenda-skip-function 'bh/skip-non-tasks)
+                     (org-tags-match-list-sublevels nil)
+                     (org-agenda-todo-ignore-scheduled
+                      bh/hide-scheduled-and-waiting-next-tasks)
+                     (org-agenda-todo-ignore-deadlines
+                      bh/hide-scheduled-and-waiting-next-tasks)))
+         (tags "-REFILE/"
+               ((org-agenda-overriding-header "Tasks to Archive")
+                (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
+                (org-tags-match-list-sublevels nil))))
+        nil)))
+   '(org-agenda-deadline-leaders '("!D!: " "D%02d: "))
+   '(org-agenda-default-appointment-duration 60)
+   '(org-agenda-diary-file "/Users/dhaley/Box/projects/diary.org")
+   '(org-agenda-dim-blocked-tasks nil)
+   '(org-agenda-exporter-settings
+     '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
+   '(org-agenda-files
+     '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"
+       "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"))
+   '(org-agenda-fontify-priorities t)
+   '(org-agenda-include-diary nil)
+   '(org-agenda-inhibit-startup t)
+   '(org-agenda-insert-diary-extract-time t)
+   '(org-agenda-log-mode-items '(closed clock state))
+   '(org-agenda-ndays 1)
+   '(org-agenda-persistent-filter t)
+   '(org-agenda-prefix-format
+     '((agenda . "  %-11c%?-12t% s") (timeline . "  % s") (todo . "  %-11c")
+       (tags . "  %-11c")))
+   '(org-agenda-repeating-timestamp-show-all t)
+   '(org-agenda-restriction-lock-highlight-subtree nil)
+   '(org-agenda-scheduled-leaders '("" "S%d: "))
+   '(org-agenda-scheduled-relative-text "S%d: ")
+   '(org-agenda-scheduled-text "")
+   '(org-agenda-show-all-dates t)
+   '(org-agenda-skip-additional-timestamps-same-entry t)
+   '(org-agenda-skip-deadline-if-done t)
+   '(org-agenda-skip-scheduled-if-deadline-is-shown t)
+   '(org-agenda-skip-scheduled-if-done t)
+   '(org-agenda-skip-timestamp-if-done t)
+   '(org-agenda-skip-unavailable-files t)
+   '(org-agenda-sorting-strategy
+     '((agenda habit-down time-up user-defined-up effort-up category-keep)
+       (todo category-up effort-up) (tags category-up effort-up)
+       (search category-up)))
+   '(org-agenda-span 'day)
+   '(org-agenda-start-on-weekday nil)
+   '(org-agenda-start-with-log-mode nil)
+   '(org-agenda-sticky t)
+   '(org-agenda-tags-column -100)
+   '(org-agenda-tags-todo-honor-ignore-options t)
+   '(org-agenda-text-search-extra-files '(agenda-archives))
+   '(org-agenda-time-grid
+     '((daily today remove-match) #("----------------" 0 16 (org-heading t))
+       (900 1100 1300 1500 1700)))
+   '(org-agenda-todo-ignore-with-date nil)
+   '(org-agenda-use-time-grid nil)
+   '(org-agenda-window-setup 'current-window)
+   '(org-archive-location "%s_archive::* Archived Tasks")
+   '(org-archive-save-context-info '(time category itags))
+   '(org-attach-method 'mv)
+   '(org-babel-load-languages
+     '((php . t) (python . t) (js . t) (ruby . t) (shell . t) (sql . t)
+       (emacs-lisp . t)))
+   '(org-babel-results-keyword "results")
+   '(org-beamer-frame-default-options "fragile")
+   '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
+   '(org-capture-templates
+     '(("t" "Task" entry
+        (file+headline
+         "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
+        "* TODO %?\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:"
+        :prepend t)))
+   '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
+   '(org-clock-clocked-in-display nil)
+   '(org-clock-history-length 23)
+   '(org-clock-idle-time 10)
+   '(org-clock-in-resume t)
+   '(org-clock-in-switch-to-state 'bh/clock-in-to-next)
+   '(org-clock-into-drawer t)
+   '(org-clock-mode-line-total 'current)
+   '(org-clock-out-remove-zero-time-clocks t)
+   '(org-clock-out-switch-to-state nil)
+   '(org-clock-out-when-done t)
+   '(org-clock-persist t)
+   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el")
+   '(org-clock-persist-query-resume nil)
+   '(org-clock-report-include-clocking-task t)
+   '(org-clock-resolve-expert t)
+   '(org-clock-sound "/usr/local/lib/tngchime.wav")
+   '(org-clone-delete-id t)
+   '(org-columns-default-format
+     "%80ITEM(Task) %10Effort(Effort){:} %10Confidence(Confidence) %10CLOCKSUM")
+   '(org-completion-use-ido t)
+   '(org-confirm-babel-evaluate nil)
+   '(org-crypt-disable-auto-save nil)
+   '(org-crypt-key "F0B66B40")
+   '(org-cycle-global-at-bob t)
+   '(org-cycle-include-plain-lists t)
+   '(org-cycle-separator-lines 0)
+   '(org-deadline-warning-days 14)
+   '(org-default-notes-file
+     "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+   '(org-directory "/Users/dhaley/Box/projects")
+   '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
+   '(org-emphasis-alist
+     '(("*" bold "<b>" "</b>") ("/" italic "<i>" "</i>")
+       ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+       ("=" org-code "<code>" "</code>" verbatim)
+       ("~" org-verbatim "<code>" "</code>" verbatim)))
+   '(org-enable-bootstrap-support t t)
+   '(org-enable-github-support t t)
+   '(org-enforce-todo-dependencies t)
+   '(org-export-allow-BIND t)
+   '(org-export-html-inline-images t)
+   '(org-export-html-style-extra
+     "<link rel=\"stylesheet\" href=\"http://doc.norang.ca/org.css\" type=\"text/css\" />")
+   '(org-export-html-style-include-default nil)
+   '(org-export-html-xml-declaration
+     '(("html" . "") ("was-html" . "<?xml version=\"1.0\" encoding=\"%s\"?>")
+       ("php"
+        . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>")))
+   '(org-export-htmlize-output-type 'css)
+   '(org-export-latex-classes
+     '(("article" "\\documentclass[11pt]{article}"
+        ("\\section{%s}" . "\\section*{%s}")
+        ("\\subsection{%s}" . "\\subsection*{%s}")
+        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+        ("\\paragraph{%s}" . "\\paragraph*{%s}")
+        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+       ("linalg"
+        "\\documentclass{article}\12\\usepackage{linalgjh}\12[DEFAULT-PACKAGES]\12[EXTRA]\12`[PACKAGES]"
+        ("\\section{%s}" . "\\section*{%s}")
+        ("\\subsection{%s}" . "\\subsection*{%s}")
+        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+        ("\\paragraph{%s}" . "\\paragraph*{%s}")
+        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+       ("report" "\\documentclass[11pt]{report}" ("\\part{%s}" . "\\part*{%s}")
+        ("\\chapter{%s}" . "\\chapter*{%s}") ("\\section{%s}" . "\\section*{%s}")
+        ("\\subsection{%s}" . "\\subsection*{%s}")
+        ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+       ("book" "\\documentclass[11pt]{book}" ("\\part{%s}" . "\\part*{%s}")
+        ("\\chapter{%s}" . "\\chapter*{%s}") ("\\section{%s}" . "\\section*{%s}")
+        ("\\subsection{%s}" . "\\subsection*{%s}")
+        ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+       ("beamer" "\\documentclass{beamer}" org-beamer-sectioning)))
+   '(org-export-latex-listings t)
+   '(org-export-use-babel nil)
+   '(org-export-with-section-numbers nil)
+   '(org-export-with-sub-superscripts '{})
+   '(org-export-with-timestamps nil)
+   '(org-extend-today-until 7)
+   '(org-fast-tag-selection-single-key 'expert)
+   '(org-file-apps
+     '((auto-mode . emacs) ("\\.mm\\'" . system) ("\\.x?html?\\'" . system)
+       ("\\.pdf\\'" . system)))
+   '(org-fold-catch-invisible-edits 'error)
+   '(org-fontify-done-headline t)
+   '(org-footnote-section nil)
+   '(org-global-properties
+     '(("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
+       ("Confidence_ALL" . "low medium high") ("STYLE_ALL" . "habit")))
+   '(org-habit-graph-column 50)
+   '(org-habit-preceding-days 42)
+   '(org-habit-today-glyph 45)
+   '(org-hide-leading-stars t)
+   '(org-html-checkbox-type "unicode")
+   '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+   '(org-id-locations-file "~/.emacs.d/data/org-id-locations")
+   '(org-id-method 'uuidgen)
+   '(org-image-actual-width '(800))
+   '(org-indirect-buffer-display 'current-window)
+   '(org-insert-heading-respect-content t)
+   '(org-irc-link-to-logs t t)
+   '(org-latex-default-packages-alist
+     '(("T1" "fontenc" t) ("" "fixltx2e" nil) ("" "graphicx" t) ("" "longtable" nil)
+       ("" "float" nil) ("" "wrapfig" nil) ("" "rotating" nil)
+       ("normalem" "ulem" t) ("" "amsmath" t) ("" "textcomp" t) ("" "marvosym" t)
+       ("" "wasysym" t) ("" "amssymb" t) ("" "hyperref" nil) "\\tolerance=1000"))
+   '(org-link-abbrev-alist
+     '(("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
+       ("google" . "http://www.google.com/search?q=%s")
+       ("map" . "http://maps.google.com/maps?q=%s")
+       ("github_org" . "https://github.example.com")
+       ("github" . "https://github.com")
+       ("ndg" . "https://github.example.com/ExampleDrupal/%s")))
+   '(org-link-elisp-confirm-function nil)
+   '(org-link-frame-setup
+     '((vm . vm-visit-folder) (gnus . org-gnus-no-new-news) (file . find-file)))
+   '(org-link-mailto-program '(compose-mail "%a" "%s"))
+   '(org-link-shell-confirm-function nil)
+   '(org-list-allow-alphabetical t)
+   '(org-list-demote-modify-bullet
+     '(("+" . "-") ("*" . "-") ("1." . "-") ("1)" . "-") ("A)" . "-") ("B)" . "-")
+       ("a)" . "-") ("b)" . "-") ("A." . "-") ("B." . "-") ("a." . "-")
+       ("b." . "-")))
+   '(org-log-done 'time)
+   '(org-log-into-drawer t)
+   '(org-log-state-notes-insert-after-drawers nil)
+   '(org-mobile-agendas '("Z"))
+   '(org-mobile-directory "~/Dropbox/Apps/MobileOrg")
+   '(org-mobile-files
+     '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"))
+   '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
+   '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
+   '(org-modules '(org-id org-habit org-depend org-tempo))
+   '(org-odd-levels-only nil)
+   '(org-outline-path-complete-in-steps nil)
+   '(org-plantuml-jar-path nil)
+   '(org-priority-default 69)
+   '(org-priority-enable-commands t)
+   '(org-priority-faces
+     '((65 :foreground "ForestGreen" :weight bold)
+       (67 :foreground "dark gray" :slant italic)))
+   '(org-priority-lowest 69)
+   '(org-refile-allow-creating-parent-nodes 'confirm)
+   '(org-refile-target-verify-function 'bh/verify-refile-target)
+   '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
+   '(org-refile-use-outline-path t)
+   '(org-remove-highlights-with-change t)
+   '(org-return-follows-link t)
+   '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")
+   '(org-reverse-note-order t)
+   '(org-special-ctrl-a/e 'reversed)
+   '(org-special-ctrl-k t)
+   '(org-speed-commands-user
+     '(("0" . ignore) ("1" . ignore) ("2" . ignore) ("3" . ignore) ("4" . ignore)
+       ("5" . ignore) ("6" . ignore) ("7" . ignore) ("8" . ignore) ("9" . ignore)
+       ("a" . ignore) ("d" . ignore) ("h" . bh/hide-other)
+       ("i" progn (forward-char 1)
+        (call-interactively 'org-insert-heading-respect-content))
+       ("k" . org-kill-note-or-show-branches) ("l" . ignore) ("m" . ignore)
+       ("q" . bh/show-org-agenda) ("r" . ignore) ("s" . org-save-all-org-buffers)
+       ("w" . org-refile) ("x" . ignore) ("y" . ignore) ("z" . org-add-note)
+       ("A" . ignore) ("B" . ignore) ("E" . ignore)
+       ("F" . bh/restrict-to-file-or-follow) ("G" . ignore) ("H" . ignore)
+       ("J" . org-clock-goto) ("K" . ignore) ("L" . ignore) ("M" . ignore)
+       ("N" . bh/narrow-to-org-subtree) ("P" . bh/narrow-to-org-project)
+       ("Q" . ignore) ("R" . ignore) ("S" . ignore) ("T" . bh/org-todo)
+       ("U" . bh/narrow-up-one-org-level) ("V" . ignore) ("W" . bh/widen)
+       ("X" . ignore) ("Y" . ignore) ("Z" . ignore)))
+   '(org-src-content-indentation 0)
+   '(org-src-fontify-natively t)
+   '(org-src-preserve-indentation nil)
+   '(org-src-window-setup 'current-window)
+   '(org-startup-folded t)
+   '(org-startup-indented t)
+   '(org-startup-with-link-previews nil)
+   '(org-structure-template-alist
+     '(("a" . "export ascii") ("C" . "comment") ("E" . "export") ("c" . "center")
+       ("ditaa" . "src ditaa :file") ("dot" . "src dot :file") ("e" . "example")
+       ("el" . "src emacs-lisp") ("h" . "export html") ("hs" . "src haskell")
+       ("http" . "src http") ("ipy" . "src ipython :results output")
+       ("js" . "src js") ("l" . "export latex")
+       ("laeq"
+        . "latex \12\\begin{equation} \\label{eq-sinh}\12y=\\sinh x\12\\end{equation}")
+       ("n" . "notes") ("plantuml" . "src plantuml :file")
+       ("py" . "src python :results output") ("q" . "quote") ("r" . "src R")
+       ("rp" . "src R :results output graphics :file ") ("s" . "src")
+       ("v" . "verse")))
+   '(org-stuck-projects '("TODO=\"PROJECT\"" nil nil "SCHEDULED:"))
+   '(org-table-convert-region-max-lines 99999)
+   '(org-tag-alist
+     '((:startgroup) ("@errand" . 101) ("@net" . 110) ("@home" . 72) (:endgroup)
+       ("WAITING" . 119) ("HOLD" . 104) ("PERSONAL" . 80) ("WORK" . 87)
+       ("ORG" . 79) ("NOTE" . 78) ("CANCELLED" . 99) ("FLAGGED" . 63)))
+   '(org-tags-column -97)
+   '(org-tags-exclude-from-inheritance '("crypt"))
+   '(org-tags-match-list-sublevels t)
+   '(org-time-clocksum-format
+     '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
+   '(org-time-clocksum-use-fractional t)
+   '(org-todo-keyword-faces
+     '(("TODO" :inherit org-todo) ("PHONE" :foreground "forest green" :weight bold)))
+   '(org-todo-keywords
+     '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+       (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE"
+                 "MEETING")))
+   '(org-todo-repeat-to-state "TODO")
+   '(org-todo-state-tags-triggers
+     '(("CANCELLED" ("CANCELLED" . t)) ("WAITING" ("WAITING" . t))
+       ("HOLD" ("WAITING") ("HOLD" . t)) (done ("WAITING") ("HOLD"))
+       ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
+       ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
+       ("DONE" ("WAITING") ("CANCELLED") ("HOLD"))))
+   '(org-treat-S-cursor-todo-selection-as-state-change nil)
+   '(org-trello-current-prefix-keybinding "C-c o")
+   '(org-use-fast-todo-selection t)
+   '(org-use-property-inheritance '("AREA"))
+   '(org-use-speed-commands t)
+   '(org-use-sub-superscripts '{})
+   '(org-use-tag-inheritance nil)
+   '(org-velocity-always-use-bucket t)
+   '(org-velocity-bucket "/Users/dhaley/Box/projects/notes.txt")
+   '(org-velocity-capture-templates
+     '(("v" "Velocity" entry (file "/Users/dhaley/Box/projects/notes.txt")
+        "* NOTE %:search\12%i%?\12:PROPERTIES:\12:ID:       %(shell-command-to-string \\\"uuidgen\\\"):CREATED:  %U\12:END:"
+        :prepend t)))
+   '(org-velocity-exit-on-match t)
+   '(org-velocity-force-new t)
+   '(org-velocity-search-method 'regexp)
+   '(org-x-backends '(ox-org ox-redmine))
+   '(org-x-redmine-title-prefix-function 'org-x-redmine-title-prefix)
+   '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
+   '(org-yank-adjusted-subtrees t)
+   '(package-selected-packages
+     '(ac-ispell ace-jump-helm-line ace-link ace-window adaptive-wrap
+                 aggressive-indent alert anaconda-mode ansible ansible-doc anzu
+                 async auctex auto-compile auto-complete auto-dictionary
+                 auto-highlight-symbol auto-yasnippet avy aws-ec2 aws-snippets
+                 awscli-capf bind-key bind-map blacken bui bundler calfw-cal
+                 chruby clean-aindent-mode coffee-mode column-enforce-mode company
+                 company-anaconda company-auctex company-statistics company-tern
+                 company-web concurrent counsel counsel-gtags csv-mode ctable
+                 cython-mode dap-mode dash-functional deferred define-word
+                 docker-compose-mode dumb-jump ebib
+                 ede-php-autoload-composer-installers ede-php-autoload-drupal
+                 elisp-slime-nav emmet-mode epc epl evil evil-anzu evil-args
+                 evil-ediff evil-escape evil-iedit-state evil-indent-plus
+                 evil-lisp-state evil-magit evil-matchit evil-mc
+                 evil-nerd-commenter evil-numbers evil-search-highlight-persist
+                 evil-surround evil-tutor evil-unimpaired evil-visual-mark-mode
+                 evil-visualstar exec-path-from-shell expand-region eyebrowse f
+                 fancy-battery fill-column-indicator flx flx-ido flycheck
+                 flycheck-pos-tip flyspell-correct flyspell-correct-helm geben
+                 geben-helm-projectile ggtags gh-md git-link git-messenger
+                 git-timemachine gitattributes-mode gitconfig-mode gitignore-mode
+                 gntp gnuplot go-eldoc go-guru go-mode google-translate goto-chg
+                 haml-mode helm helm-ag helm-aws helm-c-yasnippet helm-company
+                 helm-core helm-cscope helm-css-scss helm-descbinds helm-flx
+                 helm-gitignore helm-gtags helm-make helm-mode-manager
+                 helm-projectile helm-pydoc helm-swoop help-fns+ hide-comnt
+                 highlight highlight-indentation highlight-numbers
+                 highlight-parentheses hl-todo htmlize hungry-delete hydra
+                 ibuffer-git ido-hacks ido-vertical-mode iedit iflipb indent-guide
+                 inf-ruby info+ interaction-log ipretty ivy jinja2-mode jist
+                 js-doc js2-mode js2-refactor json-mode json-reformat
+                 json-snatcher key-chord know-your-http-well lentic less-css-mode
+                 link-hint linum-relative live-py-mode livid-mode loccur log4e
+                 log4j-mode lorem-ipsum lsp-mode lsp-python-ms lsp-treemacs
+                 lua-mode macrostep magit magit-annex magit-find-file magit-gerrit
+                 magit-gitflow magit-popup manage-minor-mode markdown-mode
+                 markdown-toc math-symbol-lists memory-usage mic-paren minimap
+                 minitest mmm-mode move-dup move-text multi-term multi-web-mode
+                 multifiles multiple-cursors nameless neotree nginx-mode nix-mode
+                 nlinum nyan-mode oauth ob-athena ob-http ob-php olivetti
+                 on-screen open-junk-file org-autolist org-aws-iam-role
+                 org-bullets org-caldav org-link-minor-mode org-pdfview
+                 org-present-remote org-repo-todo org-trello orgbox orgit
+                 osx-trash outorg outshine ov owdriver ox-gfm ox-twbs pabbrev
+                 package-build packed pacmacs page-break-lines pandoc-mode
+                 parent-mode parsebib pcache pcre2el peep-dired persistent-scratch
+                 persistent-soft persp-mode perspective php-auto-yasnippets
+                 php-boris php-boris-minor-mode php-eldoc php-extras php-mode
+                 phpcbf phpunit pip-requirements pipenv pippel pkg-info po-mode
+                 popup popwin pos-tip powerline pretty-mode prodigy projectile
+                 pug-mode puppet-mode py-isort pyenv-mode python-mode pythonic
+                 pyvenv quelpa rainbow-delimiters rainbow-mode rake rbenv redshank
+                 request restart-emacs restclient robe rspec-mode rubocop
+                 ruby-test-mode ruby-tools runner rvm s sass-mode scss-mode seq
+                 session shift-text simple-httpd slim-mode slime smart-compile
+                 smart-cursor-color smart-dash smart-forward smart-mode-line
+                 smart-shift smartparens smex sort-words spaceline spacemacs-theme
+                 spinner sql-indent ssass-mode stickyfunc-enhance stripe-buffer
+                 sublimity sudden-death swiper tagedit tbx2org tern theme-changer
+                 tiny toc-org transpose-mark twittering-mode undo-tree
+                 unicode-enbox use-package uuidgen vi-tilde-fringe vimish-fold
+                 visible-mark visual-fill-column visual-regexp volatile-highlights
+                 wand web-beautify web-completion-data web-mode weblogger wgrep
+                 which-key window-numbering workgroups workgroups2 wrap-region
+                 writeroom-mode ws-butler xcscope yaml-mode yapfify yasnippet
+                 ztree))
+   '(php-mode-coding-style 'pear)
+   '(user-full-name "Damon Haley")
+   '(user-initials "dkh")
+   '(user-mail-address "damon.haley@example.com"))
+  (custom-set-faces
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(highlight-parentheses-highlight ((nil (:weight ultra-bold))) t)
+   '(org-mode-line-clock ((t (:foreground "red" :box (:line-width -1 :style released-button))))))
+  )

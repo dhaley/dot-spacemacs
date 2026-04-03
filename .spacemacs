@@ -868,7 +868,7 @@ you should place your code here."
             ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))
             ("portal-costs"    . (:url "https://cloud-mcp-costs.cloud.example.com/mcp"))))
     ;; Auto-register MCP tools with gptel
-    (add-hook 'gptel-mode-hook #'mcp-hub-start))
+    (add-hook 'gptel-mode-hook #'mcp-hub-start-all-server))
   )
 
 

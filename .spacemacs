@@ -866,7 +866,7 @@ you should place your code here."
     :config
     (require 'mcp-hub)
     (setq mcp-hub-servers
-          '(("appfleet-config" . (:url "https://cloud-mcp-appfleet-dev.cloud.example.com/mcp"))
+          '(("appfleet-config" . (:url "https://cloud-mcp-appfleet.cloud.example.com/mcp"))
             ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."

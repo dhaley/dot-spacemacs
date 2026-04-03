@@ -870,7 +870,13 @@ you should place your code here."
             ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
             ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))
             ("portal-costs"    . (:url "https://cloud-mcp-costs.cloud.example.com/mcp"))))
-    (add-hook 'after-init-hook #'mcp-hub-start-all-server))
+    (defun my/mcp-start-and-register-tools ()
+      "Start MCP servers and register tools with gptel."
+      (mcp-hub-start-all-server
+       (lambda ()
+         (setq gptel-tools (mcp-hub-get-all-tool :categoryp t))
+         (message "Registered %d MCP tools with gptel" (length gptel-tools)))))
+    (add-hook 'after-init-hook #'my/mcp-start-and-register-tools))
   )
 
 

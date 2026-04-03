@@ -868,14 +868,24 @@ you should place your code here."
     (setq mcp-hub-servers
           '(("appfleet-config" . (:url "https://cloud-mcp-appfleet-dev.cloud.example.com/mcp"))
             ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
-            ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))
-            ("portal-costs"    . (:url "https://cloud-mcp-costs.cloud.example.com/mcp"))))
+            ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))))
+    (defun my/mcp-plist-to-gptel-tool (plist)
+      "Convert an mcp.el tool plist to a gptel-tool struct."
+      (gptel-make-tool
+       :function (plist-get plist :function)
+       :name (plist-get plist :name)
+       :description (plist-get plist :description)
+       :args (plist-get plist :args)
+       :async (plist-get plist :async)
+       :category (plist-get plist :category)))
     (defun my/mcp-start-and-register-tools ()
       "Start MCP servers and register tools with gptel."
       (mcp-hub-start-all-server
        (lambda ()
-         (setq gptel-tools (mcp-hub-get-all-tool :categoryp t))
-         (message "Registered %d MCP tools with gptel" (length gptel-tools)))))
+         (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
+           (setq gptel-tools
+                 (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
+           (message "Registered %d MCP tools with gptel" (length gptel-tools))))))
     (add-hook 'after-init-hook #'my/mcp-start-and-register-tools))
   )
 

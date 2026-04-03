@@ -878,15 +878,16 @@ you should place your code here."
        :args (plist-get plist :args)
        :async (plist-get plist :async)
        :category (plist-get plist :category)))
-    (defun my/mcp-start-and-register-tools ()
-      "Start MCP servers and register tools with gptel."
-      (mcp-hub-start-all-server
-       (lambda ()
-         (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
-           (setq gptel-tools
-                 (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
-           (message "Registered %d MCP tools with gptel" (length gptel-tools))))))
-    (add-hook 'after-init-hook #'my/mcp-start-and-register-tools))
+    (defun my/mcp-register-tools ()
+      "Start MCP servers if needed and register tools with gptel."
+      (unless (and gptel-tools (> (length gptel-tools) 0))
+        (mcp-hub-start-all-server
+         (lambda ()
+           (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
+             (setq gptel-tools
+                   (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
+             (message "Registered %d MCP tools with gptel" (length gptel-tools)))))))
+    (add-hook 'gptel-mode-hook #'my/mcp-register-tools))
   )
 
 

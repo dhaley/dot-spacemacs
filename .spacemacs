@@ -378,6 +378,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setenv "CURL_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
   (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
+  ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
+  (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+  ;; Also prepend to exec-path and PATH so gptel-bedrock--curl-version finds it
+  (add-to-list 'exec-path "/opt/homebrew/opt/curl/bin")
+  (setenv "PATH" (concat "/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
   )
 
 (defun dotspacemacs/user-config ()
@@ -814,12 +819,23 @@ you should place your code here."
   ;; ── gptel: Bedrock Sonnet 4.6 via Appfleet Agentic inference profiles ──
   (use-package gptel
     :ensure t
-    :bind (("C-c g" . gptel)
-           ("C-c G" . gptel-send)
-           ("C-c M-g" . gptel-menu))
-    :config
-    ;; Use Homebrew curl >= 8.9 for Bedrock sigv4 signing
+    :defer t
+    :init
+    ;; Must be set before gptel loads — Bedrock needs curl >= 8.9 for sigv4
     (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+    (global-set-key (kbd "C-c g") #'gptel)
+    (global-set-key (kbd "C-c G") #'gptel-send)
+    (global-set-key (kbd "C-c M-g") #'gptel-menu)
+    :config
+    ;; Patch: gptel-bedrock--curl-version hardcodes "curl" — make it respect gptel-use-curl
+    (require 'gptel-bedrock)
+    (defun gptel-bedrock--curl-version ()
+      "Check Curl version required for gptel-bedrock."
+      (let* ((curl-cmd (if (stringp gptel-use-curl) gptel-use-curl "curl"))
+             (output (shell-command-to-string (concat curl-cmd " --version")))
+             (version (and (string-match "^curl \\([0-9.]+\\)" output)
+                           (match-string 1 output))))
+        version))
 
     ;; Register Bedrock backend with your inference profiles
     (setq gptel-model 'claude-sonnet-4-20250514

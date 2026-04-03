@@ -854,21 +854,23 @@ you should place your code here."
             (terraform . "You are a Terraform expert for AWS. Follow least-privilege IAM, use modules, and tag all resources with billingId, org, owner, manifest.")
             (writing . "You are a technical writer. Be concise and direct.")))
 
-    ;; Tool-use confirmation
-    (setq gptel-confirm-tool-calls t))
+    ;; Enable tool-use with MCP
+    (setq gptel-use-tools t
+          gptel-confirm-tool-calls t
+          gptel-include-tool-results 'auto))
 
   ;; ── mcp.el: Connect gptel to Cloud MCP servers ──
   (use-package mcp
     :ensure t
     :after gptel
     :config
+    (require 'mcp-hub)
     (setq mcp-hub-servers
           '(("appfleet-config" . (:url "https://cloud-mcp-appfleet-dev.cloud.example.com/mcp"))
             ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
             ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))
             ("portal-costs"    . (:url "https://cloud-mcp-costs.cloud.example.com/mcp"))))
-    ;; Auto-register MCP tools with gptel
-    (add-hook 'gptel-mode-hook #'mcp-hub-start-all-server))
+    (add-hook 'after-init-hook #'mcp-hub-start-all-server))
   )
 
 

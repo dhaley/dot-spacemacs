@@ -867,8 +867,7 @@ you should place your code here."
     (require 'mcp-hub)
     (setq mcp-hub-servers
           '(("appfleet-config" . (:url "https://cloud-mcp-appfleet-dev.cloud.example.com/mcp"))
-            ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
-            ("knowledge-graph" . (:url "https://cloud-mcp-kg.cloud.example.com/mcp"))))
+            ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool
@@ -881,7 +880,8 @@ you should place your code here."
     (defun my/mcp-register-tools ()
       "Start MCP servers if needed and register tools with gptel."
       (unless (and gptel-tools (> (length gptel-tools) 0))
-        (mcp-hub-start-all-server
+        (mcp-hub-start-all-server)
+        (run-with-timer 5 nil
          (lambda ()
            (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
              (setq gptel-tools

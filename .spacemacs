@@ -892,20 +892,25 @@ you should place your code here."
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
   (use-package agent-shell
     :config
+    (defvar my/deepagents-env
+      (agent-shell-make-environment-variables
+       :load-env "~/.deepagents/.env"
+       :inherit-env t))
+
     (add-to-list 'agent-shell-agent-configs
-                 (list :name "Appfleet Agentic"
-                       :identifier 'deepagents
-                       :command '("deepagents" "--acp")
-                       :icon "🚀"))
-    (setq agent-shell-preferred-agent-config
-          (list :name "Appfleet Agentic"
-                :identifier 'deepagents
-                :command '("deepagents" "--acp")
-                :icon "🚀"))
-    (setq agent-shell-deepagents-environment
-          (agent-shell-make-environment-variables
-           :load-env "~/.deepagents/.env"
-           :inherit-env t)))
+      (agent-shell-make-agent-config
+       :identifier 'deepagents
+       :mode-line-name "Appfleet"
+       :buffer-name "Appfleet Agentic"
+       :shell-prompt "deepagents> "
+       :shell-prompt-regexp "deepagents> "
+       :client-maker (lambda (buffer)
+                       (agent-shell--make-acp-client
+                        :command "deepagents"
+                        :command-params '("--acp")
+                        :environment-variables my/deepagents-env
+                        :context-buffer buffer))
+       :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
   )
 
 

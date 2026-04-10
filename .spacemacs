@@ -947,6 +947,21 @@ of picking up stale keys from .spacemacs.env / process-environment."
     (setq eat-term-name "xterm-256color")
     (setq eat-kill-buffer-on-exit t))
 
+  ;; ── agent + terminal workspace ──
+  (defun my/agent-workspace ()
+    "Show Appfleet Agentic and eat side by side."
+    (interactive)
+    (delete-other-windows)
+    (switch-to-buffer (or (get-buffer "Appfleet Agentic")
+                          (current-buffer)))
+    (split-window-right)
+    (other-window 1)
+    (if (get-buffer "*eat*")
+        (switch-to-buffer "*eat*")
+      (eat))
+    (other-window 1))
+  (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
+
   ;; ── vterm fallback: af-agent in terminal emulator ──
   (defun my/af-agent ()
     "Run af-agent in vterm."

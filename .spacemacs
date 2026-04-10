@@ -898,15 +898,27 @@ you should place your code here."
   ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
     :config
+    (defun my/deepagents-refresh-creds ()
+      "Generate fresh AWS credentials for deepagents subprocess."
+      (let ((creds-dir (expand-file-name "~/shared_credentials_files")))
+        (message "Refreshing AWS credentials...")
+        (shell-command "/usr/local/src/appfleet-iac/cdktf/generate_aws_credentials.sh")
+        creds-dir))
+
     (defvar my/deepagents-env
       (agent-shell-make-environment-variables
-       :load-env "~/.deepagents/.env"
        :inherit-env t
-       "AWS_PROFILE" "work-aws-profile"
+       "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.ace")
+       "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")
        "AWS_REGION" "us-west-2"
        "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem")
        "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
-       "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")))
+       "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
+       "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
+       "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
+       "LANGSMITH_PROJECT" "appfleet-agentic"
+       "LANGSMITH_TRACING" "true"
+       "HTTPX_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")))
 
     (add-to-list 'agent-shell-agent-configs
       (agent-shell-make-agent-config
@@ -916,6 +928,7 @@ you should place your code here."
        :shell-prompt "deepagents> "
        :shell-prompt-regexp "deepagents> "
        :client-maker (lambda (buffer)
+                       (my/deepagents-refresh-creds)
                        (agent-shell--make-acp-client
                         :command "deepagents"
                         :command-params '("--acp")

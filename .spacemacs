@@ -890,6 +890,8 @@ you should place your code here."
     (add-hook 'gptel-mode-hook #'my/mcp-register-tools))
 
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
+  ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).
+  ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
     :config
     (defvar my/deepagents-env
@@ -911,6 +913,15 @@ you should place your code here."
                         :environment-variables my/deepagents-env
                         :context-buffer buffer))
        :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
+
+  ;; ── vterm fallback: af-agent in terminal emulator ──
+  (defun my/af-agent ()
+    "Run af-agent in vterm."
+    (interactive)
+    (if (get-buffer "*af-agent*")
+        (switch-to-buffer "*af-agent*")
+      (vterm "*af-agent*")
+      (vterm-send-string "af-agent\n")))
   )
 
 

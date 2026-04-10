@@ -905,18 +905,19 @@ you should place your code here."
 
     (defvar my/deepagents-env
       (agent-shell-make-environment-variables
-       :inherit-env t
+       "HOME" (expand-file-name "~")
+       "PATH" (getenv "PATH")
        "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.ace")
        "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")
        "AWS_REGION" "us-west-2"
        "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem")
        "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
        "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
+       "HTTPX_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
        "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
        "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
        "LANGSMITH_PROJECT" "appfleet-agentic"
-       "LANGSMITH_TRACING" "true"
-       "HTTPX_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")))
+       "LANGSMITH_TRACING" "true"))
 
     (add-to-list 'agent-shell-agent-configs
       (agent-shell-make-agent-config

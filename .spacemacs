@@ -967,6 +967,7 @@ Starts the agent shell if not already running."
       (eat))
     (other-window 1))
   (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
+  (bind-key "C-c a" #'my/agent-workspace)
 
   ;; ── vterm fallback: af-agent in terminal emulator ──
   (defun my/af-agent ()

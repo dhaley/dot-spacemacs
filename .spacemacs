@@ -897,7 +897,9 @@ you should place your code here."
     (defvar my/deepagents-env
       (agent-shell-make-environment-variables
        :load-env "~/.deepagents/.env"
-       :inherit-env t))
+       :inherit-env t
+       "AWS_PROFILE" "work-aws-profile"
+       "AWS_REGION" "us-west-2"))
 
     (add-to-list 'agent-shell-agent-configs
       (agent-shell-make-agent-config

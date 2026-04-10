@@ -378,9 +378,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setenv "CURL_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
   (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
-  ;; AWS credentials for agent-shell / deepagents (macOS GUI doesn't inherit shell env)
-  (setenv "AWS_PROFILE" "work-aws-profile")
-  (setenv "AWS_REGION" "us-west-2")
+  ;; AWS CA bundle for boto3 through ORG proxy
   (setenv "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
   (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")

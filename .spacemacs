@@ -898,12 +898,11 @@ you should place your code here."
     :config
     (defun my/deepagents-refresh-creds ()
       "Generate fresh AWS credentials for deepagents subprocess."
-      (let ((creds-dir (expand-file-name "~/shared_credentials_files")))
-        (message "Refreshing AWS credentials...")
-        (shell-command "/usr/local/src/appfleet-iac/cdktf/generate_aws_credentials.sh")
-        creds-dir))
+      (message "Refreshing AWS credentials...")
+      (shell-command "/usr/local/src/appfleet-iac/cdktf/generate_aws_credentials.sh"))
 
-    (defvar my/deepagents-env
+    (defun my/deepagents-make-env ()
+      "Build environment variables with fresh credentials."
       (agent-shell-make-environment-variables
        "HOME" (expand-file-name "~")
        "PATH" (getenv "PATH")
@@ -932,7 +931,7 @@ you should place your code here."
                        (agent-shell--make-acp-client
                         :command "deepagents"
                         :command-params '("--acp")
-                        :environment-variables my/deepagents-env
+                        :environment-variables (my/deepagents-make-env)
                         :context-buffer buffer))
        :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
 

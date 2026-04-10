@@ -899,15 +899,21 @@ you should place your code here."
     (defun my/deepagents-refresh-creds ()
       "Generate fresh AWS credentials for deepagents subprocess."
       (message "Refreshing AWS credentials...")
-      (shell-command "/usr/local/src/appfleet-iac/cdktf/generate_aws_credentials.sh"))
+      (shell-command "/usr/local/bin/emacs-aws-refresh"))
 
     (defun my/deepagents-make-env ()
-      "Build environment variables with fresh credentials."
+      "Build environment variables with fresh credentials.
+Explicitly clear AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY so
+boto3 falls through to the profile/credentials-file chain instead
+of picking up stale keys from .spacemacs.env / process-environment."
       (agent-shell-make-environment-variables
        "HOME" (expand-file-name "~")
        "PATH" (getenv "PATH")
+       "AWS_ACCESS_KEY_ID" ""
+       "AWS_SECRET_ACCESS_KEY" ""
+       "AWS_SESSION_TOKEN" ""
        "AWS_PROFILE" "default"
-       "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.ace")
+       "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.emacs")
        "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")
        "AWS_REGION" "us-west-2"
        "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem")

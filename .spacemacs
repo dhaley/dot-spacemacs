@@ -126,7 +126,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -882,22 +882,21 @@ you should place your code here."
       (unless (and gptel-tools (> (length gptel-tools) 0))
         (mcp-hub-start-all-server)
         (run-with-timer 5 nil
-         (lambda ()
-           (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
-             (setq gptel-tools
-                   (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
-             (message "Registered %d MCP tools with gptel" (length gptel-tools)))))))
+                        (lambda ()
+                          (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
+                            (setq gptel-tools
+                                  (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
+                            (message "Registered %d MCP tools with gptel" (length gptel-tools)))))))
     (add-hook 'gptel-mode-hook #'my/mcp-register-tools))
 
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
   (use-package agent-shell
-    :ensure t
     :config
     (add-to-list 'agent-shell-agent-configs
-      (list :name "Appfleet Agentic"
-            :identifier 'deepagents
-            :command '("deepagents" "--acp")
-            :icon "🚀"))
+                 (list :name "Appfleet Agentic"
+                       :identifier 'deepagents
+                       :command '("deepagents" "--acp")
+                       :icon "🚀"))
     (setq agent-shell-preferred-agent-config
           (list :name "Appfleet Agentic"
                 :identifier 'deepagents
@@ -1137,7 +1136,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-clock-out-switch-to-state nil)
    '(org-clock-out-when-done t)
    '(org-clock-persist t)
-   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el")
+   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el" t)
    '(org-clock-persist-query-resume nil)
    '(org-clock-report-include-clocking-task t)
    '(org-clock-resolve-expert t)
@@ -1358,7 +1357,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-x-redmine-title-prefix-match-function 'org-x-redmine-title-prefix-match)
    '(org-yank-adjusted-subtrees t)
    '(package-selected-packages
-     '(ac-ispell ace-jump-helm-line ace-link ace-window adaptive-wrap
+     '(ac-ispell ace-jump-helm-line ace-link ace-window adaptive-wrap agent-shell
                  aggressive-indent alert anaconda-mode ansible ansible-doc anzu
                  async auctex auto-compile auto-complete auto-dictionary
                  auto-highlight-symbol auto-yasnippet avy aws-ec2 aws-snippets
@@ -1392,17 +1391,17 @@ This function is called at the very end of Spacemacs initialization."
                  json-snatcher key-chord know-your-http-well lentic less-css-mode
                  link-hint linum-relative live-py-mode livid-mode loccur log4e
                  log4j-mode lorem-ipsum lsp-mode lsp-python-ms lsp-treemacs
-                 lua-mode macrostep magit magit-annex magit-find-file magit-gerrit
-                 magit-gitflow magit-popup manage-minor-mode markdown-mode
-                 markdown-toc math-symbol-lists memory-usage mic-paren minimap
-                 minitest mmm-mode move-dup move-text multi-term multi-web-mode
-                 multifiles multiple-cursors nameless neotree nginx-mode nix-mode
-                 nlinum nyan-mode oauth ob-athena ob-http ob-php olivetti
-                 on-screen open-junk-file org-autolist org-aws-iam-role
-                 org-bullets org-caldav org-link-minor-mode org-pdfview
-                 org-present-remote org-repo-todo org-trello orgbox orgit
-                 osx-trash outorg outshine ov owdriver ox-gfm ox-twbs pabbrev
-                 package-build packed pacmacs page-break-lines pandoc-mode
+                 lua-mode macports macrostep magit magit-annex magit-find-file
+                 magit-gerrit magit-gitflow magit-popup manage-minor-mode
+                 markdown-mode markdown-toc math-symbol-lists memory-usage
+                 mic-paren minimap minitest mmm-mode move-dup move-text multi-term
+                 multi-web-mode multifiles multiple-cursors nameless neotree
+                 nginx-mode nix-mode nlinum nyan-mode oauth ob-athena ob-http
+                 ob-php olivetti on-screen open-junk-file org-autolist
+                 org-aws-iam-role org-bullets org-caldav org-link-minor-mode
+                 org-pdfview org-present-remote org-repo-todo org-trello orgbox
+                 orgit osx-trash outorg outshine ov owdriver ox-gfm ox-twbs
+                 pabbrev package-build packed pacmacs page-break-lines pandoc-mode
                  parent-mode parsebib pcache pcre2el peep-dired persistent-scratch
                  persistent-soft persp-mode perspective php-auto-yasnippets
                  php-boris php-boris-minor-mode php-eldoc php-extras php-mode

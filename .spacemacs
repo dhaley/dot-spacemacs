@@ -888,6 +888,25 @@ you should place your code here."
                    (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
              (message "Registered %d MCP tools with gptel" (length gptel-tools)))))))
     (add-hook 'gptel-mode-hook #'my/mcp-register-tools))
+
+  ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
+  (use-package agent-shell
+    :ensure t
+    :config
+    (add-to-list 'agent-shell-agent-configs
+      (list :name "Appfleet Agentic"
+            :identifier 'deepagents
+            :command '("deepagents" "--acp")
+            :icon "🚀"))
+    (setq agent-shell-preferred-agent-config
+          (list :name "Appfleet Agentic"
+                :identifier 'deepagents
+                :command '("deepagents" "--acp")
+                :icon "🚀"))
+    (setq agent-shell-deepagents-environment
+          (agent-shell-make-environment-variables
+           :load-env "~/.deepagents/.env"
+           :inherit-env t)))
   )
 
 

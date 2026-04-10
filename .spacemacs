@@ -126,7 +126,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -940,6 +940,12 @@ of picking up stale keys from .spacemacs.env / process-environment."
                         :environment-variables (my/deepagents-make-env)
                         :context-buffer buffer))
        :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
+
+  ;; ── eat: full terminal emulator (iTerm-like) ──
+  (use-package eat
+    :config
+    (setq eat-term-name "xterm-256color")
+    (setq eat-kill-buffer-on-exit t))
 
   ;; ── vterm fallback: af-agent in terminal emulator ──
   (defun my/af-agent ()

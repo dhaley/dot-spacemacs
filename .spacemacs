@@ -907,6 +907,7 @@ you should place your code here."
       (agent-shell-make-environment-variables
        "HOME" (expand-file-name "~")
        "PATH" (getenv "PATH")
+       "AWS_PROFILE" "default"
        "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.ace")
        "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")
        "AWS_REGION" "us-west-2"

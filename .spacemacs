@@ -899,7 +899,10 @@ you should place your code here."
        :load-env "~/.deepagents/.env"
        :inherit-env t
        "AWS_PROFILE" "work-aws-profile"
-       "AWS_REGION" "us-west-2"))
+       "AWS_REGION" "us-west-2"
+       "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem")
+       "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
+       "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")))
 
     (add-to-list 'agent-shell-agent-configs
       (agent-shell-make-agent-config

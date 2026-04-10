@@ -949,11 +949,17 @@ of picking up stale keys from .spacemacs.env / process-environment."
 
   ;; ── agent + terminal workspace ──
   (defun my/agent-workspace ()
-    "Show Appfleet Agentic and eat side by side."
+    "Show Appfleet Agentic and eat side by side.
+Starts the agent shell if not already running."
     (interactive)
     (delete-other-windows)
-    (switch-to-buffer (or (get-buffer "Appfleet Agentic")
-                          (current-buffer)))
+    (let ((agent-buf (get-buffer "Appfleet Agentic")))
+      (unless agent-buf
+        (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
+                                agent-shell-agent-configs)))
+          (agent-shell-start :config config))
+        (setq agent-buf (get-buffer "Appfleet Agentic")))
+      (when agent-buf (switch-to-buffer agent-buf)))
     (split-window-right)
     (other-window 1)
     (if (get-buffer "*eat*")

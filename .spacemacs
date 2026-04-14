@@ -371,7 +371,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
   ;; Ensure exec-path-from-shell copies ORG SSL cert vars for Copilot
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"))
+        '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
+          "JENKINS_API_USER" "JENKINS_API_TOKEN"))
   ;; Set ORG SSL trust directly in case exec-path-from-shell doesn't run (batch mode)
   (setenv "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
@@ -394,6 +395,10 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  ;; Pull specific shell env vars into Emacs (Jenkins creds for agent-shell)
+  (dolist (var '("JENKINS_API_USER" "JENKINS_API_TOKEN"))
+    (let ((val (string-trim (shell-command-to-string (concat "bash -l -c 'echo $" var "'")))))
+      (unless (string-empty-p val) (setenv var val))))
   ;; Copy current buffer's full file path to kill ring
   (global-set-key (kbd "C-c f") (lambda () (interactive) (let ((path (or (buffer-file-name) default-directory))) (kill-new path) (message "%s" path))))
 
@@ -437,6 +442,34 @@ you should place your code here."
   (bind-key "H-v" #'yank)
   (bind-key "C-c o" #'customize-option)
   (bind-key "C-x g" #'magit-status)
+
+  ;; Magit worktree: auto-redirect to worktree when opening magit-status
+  (with-eval-after-load 'magit
+    ;; Prefer worktree path when visiting files from magit
+    (defun my/magit-worktree-find-file (orig-fun &rest args)
+      "When visiting a file, check if a worktree exists for the current branch and redirect."
+      (let* ((root (magit-toplevel))
+             (wt-base (when root (concat (directory-file-name root) "-wt")))
+             (branch (magit-get-current-branch))
+             (handle (when branch (car (last (split-string branch "/")))))
+             (wt-path (when (and wt-base handle) (expand-file-name handle wt-base))))
+        (if (and wt-path (file-directory-p wt-path) (not (string-prefix-p wt-base root)))
+            (magit-status-setup-buffer wt-path)
+          (apply orig-fun args))))
+
+    ;; Keybinding: C-x G to jump straight to worktree magit-status
+    (defun my/magit-worktree-status ()
+      "Open magit-status in the worktree for the current branch, if one exists."
+      (interactive)
+      (let* ((root (magit-toplevel))
+             (wt-base (when root (concat (directory-file-name root) "-wt")))
+             (branch (magit-get-current-branch))
+             (handle (when branch (car (last (split-string branch "/")))))
+             (wt-path (when (and wt-base handle) (expand-file-name handle wt-base))))
+        (if (and wt-path (file-directory-p wt-path))
+            (magit-status-setup-buffer wt-path)
+          (message "No worktree found for branch %s" (or branch "none")))))
+    (global-set-key (kbd "C-x G") #'my/magit-worktree-status))
 
   (bind-key "C-c n" #'insert-user-timestamp)
   (bind-key "C-c o" #'customize-option)
@@ -923,7 +956,13 @@ of picking up stale keys from .spacemacs.env / process-environment."
        "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
        "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
        "LANGSMITH_PROJECT" "appfleet-agentic"
-       "LANGSMITH_TRACING" "true"))
+       "LANGSMITH_TRACING" "true"
+       "JENKINS_API_USER" (getenv "JENKINS_API_USER")
+       "JENKINS_API_TOKEN" (getenv "JENKINS_API_TOKEN")
+       "jenkins_url" "https://jenkins.cloud.example.com"
+       "jenkins_username" (getenv "JENKINS_API_USER")
+       "jenkins_password" (getenv "JENKINS_API_TOKEN")
+       "jenkins_verify_ssl" "false"))
 
     (add-to-list 'agent-shell-agent-configs
       (agent-shell-make-agent-config
@@ -948,24 +987,37 @@ of picking up stale keys from .spacemacs.env / process-environment."
     (setq eat-kill-buffer-on-exit t))
 
   ;; ── agent + terminal workspace ──
+  (defun my/find-buffer-by-prefix (prefix)
+    "Find first buffer whose name starts with PREFIX."
+    (seq-find (lambda (b) (string-prefix-p prefix (buffer-name b)))
+              (buffer-list)))
+
   (defun my/agent-workspace ()
     "Show Appfleet Agentic and eat side by side.
-Starts the agent shell if not already running."
+On first call, starts the agent shell and eat terminal.
+On subsequent calls, just brings the existing buffers to the foreground."
     (interactive)
-    (delete-other-windows)
-    (let ((agent-buf (get-buffer "Appfleet Agentic")))
-      (unless agent-buf
-        (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
-                                agent-shell-agent-configs)))
-          (agent-shell-start :config config))
-        (setq agent-buf (get-buffer "Appfleet Agentic")))
-      (when agent-buf (switch-to-buffer agent-buf)))
-    (split-window-right)
-    (other-window 1)
-    (if (get-buffer "*eat*")
-        (switch-to-buffer "*eat*")
-      (eat))
-    (other-window 1))
+    (let ((agent-buf (my/find-buffer-by-prefix "Appfleet Agentic"))
+          (eat-buf (get-buffer "*eat*")))
+      (if (and agent-buf eat-buf
+               (get-buffer-window agent-buf)
+               (get-buffer-window eat-buf))
+          (select-window (get-buffer-window agent-buf))
+        (delete-other-windows)
+        (if agent-buf
+            (switch-to-buffer agent-buf)
+          (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
+                                  agent-shell-agent-configs)))
+            (agent-shell-start :config config))
+          (setq agent-buf (my/find-buffer-by-prefix "Appfleet Agentic"))
+          (when agent-buf (switch-to-buffer agent-buf)))
+        (split-window-right)
+        (other-window 1)
+        (if eat-buf
+            (switch-to-buffer eat-buf)
+          (let ((default-directory (expand-file-name "~/src/")))
+            (eat)))
+        (other-window 1))))
   (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
   (bind-key "C-c a" #'my/agent-workspace)
 

@@ -901,8 +901,9 @@ you should place your code here."
     :config
     (require 'mcp-hub)
     (setq mcp-hub-servers
-          '(("appfleet-config" . (:url "https://cloud-mcp-appfleet.cloud.example.com/mcp"))
-            ("lex"             . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))))
+          '(("appfleet-config"    . (:url "https://cloud-mcp-appfleet.cloud.example.com/mcp"))
+            ("appfleet-migration" . (:url "http://localhost:9000/mcp"))
+            ("lex"                . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool
@@ -931,8 +932,10 @@ you should place your code here."
     :config
     (defun my/deepagents-refresh-creds ()
       "Generate fresh AWS credentials for deepagents subprocess."
+      (interactive)
       (message "Refreshing AWS credentials...")
-      (shell-command "/usr/local/bin/emacs-aws-refresh"))
+      (shell-command "/usr/local/bin/emacs-aws-refresh")
+      (message "AWS credentials refreshed"))
 
     (defun my/deepagents-make-env ()
       "Build environment variables with fresh credentials.
@@ -1020,6 +1023,24 @@ On subsequent calls, just brings the existing buffers to the foreground."
         (other-window 1))))
   (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
   (bind-key "C-c a" #'my/agent-workspace)
+
+  (defun my/az-login ()
+    "Run az login with device code and open the auth page in Vivaldi."
+    (interactive)
+    (let ((buf (generate-new-buffer "*az-login*")))
+      (async-shell-command "az login --use-device-code 2>&1" buf)
+      (run-at-time 2 nil
+        (lambda ()
+          (with-current-buffer "*az-login*"
+            (goto-char (point-min))
+            (when (re-search-forward "enter the code \\([A-Z0-9]+\\)" nil t)
+              (let ((code (match-string 1)))
+                (kill-new code)
+                (message "Device code %s copied to clipboard" code)
+                (start-process "vivaldi" nil
+                  "/Applications/Vivaldi.app/Contents/MacOS/Vivaldi"
+                  "https://login.microsoft.com/device"))))))))
+  (bind-key "C-c z" #'my/az-login)
 
   ;; ── vterm fallback: af-agent in terminal emulator ──
   (defun my/af-agent ()

@@ -6,6 +6,7 @@
   (expand-file-name "site-lisp/" user-emacs-directory))
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
+(add-to-list 'load-path "~/dot-spacemacs")
 
 ;; (defun add-to-load-path (path &optional dir)
 
@@ -404,6 +405,8 @@ you should place your code here."
 
   (require 'org-tempo)
   (require 'ob-php)
+  (require 'cloudwatch-tail)
+  (bind-key "C-c L" #'cwt-launch)
 
   ;; Copilot: set default indentation offset, disable in large org files
   (with-eval-after-load 'copilot
@@ -968,20 +971,20 @@ of picking up stale keys from .spacemacs.env / process-environment."
        "jenkins_verify_ssl" "false"))
 
     (add-to-list 'agent-shell-agent-configs
-      (agent-shell-make-agent-config
-       :identifier 'deepagents
-       :mode-line-name "Appfleet"
-       :buffer-name "Appfleet Agentic"
-       :shell-prompt "deepagents> "
-       :shell-prompt-regexp "deepagents> "
-       :client-maker (lambda (buffer)
-                       (my/deepagents-refresh-creds)
-                       (agent-shell--make-acp-client
-                        :command "deepagents"
-                        :command-params '("--acp")
-                        :environment-variables (my/deepagents-make-env)
-                        :context-buffer buffer))
-       :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
+                 (agent-shell-make-agent-config
+                  :identifier 'deepagents
+                  :mode-line-name "Appfleet"
+                  :buffer-name "Appfleet Agentic"
+                  :shell-prompt "deepagents> "
+                  :shell-prompt-regexp "deepagents> "
+                  :client-maker (lambda (buffer)
+                                  (my/deepagents-refresh-creds)
+                                  (agent-shell--make-acp-client
+                                   :command "deepagents"
+                                   :command-params '("--acp")
+                                   :environment-variables (my/deepagents-make-env)
+                                   :context-buffer buffer))
+                  :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat
@@ -1028,18 +1031,18 @@ On subsequent calls, just brings the existing buffers to the foreground."
     "Run az login with device code and open the auth page in Vivaldi."
     (interactive)
     (let ((buf (generate-new-buffer "*az-login*")))
-      (async-shell-command "az login --use-device-code 2>&1" buf)
+      (async-shell-command "AZURE_CORE_NO_COLOR=1 az login --use-device-code 2>&1" buf)
       (run-at-time 2 nil
-        (lambda ()
-          (with-current-buffer "*az-login*"
-            (goto-char (point-min))
-            (when (re-search-forward "enter the code \\([A-Z0-9]+\\)" nil t)
-              (let ((code (match-string 1)))
-                (kill-new code)
-                (message "Device code %s copied to clipboard" code)
-                (start-process "vivaldi" nil
-                  "/Applications/Vivaldi.app/Contents/MacOS/Vivaldi"
-                  "https://login.microsoft.com/device"))))))))
+                   (lambda ()
+                     (with-current-buffer "*az-login*"
+                       (goto-char (point-min))
+                       (when (re-search-forward "enter the code \\([A-Z0-9]+\\)" nil t)
+                         (let ((code (match-string 1)))
+                           (kill-new code)
+                           (message "Device code %s copied to clipboard" code)
+                           (start-process "vivaldi" nil
+                                          "/Applications/Vivaldi.app/Contents/MacOS/Vivaldi"
+                                          "https://login.microsoft.com/device"))))))))
   (bind-key "C-c z" #'my/az-login)
 
   ;; ── vterm fallback: af-agent in terminal emulator ──

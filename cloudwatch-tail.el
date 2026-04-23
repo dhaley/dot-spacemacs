@@ -25,19 +25,33 @@
 Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
 
 (setq cwt-log-aliases
-  '(("resourcetagger"   . "/aws/lambda/ops-scheduledtagging-lambda-function")
-    ("tag.log1"         . "/aws/lambda/ops-scheduledtagging-lambda-function")
-    ("qremove"          . "/aws/lambda/ops-scheduledtagging-delete-sqs-lambda")
-    ("statefailure"     . "/aws/lambda/ops-scheduledtagging-log-failure-lambda")
-    ("logbus"           . "/aws/events/ops-scheduledtagging-bus-cloudwatch-loggroup")
-    ("cesearch"         . "/aws/lambda/ops-scheduledtagging-cetobus-lambda-function")
-    ("qpush"            . "/aws/lambda/ops-scheduledtagging-populatesqs-lambda-function")
-    ("unenhancedlogbus" . "/aws/events/ops-scheduledtagging-unenhancedbus-cloudwatch-loggroup")
-    ("acesearch"        . ("/aws/lambda/ops-scheduledtagging-resources-to-acebus-lambda-function" "--since" "1m"))
-    ("sandboxsearch"    . "/aws/lambda/ops-scheduledtagging-resources-to-sandboxbus-lambda-function")
-    ("error"            . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "?ERROR ?Exception"))
-    ("fail"             . ("/aws/lambda/ops-scheduledtagging-log-failure-lambda" "--filter-pattern" "TAGGING_FAILURE"))
-    ("success"          . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "Successfully tagged resource"))))
+      '(("resourcetagger"   . "/aws/lambda/ops-scheduledtagging-lambda-function")
+        ("qremove"          . "/aws/lambda/ops-scheduledtagging-delete-sqs-lambda")
+        ("statefailure"     . "/aws/lambda/ops-scheduledtagging-log-failure-lambda")
+        ("logbus"           . "/aws/events/ops-scheduledtagging-bus-cloudwatch-loggroup")
+        ("cesearch"         . "/aws/lambda/ops-scheduledtagging-cetobus-lambda-function")
+        ("qpush"            . "/aws/lambda/ops-scheduledtagging-populatesqs-lambda-function")
+        ("unenhancedlogbus" . "/aws/events/ops-scheduledtagging-unenhancedbus-cloudwatch-loggroup")
+        ("eventbridge_bus"  . "/aws/events/ops-scheduledtagging-eventbridge-bus")
+        ("acesearch"        . ("/aws/lambda/ops-scheduledtagging-resources-to-acebus-lambda-function" "--since" "1m"))
+        ("sandboxsearch"    . ("/aws/lambda/ops-scheduledtagging-resources-to-sandboxbus-lambda-function" "--since" "1m"))
+        ("bus_search"       . "/aws/lambda/ops-scheduledtagging-resources-to-bus-lambda-function")
+        ("loggroup_search"  . "/aws/lambda/ops-scheduledtagging-resources-to-loggroupbus-lambda-function")
+        ("check_dlq"        . "/aws/lambda/ops-scheduledtagging-check-dlq")
+        ("config_transform" . "/aws/lambda/ops-scheduledtagging-config-transform-lambda-function")
+        ("corrections"      . "/aws/lambda/ops-scheduledtagging-corrections-to-bus-lambda-function")
+        ("directclientlist" . "/aws/lambda/ops-scheduledtagging-search-directclientlist-lambda-function")
+        ("dynamo_scanner"   . "/aws/lambda/ops-scheduledtagging-dynamo-scanner")
+        ("expandarray"      . "/aws/lambda/ops-scheduledtagging-expandobjecttoarray-lambda-function")
+        ("fetch"            . "/aws/lambda/ops-scheduledtagging-fetch-lambda")
+        ("fetchaccounts"    . "/aws/lambda/ops-scheduledtagging-fetchaccounts-lambda-function")
+        ("receive_sqs"      . "/aws/lambda/ops-scheduledtagging-receive-sqs-lambda")
+        ("reprocess_dlq"    . "/aws/lambda/ops-scheduledtagging-reprocess-dlq")
+        ("s3_policy_eval"   . "/aws/lambda/ops-scheduledtagging-s3-policy-evaluator")
+        ("s3_policy_fix"    . "/aws/lambda/ops-scheduledtagging-s3-policy-remediation")
+        ("error"            . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "?ERROR ?Exception"))
+        ("fail"             . ("/aws/lambda/ops-scheduledtagging-log-failure-lambda" "--filter-pattern" "TAGGING_FAILURE"))
+        ("success"          . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "Successfully tagged resource"))))
 
 (defun cwt--build-cmd (alias)
   "Build the full aws logs tail command string for ALIAS."
@@ -57,7 +71,7 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
 ;; ── per-buffer background tints ────────────────────────────────────
 ;; Error-oriented aliases get reddish tints, success gets greenish,
 ;; everything else gets a subtle unique tint.
-(defvar cwt--bg-colors
+(defvar cwt--bg-colors-dark
   '(("error"          . "#2a1515")
     ("fail"           . "#2a1a15")
     ("statefailure"   . "#2a1818")
@@ -70,28 +84,81 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
     ("qpush"          . "#151f2a")
     ("unenhancedlogbus" . "#201a15")
     ("acesearch"      . "#15201f")
-    ("sandboxsearch"  . "#1a1a20"))
-  "Per-alias background colors.  Dark tints so text stays readable.")
+    ("sandboxsearch"  . "#1a1a20")
+    ("bus_search"     . "#1a1520")
+    ("loggroup_search" . "#15201a")
+    ("check_dlq"      . "#251518")
+    ("config_transform" . "#181a25")
+    ("corrections"    . "#1a2518")
+    ("directclientlist" . "#201518")
+    ("dynamo_scanner" . "#18251a")
+    ("eventbridge_bus" . "#1a1825")
+    ("expandarray"    . "#251a18")
+    ("fetch"          . "#181525")
+    ("fetchaccounts"  . "#25181a")
+    ("receive_sqs"    . "#151a25")
+    ("reprocess_dlq"  . "#251815")
+    ("s3_policy_eval" . "#1a2520")
+    ("s3_policy_fix"  . "#201a25"))
+  "Per-alias background colors for dark themes.")
+
+(defvar cwt--bg-colors-light
+  '(("error"          . "#fff0f0")
+    ("fail"           . "#fff5ee")
+    ("statefailure"   . "#fff0f5")
+    ("success"        . "#f0fff0")
+    ("resourcetagger" . "#f0f0ff")
+    ("tag.log1"       . "#f5f0ff")
+    ("qremove"        . "#f0faff")
+    ("logbus"         . "#f5fff0")
+    ("cesearch"       . "#faf0ff")
+    ("qpush"          . "#f0f5ff")
+    ("unenhancedlogbus" . "#fff8f0")
+    ("acesearch"      . "#f0fff8")
+    ("sandboxsearch"  . "#f5f5ff")
+    ("bus_search"     . "#f5f0fa")
+    ("loggroup_search" . "#f0faf5")
+    ("check_dlq"      . "#fff0f3")
+    ("config_transform" . "#f3f5ff")
+    ("corrections"    . "#f5fff3")
+    ("directclientlist" . "#faf0f3")
+    ("dynamo_scanner" . "#f3faf5")
+    ("eventbridge_bus" . "#f5f3ff")
+    ("expandarray"    . "#fff5f3")
+    ("fetch"          . "#f3f0ff")
+    ("fetchaccounts"  . "#fff3f5")
+    ("receive_sqs"    . "#f0f5fa")
+    ("reprocess_dlq"  . "#faf3f0")
+    ("s3_policy_eval" . "#f5fff8")
+    ("s3_policy_fix"  . "#f8f5ff"))
+  "Per-alias background colors for light themes.")
 
 (defun cwt--bg-for (alias)
-  "Return background color for ALIAS, falling back to default."
-  (or (cdr (assoc alias cwt--bg-colors)) "#1a1a1a"))
+  "Return background color for ALIAS, adapting to current theme."
+  (let* ((light-p (eq (frame-parameter nil 'background-mode) 'light))
+         (colors (if light-p cwt--bg-colors-light cwt--bg-colors-dark)))
+    (or (cdr (assoc alias colors))
+        (if light-p "#f8f8f8" "#1a1a1a"))))
 
 ;; ── font-lock faces ───────────────────────────────────────────────
 (defface cwt-error-face
-  '((t :foreground "#ff6666" :weight bold))
+  '((((background dark))  :foreground "#ff6666" :weight bold)
+    (((background light)) :foreground "#cc0000" :weight bold))
   "Face for ERROR / Exception lines.")
 
 (defface cwt-warn-face
-  '((t :foreground "#ffaa44"))
+  '((((background dark))  :foreground "#ffaa44")
+    (((background light)) :foreground "#996600"))
   "Face for WARNING lines.")
 
 (defface cwt-success-face
-  '((t :foreground "#66ff88" :weight bold))
+  '((((background dark))  :foreground "#66ff88" :weight bold)
+    (((background light)) :foreground "#007700" :weight bold))
   "Face for success lines.")
 
 (defface cwt-timestamp-face
-  '((t :foreground "#888899"))
+  '((((background dark))  :foreground "#888899")
+    (((background light)) :foreground "#888888"))
   "Face for CloudWatch timestamps.")
 
 (defvar cwt-font-lock-keywords
@@ -101,6 +168,35 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
     ("^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9:+.-]+" 0 'cwt-timestamp-face t))
   "Font-lock keywords for CloudWatch tail buffers.")
 
+;; ── UTC → local time conversion ───────────────────────────────────
+(defvar cwt-timezone "America/Denver"
+  "Timezone for converting CloudWatch UTC timestamps.")
+
+(defun cwt--convert-utc-timestamps (_string)
+  "Convert UTC ISO-8601 timestamps to local time in the last comint output.
+Modeled after `ansi-color-process-output'."
+  (let ((start-marker comint-last-output-start)
+        (end-marker (process-mark (get-buffer-process (current-buffer)))))
+    (save-excursion
+      ;; Back up 35 chars before start-marker to catch timestamps split
+      ;; across chunk boundaries (timestamp is ~33 chars)
+      (goto-char (max (point-min) (- start-marker 35)))
+      (while (re-search-forward
+              "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)T\\([0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\)\\(\\.[0-9]+\\)?\\+00:00"
+              end-marker t)
+        (let* ((date-str (match-string 1))
+               (time-str (match-string 2))
+               (frac (or (match-string 3) ""))
+               (parsed (parse-time-string (concat date-str " " time-str)))
+               (time (encode-time (nth 0 parsed) (nth 1 parsed) (nth 2 parsed)
+                                  (nth 3 parsed) (nth 4 parsed) (nth 5 parsed)
+                                  0))  ; UTC
+               (local (format-time-string "%Y-%m-%dT%H:%M:%S" time cwt-timezone))
+               (offset (format-time-string "%z" time cwt-timezone))
+               ;; Format offset as -06:00 instead of -0600
+               (tz-fmt (concat (substring offset 0 3) ":" (substring offset 3))))
+          (replace-match (concat local frac tz-fmt) t t))))))
+
 ;; ── major mode ────────────────────────────────────────────────────
 (define-derived-mode cwt-mode comint-mode "CW-Tail"
   "Major mode for tailing CloudWatch logs."
@@ -109,7 +205,8 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
   (ansi-color-for-comint-mode-on)
   (font-lock-add-keywords nil cwt-font-lock-keywords)
   (font-lock-mode 1)
-  (setq buffer-read-only nil))
+  (setq buffer-read-only nil)
+  (add-hook 'comint-output-filter-functions #'cwt--convert-utc-timestamps nil t))
 
 ;; ── commands ──────────────────────────────────────────────────────
 (defun cwt--buffer-name (alias)

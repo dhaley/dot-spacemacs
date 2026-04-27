@@ -396,6 +396,24 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  ;; Load beamer export backend so C-c C-e l B/P are available
+  (require 'ox-beamer)
+  ;; LuaLaTeX for beamer presentations
+  (setq org-latex-compiler "lualatex")
+  (setq org-latex-pdf-process
+        '("lualatex --interaction=nonstopmode --output-directory=%o %f"
+          "lualatex --interaction=nonstopmode --output-directory=%o %f"))
+  (with-eval-after-load 'ox-latex
+    (add-to-list 'org-latex-classes
+                 '("beamer"
+                   "\\documentclass[aspectratio=169,handout]{beamer}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+    ;; Remove default packages that conflict with beamer/fontspec under LuaLaTeX
+    (setq org-latex-default-packages-alist
+          (seq-remove (lambda (p) (and (listp p) (member (cadr p) '("inputenc" "fontenc"))))
+                      org-latex-default-packages-alist)))
   ;; Pull specific shell env vars into Emacs (Jenkins creds for agent-shell)
   (dolist (var '("JENKINS_API_USER" "JENKINS_API_TOKEN"))
     (let ((val (string-trim (shell-command-to-string (concat "bash -l -c 'echo $" var "'")))))
@@ -407,6 +425,8 @@ you should place your code here."
   (require 'ob-php)
   (require 'cloudwatch-tail)
   (bind-key "C-c L" #'cwt-launch)
+  (require 'aws-ops-dashboard)
+  (bind-key "C-c D" #'aod-status)
 
   ;; Copilot: set default indentation offset, disable in large org files
   (with-eval-after-load 'copilot
@@ -906,7 +926,8 @@ you should place your code here."
     (setq mcp-hub-servers
           '(("appfleet-config"    . (:url "https://cloud-mcp-appfleet.cloud.example.com/mcp"))
             ("appfleet-migration" . (:url "http://localhost:9000/mcp"))
-            ("lex"                . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))))
+            ("lex"                . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
+            ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp"))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool
@@ -1109,7 +1130,6 @@ This function is called at the very end of Spacemacs initialization."
    '(mac-option-modifier 'meta)
    '(mac-pass-command-to-system nil)
    '(magit-auto-revert-mode nil)
-   '(magit-completing-read-function 'my-ivy-completing-read)
    '(magit-diff-options nil)
    '(magit-fetch-arguments nil)
    '(magit-highlight-trailing-whitespace nil)
@@ -1353,7 +1373,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-fast-tag-selection-single-key 'expert)
    '(org-file-apps
      '((auto-mode . emacs) ("\\.mm\\'" . system) ("\\.x?html?\\'" . system)
-       ("\\.pdf\\'" . system)))
+       ("\\.pdf\\'" . "open -a Skim %s")))
    '(org-fold-catch-invisible-edits 'error)
    '(org-fontify-done-headline t)
    '(org-footnote-section nil)

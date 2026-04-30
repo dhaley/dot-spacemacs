@@ -433,6 +433,8 @@ you should place your code here."
                          (shell-command-to-string
                           "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
     :config
+    ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only)
+    (defun org-jira-read-labels () nil)
     (setq org-jira-custom-jqls
           '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                   :limit 50

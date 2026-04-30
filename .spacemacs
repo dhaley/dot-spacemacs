@@ -451,15 +451,36 @@ you should place your code here."
         (error nil)))
 
     ;; Jira Server expects assignee as {"name": "username"} not {"accountId": "..."}
-    (advice-add 'org-jira-build-issue-ticket-struct :filter-return
-                (lambda (ticket)
-                  (let* ((fields (cdr (assoc 'fields (car ticket))))
-                         (assignee (assoc 'assignee fields)))
-                    (when assignee
-                      (let ((account-id (cdr (assoc 'accountId (cdr assignee)))))
-                        (when account-id
-                          (setcdr assignee (list (cons 'name account-id)))))))
-                  ticket))
+    (defun org-jira-get-issue-struct (project type summary description &optional parent-id)
+      "Create an issue struct for PROJECT, of TYPE, with SUMMARY and DESCRIPTION.
+Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
+      (if (or (equal project "") (equal type "") (equal summary ""))
+          (error "Must provide all information!"))
+      (let* ((project-components (jiralib-get-components project))
+             (jira-users (org-jira-get-assignable-users project))
+             (user (completing-read "Assignee: " (mapcar #'car jira-users)))
+             (priority (car (rassoc (org-jira-read-priority) (jiralib-get-priorities))))
+             (labels (org-jira-read-labels))
+             (ticket-fields
+              `((project (key . ,project))
+                (parent (key . ,parent-id))
+                (issuetype (id . ,(car (rassoc type
+                                               (if (and (boundp 'parent-id) parent-id)
+                                                   (jiralib-get-subtask-types)
+                                                 (jiralib-get-issue-types-by-project project))))))
+                (summary . ,(format "%s%s" summary
+                                    (if (and (boundp 'parent-id) parent-id)
+                                        (format " (subtask of [jira:%s])" parent-id)
+                                      "")))
+                (description . ,description)
+                (priority (id . ,priority))
+                (labels . ,labels)
+                (assignee (name . ,(cdr (assoc user jira-users))))))
+             (filtered-fields (jiralib-filter-fields-by-exclude-list
+                               jiralib-update-issue-fields-exclude-list
+                               ticket-fields))
+             (ticket-struct `((fields . ,filtered-fields))))
+        ticket-struct))
     (setq org-jira-custom-jqls
           '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                   :limit 50

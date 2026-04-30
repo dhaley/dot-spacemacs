@@ -265,8 +265,46 @@ Reads jira-* properties and pushes to Jira. Only sends non-empty optional fields
       (browse-url url)
       (message "Created Jira issue: %s (URL copied)" key))))
 
+(defun org-jira-sync-from-heading ()
+  "Sync the org heading at point from its linked Jira issue.
+Updates TODO state and assignee based on current Jira status."
+  (interactive)
+  (require 'org-jira)
+  (let ((key (org-entry-get nil "Jira")))
+    (unless key (error "No :Jira: property on this heading"))
+    (let* ((issue (car (jiralib-do-jql-search (format "key = %s" key) 1)))
+           (fields (cdr (assoc 'fields issue)))
+           (status-name (cdr (assoc 'name (cdr (assoc 'status fields)))))
+           (assignee-name (cdr (assoc 'name (cdr (assoc 'assignee fields)))))
+           (org-keyword (org-jira-get-org-keyword-from-status status-name)))
+      (when assignee-name
+        (org-entry-put nil "jira-assignee" assignee-name))
+      (org-entry-put nil "jira-status" status-name)
+      (when org-keyword
+        (org-todo org-keyword))
+      (message "Synced %s: %s (%s)" key status-name (or assignee-name "unassigned")))))
+
+(defun org-jira-sync-buffer ()
+  "Sync all org headings with a :Jira: property in the current buffer."
+  (interactive)
+  (require 'org-jira)
+  (let ((count 0))
+    (org-map-entries
+     (lambda ()
+       (when (org-entry-get nil "Jira")
+         (condition-case err
+             (progn (org-jira-sync-from-heading)
+                    (setq count (1+ count)))
+           (error (message "Error syncing %s: %s"
+                           (org-entry-get nil "Jira")
+                           (error-message-string err))))))
+     nil 'file)
+    (message "Synced %d Jira issues" count)))
+
 (with-eval-after-load 'org
-  (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading))
+  (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading)
+  (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-from-heading)
+  (define-key org-mode-map (kbd "C-c j S") #'org-jira-sync-buffer))
 
 (provide 'dot-org-jira)
 

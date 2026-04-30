@@ -81,6 +81,79 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
 
 ;;; ── Create Jira issues from org headings ──
 
+(defun org-jira--last-business-day-next-month ()
+  "Return the last business day (Mon-Fri) of next month as yyyy-MM-dd."
+  (let* ((now (decode-time))
+         (month (nth 4 now))
+         (year (nth 5 now))
+         ;; advance to next month
+         (next-month (if (= month 12) 1 (1+ month)))
+         (next-year (if (= month 12) (1+ year) year))
+         ;; last day of next month = day 0 of month after that
+         (after-month (if (= next-month 12) 1 (1+ next-month)))
+         (after-year (if (= next-month 12) (1+ next-year) next-year))
+         (last-day (nth 3 (decode-time (encode-time 0 0 0 0 after-month after-year))))
+         (last-time (encode-time 0 0 12 last-day next-month next-year))
+         (dow (nth 6 (decode-time last-time))))
+    ;; Roll back from weekend: 0=Sun->-2, 6=Sat->-1
+    (when (= dow 0) (setq last-day (- last-day 2)))
+    (when (= dow 6) (setq last-day (- last-day 1)))
+    (format "%04d-%02d-%02d" next-year next-month last-day)))
+
+(defun org-jira--next-sprint-name (project)
+  "Return the name of the sprint following the active sprint in PROJECT."
+  (require 'org-jira)
+  (condition-case err
+      (let* ((boards (jiralib--rest-call-it
+                      (format "/rest/agile/1.0/board?projectKeyOrId=%s&type=scrum" project)
+                      :type "GET"))
+             (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0))))
+             ;; Get active sprints
+             (active (jiralib--rest-call-it
+                      (format "/rest/agile/1.0/board/%s/sprint?state=active" board-id)
+                      :type "GET"))
+             (active-list (append (cdr (assoc 'values active)) nil))
+             ;; Find the StratusOps sprint
+             (current (seq-find (lambda (s) (string-match-p "StratusOps Sprint" (cdr (assoc 'name s))))
+                                active-list))
+             ;; Get future sprints
+             (future (jiralib--rest-call-it
+                      (format "/rest/agile/1.0/board/%s/sprint?state=future" board-id)
+                      :type "GET"))
+             (future-list (append (cdr (assoc 'values future)) nil))
+             (next (seq-find (lambda (s) (string-match-p "StratusOps Sprint" (cdr (assoc 'name s))))
+                             future-list)))
+        (cond
+         (next (cdr (assoc 'name next)))
+         ;; Fallback: increment current sprint number
+         (current
+          (let ((name (cdr (assoc 'name current))))
+            (if (string-match "\\(.*Sprint \\)\\([0-9]+\\)" name)
+                (format "%s%d" (match-string 1 name)
+                        (1+ (string-to-number (match-string 2 name))))
+              "")))
+         (t "")))
+    (error "")))
+
+(defvar org-jira--capture-defaults-cache nil
+  "Cached (sprint . due-date) for current capture session.")
+
+(defun org-jira--capture-defaults ()
+  "Return and cache default (sprint . due-date) for Jira Task capture."
+  (or org-jira--capture-defaults-cache
+      (setq org-jira--capture-defaults-cache
+            (cons (org-jira--next-sprint-name "CO")
+                  (org-jira--last-business-day-next-month)))))
+
+(defun org-jira--capture-default-sprint ()
+  "Return default sprint name for capture template."
+  (car (org-jira--capture-defaults)))
+
+(defun org-jira--capture-default-due-date ()
+  "Return default due date for capture template."
+  (prog1 (cdr (org-jira--capture-defaults))
+    (setq org-jira--capture-defaults-cache nil)))
+
 (defun org-jira--resolve-epic-key (project epic-name)
   "Look up the issue key for an epic by EPIC-NAME in PROJECT."
   (require 'org-jira)

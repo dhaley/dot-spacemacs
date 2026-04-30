@@ -1316,7 +1316,7 @@ This function is called at the very end of Spacemacs initialization."
        ("h" "Habit" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
         "* NEXT %?\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n" :prepend t)
        ("J" "Jira Task" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
-        "* TODO %^{Summary}\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:jira-project: CO\n:jira-type: Task\n:jira-priority: Major\n:jira-assignee: dhaley\n:jira-epic: OPS INT - Misc\n:jira-sprint:\n:jira-component: Ops\n:jira-labels:\n:jira-story-points:\n:jira-due-date:\n:jira-servicenow-link:\n:jira-task-number:\n:jira-contact-email:\n:jira-fix-version:\n:END:\n%?" :prepend t)))
+        "* TODO %^{Summary}\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:jira-project: CO\n:jira-type: Task\n:jira-priority: Major\n:jira-assignee: dhaley\n:jira-epic: OPS INT - Misc\n:jira-sprint: %(org-jira--capture-default-sprint)\n:jira-component: Ops\n:jira-labels: maintenance\n:jira-story-points: 1\n:jira-due-date: %(org-jira--capture-default-due-date)\n:jira-servicenow-link:\n:jira-task-number:\n:jira-contact-email:\n:jira-fix-version:\n:END:\n%?" :prepend t)))
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)

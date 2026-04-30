@@ -1434,12 +1434,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-log-done 'time)
    '(org-log-into-drawer t)
    '(org-log-state-notes-insert-after-drawers nil)
-   '(org-mobile-agendas '("Z"))
-   '(org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-   '(org-mobile-files
-     '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"))
-   '(org-mobile-files-exclude-regexp "\\(TODO\\(-.*\\)?\\)\\'")
-   '(org-mobile-inbox-for-pull "/Users/dhaley/Box/projects/from-mobile.org")
    '(org-modules '(org-id org-habit org-depend org-tempo))
    '(org-odd-levels-only nil)
    '(org-outline-path-complete-in-steps nil)

@@ -38,9 +38,6 @@
   (expand-file-name "~/.cache/cwt-ecs-cache.json")
   "File path for the ECS log group discovery cache.")
 
-(defvar cwt-ecs-cache-ttl 3600
-  "Cache TTL in seconds (default 1 hour).")
-
 ;; ── static ost/* aliases ───────────────────────────────────────────
 (defvar cwt-log-aliases nil
   "Alist of (ALIAS . LOG-GROUP-OR-LIST).
@@ -86,14 +83,6 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
 ;; ── ECS discovery & caching ────────────────────────────────────────
 (defvar cwt--ecs-cache nil
   "In-memory alist of (\"ecs/CLUSTER/SERVICE/CONTAINER\" . LOG-GROUP).")
-
-(defvar cwt--ecs-cache-time 0
-  "Epoch time when the ECS cache was last loaded.")
-
-(defun cwt--ecs-cache-stale-p ()
-  "Return non-nil if the ECS cache needs refreshing."
-  (or (null cwt--ecs-cache)
-      (> (- (float-time) cwt--ecs-cache-time) cwt-ecs-cache-ttl)))
 
 (defun cwt--ecs-discover ()
   "Discover log groups from running ECS tasks across all configured clusters.
@@ -147,42 +136,31 @@ Returns an alist of (ALIAS . LOG-GROUP)."
     (insert (json-encode data))))
 
 (defun cwt--ecs-load-cache ()
-  "Load the ECS cache from disk if it exists and is fresh enough."
+  "Load the ECS cache from disk if it exists."
   (when (file-exists-p cwt-ecs-cache-file)
-    (let ((age (- (float-time) (float-time (file-attribute-modification-time
-                                            (file-attributes cwt-ecs-cache-file))))))
-      (when (< age cwt-ecs-cache-ttl)
-        (condition-case nil
-            (with-temp-buffer
-              (insert-file-contents cwt-ecs-cache-file)
-              (let* ((raw (json-read))
-                     ;; json-read returns vector of vectors; convert to alist
-                     (entries (mapcar (lambda (pair)
-                                       (cons (aref pair 0) (aref pair 1)))
-                                     (append raw nil))))
-                entries))
-          (error nil))))))
+    (condition-case nil
+        (with-temp-buffer
+          (insert-file-contents cwt-ecs-cache-file)
+          (let* ((raw (json-read))
+                 (entries (mapcar (lambda (pair)
+                                   (cons (aref pair 0) (aref pair 1)))
+                                 (append raw nil))))
+            entries))
+      (error nil))))
 
 (defun cwt--ecs-ensure-cache ()
-  "Ensure the ECS cache is populated, loading from disk or discovering."
+  "Return ECS cache, loading from disk if needed.  Never auto-discovers."
   (unless cwt--ecs-cache
-    (setq cwt--ecs-cache (cwt--ecs-load-cache))
-    (when cwt--ecs-cache
-      (setq cwt--ecs-cache-time (float-time))))
-  (when (cwt--ecs-cache-stale-p)
-    (let ((data (cwt--ecs-discover)))
-      (setq cwt--ecs-cache data
-            cwt--ecs-cache-time (float-time))
-      (cwt--ecs-save-cache data)))
+    (setq cwt--ecs-cache (or (cwt--ecs-load-cache) '())))
   cwt--ecs-cache)
 
 ;;;###autoload
 (defun cwt-ecs-refresh ()
-  "Force refresh the ECS log group cache."
+  "Discover ECS log groups and refresh the cache."
   (interactive)
-  (setq cwt--ecs-cache nil
-        cwt--ecs-cache-time 0)
-  (cwt--ecs-ensure-cache)
+  (let ((data (cwt--ecs-discover)))
+    (setq cwt--ecs-cache data)
+    (cwt--ecs-save-cache data))
   (message "cwt: ECS cache refreshed — %d log groups" (length cwt--ecs-cache)))
 
 ;; ── command building ───────────────────────────────────────────────

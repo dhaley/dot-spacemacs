@@ -116,33 +116,10 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '(;; ── My issues (in org-agenda by default) ──
+        '(;; Only sync my issues by default
           (:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                 :limit 50
-                :filename "co-dhaley")
-          ;; ── Team members (not in org-agenda, use agenda filters to view) ──
-          (:jql "project = CO AND assignee = dwhitesi AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-dwhitesi")
-          (:jql "project = CO AND assignee = mswapnil AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-mswapnil")
-          (:jql "project = CO AND assignee = aliao AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-aliao")
-          (:jql "project = CO AND assignee = drager AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-drager")
-          (:jql "project = CO AND assignee = avillarr AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-avillarr")
-          (:jql "project = CO AND assignee = dhorton AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
-                :filename "co-dhorton")
-          ;; ── Current sprint (all team, for sprint review) ──
-          (:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
-                :limit 100
-                :filename "co-current-sprint")))
+                :filename "co-dhaley")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")
 
@@ -306,6 +283,37 @@ or an alist with a 'name' key."
         (cdr (assoc 'id match))
       (error "Sprint not found: %s" sprint-name))))
 
+(defvar org-jira-team-members
+  '(("dhaley"    . "Damon")
+    ("dwhitesi"  . "Whiteside")
+    ("aliao"     . "Anna")
+    ("drager"    . "Rager")
+    ("avillarr"  . "Andres")
+    ("dhorton"   . "Dan Horton"))
+  "Alist of (username . display-name) for team members.")
+
+(defun org-jira-sync-team-member (username)
+  "Sync issues for a team member by USERNAME into ~/.org-jira/co-USERNAME.org."
+  (interactive
+   (list (completing-read "Team member: "
+                          (mapcar #'car org-jira-team-members) nil t)))
+  (require 'org-jira)
+  (let ((org-jira-custom-jqls
+         `((:jql ,(format "project = CO AND assignee = %s AND status NOT IN (Done, Closed) ORDER BY updated DESC" username)
+                 :limit 50
+                 :filename ,(format "co-%s" username)))))
+    (org-jira-get-issues-from-custom-jql)))
+
+(defun org-jira-sync-current-sprint ()
+  "Sync all issues in the current sprint."
+  (interactive)
+  (require 'org-jira)
+  (let ((org-jira-custom-jqls
+         '((:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
+                 :limit 100
+                 :filename "co-current-sprint"))))
+    (org-jira-get-issues-from-custom-jql)))
+
 (defun org-jira-create-from-heading ()
   "Create a Jira issue from the org heading at point.
 Reads jira-* properties and pushes to Jira. Only sends non-empty optional fields.
@@ -466,7 +474,9 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j C") (lambda () (interactive)
                                               (require 'org-jira)
                                               (org-jira-update-comments-for-current-issue)
-                                              (message "Comments updated"))))
+                                              (message "Comments updated")))
+  (define-key org-mode-map (kbd "C-c j m") #'org-jira-sync-team-member)
+  (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint))
 
 (provide 'dot-org-jira)
 

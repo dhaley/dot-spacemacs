@@ -123,7 +123,7 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
   (setq org-jira-custom-jqls
         '(;; Only sync my issues by default
           (:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
+                :limit 200
                 :filename "co-dhaley")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")

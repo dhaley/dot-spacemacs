@@ -43,6 +43,19 @@
           ("Major"    . ?B)
           ("Minor"    . ?C)
           ("Trivial"  . ?C)))
+
+  ;; org-jira writes a :priority: property that clashes with org-mode's
+  ;; built-in PRIORITY handling. When org-agenda scans deadlines, it calls
+  ;; format with nil because the priority cookie is missing on existing
+  ;; headings. Patch org-agenda-get-deadlines to handle this gracefully.
+  (with-eval-after-load 'org-agenda
+    (defun my/org-agenda-fix-nil-priority (orig-fn &rest args)
+      "Wrap org-agenda-get-deadlines to catch nil format string errors."
+      (condition-case nil
+          (apply orig-fn args)
+        (wrong-type-argument nil)))
+    (advice-add 'org-agenda-get-deadlines :around #'my/org-agenda-fix-nil-priority)
+    (advice-add 'org-agenda-get-scheduled :around #'my/org-agenda-fix-nil-priority))
   :config
   ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only).
   (defun org-jira-read-labels ()
@@ -117,7 +130,69 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
                 :limit 100
                 :filename "co-current-sprint")))
 
-  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"))
+  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")
+
+  ;; Override SDK to extract sprint name from customfield_10005 (Jira Server)
+  ;; and add story points from customfield_10002.
+  (defun my/org-jira-extract-sprint-name (sprint-field)
+    "Extract sprint name from Jira Server's customfield_10005 value.
+The value is either a string like 'com.atlassian...Sprint@...[...,name=FY26 ...,...]'
+or an alist with a 'name' key."
+    (cond
+     ((null sprint-field) nil)
+     ((stringp sprint-field)
+      (if (string-match "name=\\([^],]+\\)" sprint-field)
+          (match-string 1 sprint-field)
+        sprint-field))
+     ((and (listp sprint-field) (cdr (assoc 'name sprint-field))))
+     ;; Array of sprints — take the last (most recent)
+     ((vectorp sprint-field)
+      (my/org-jira-extract-sprint-name (aref sprint-field (1- (length sprint-field)))))
+     (t nil)))
+
+  (cl-defmethod org-jira-sdk-from-data ((rec org-jira-sdk-issue))
+    (cl-flet ((path (keys) (org-jira-sdk-path (oref rec data) keys)))
+      (org-jira-sdk-issue
+       :assignee (path '(fields assignee displayName))
+       :components (mapconcat (lambda (c) (org-jira-sdk-path c '(name))) (path '(fields components)) ", ")
+       :labels (mapconcat (lambda (c) (format "%s" c)) (mapcar #'identity (path '(fields labels))) ", ")
+       :created (path '(fields created))
+       :description (or (path '(renderedFields description)) (or (path '(fields description)) ""))
+       :duedate (or (path '(fields duedate)) (path '(fields sprint endDate)))
+       :filename (path '(fields project key))
+       :headline (path '(fields summary))
+       :id (path '(key))
+       :issue-id (path '(key))
+       :issue-id-int (path '(id))
+       :parent-key (path '(fields parent key))
+       :priority (path '(fields priority name))
+       :proj-key (path '(fields project key))
+       :reporter (path '(fields reporter displayName))
+       :resolution (path '(fields resolution name))
+       :sprint (or (my/org-jira-extract-sprint-name (path '(fields customfield_10005)))
+                   (path '(fields sprint name)))
+       :start-date (path '(fields start-date))
+       :status (org-jira-decode (path '(fields status name)))
+       :summary (path '(fields summary))
+       :type (path '(fields issuetype name))
+       :type-id (path '(fields issuetype id))
+       :updated (path '(fields updated)))))
+
+  ;; Write story points as a property after each issue is rendered
+  (defun my/org-jira-add-extra-fields (Issue)
+    "Add story points and other custom fields after org-jira renders ISSUE."
+    (when (slot-boundp Issue 'data)
+      (let* ((data (oref Issue data))
+             (fields (cdr (assoc 'fields data)))
+             (story-points (cdr (assoc 'customfield_10002 fields)))
+             (issue-id (oref Issue issue-id)))
+        (save-excursion
+          (let ((p (org-find-entry-with-id issue-id)))
+            (when p
+              (goto-char p)
+              (when story-points
+                (org-entry-put nil "story-points" (format "%g" story-points)))))))))
+  (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
 
 ;;; ── Dynamic capture defaults ──
 

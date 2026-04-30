@@ -416,79 +416,7 @@ you should place your code here."
   (require 'ob-php)
   (global-set-key (kbd "H-M-S-<return>") 'org-smart-capture)
 
-  ;; ── org-jira: sync Jira issues to org-mode ──
-  (use-package org-jira
-    :defer t
-    :commands (org-jira-get-issues org-jira-get-issues-from-custom-jql
-               org-jira-create-issue org-jira-browse-issue)
-    :init
-    (setq jiralib-url "https://jira.example.com")
-    ;; Jira Server uses REST API v2, not v3 (Cloud)
-    (setq jiralib-target-api-version 2)
-    ;; Jira Server uses "name" for assignee, not "accountId" (Cloud)
-    (setq org-jira-users '(("Unassigned" . nil)))
-    (make-directory "~/.org-jira" t)
-    (setq org-jira-working-dir "~/.org-jira")
-    ;; Bearer PAT auth for Jira Server (reads token from authinfo)
-    (setq jiralib-token
-          (cons "Authorization"
-                (concat "Bearer "
-                        (string-trim
-                         (shell-command-to-string
-                          "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
-    :config
-    ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only).
-    ;; Fetch labels from existing project issues instead.
-    (defun org-jira-read-labels ()
-      (condition-case nil
-          (let* ((response (jiralib-do-jql-search
-                            "project = CO AND labels is not EMPTY" 100))
-                 (labels (make-hash-table :test 'equal)))
-            (dolist (issue response)
-              (dolist (label (org-jira-find-value issue 'fields 'labels))
-                (puthash label t labels)))
-            (hash-table-keys labels))
-        (error nil)))
-
-    ;; Jira Server expects assignee as {"name": "username"} not {"accountId": "..."}
-    (defun org-jira-get-issue-struct (project type summary description &optional parent-id)
-      "Create an issue struct for PROJECT, of TYPE, with SUMMARY and DESCRIPTION.
-Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
-      (if (or (equal project "") (equal type "") (equal summary ""))
-          (error "Must provide all information!"))
-      (let* ((project-components (jiralib-get-components project))
-             (jira-users (org-jira-get-assignable-users project))
-             (user (completing-read "Assignee: " (mapcar #'car jira-users)))
-             (priority (car (rassoc (org-jira-read-priority) (jiralib-get-priorities))))
-             (labels (org-jira-read-labels))
-             (ticket-fields
-              `((project (key . ,project))
-                (parent (key . ,parent-id))
-                (issuetype (id . ,(car (rassoc type
-                                               (if (and (boundp 'parent-id) parent-id)
-                                                   (jiralib-get-subtask-types)
-                                                 (jiralib-get-issue-types-by-project project))))))
-                (summary . ,(format "%s%s" summary
-                                    (if (and (boundp 'parent-id) parent-id)
-                                        (format " (subtask of [jira:%s])" parent-id)
-                                      "")))
-                (description . ,description)
-                (priority (id . ,priority))
-                (labels . ,labels)
-                (assignee (name . ,(cdr (assoc user jira-users))))))
-             (filtered-fields (jiralib-filter-fields-by-exclude-list
-                               jiralib-update-issue-fields-exclude-list
-                               ticket-fields))
-             (ticket-struct `((fields . ,filtered-fields))))
-        ticket-struct))
-    (setq org-jira-custom-jqls
-          '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                  :limit 50
-                  :filename "co-my-issues")
-            (:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
-                  :limit 50
-                  :filename "co-current-sprint")))
-    (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"))
+  (require 'dot-org-jira)
 
   (require 'cloudwatch-tail)
   (bind-key "C-c L" #'cwt-launch)
@@ -1386,7 +1314,9 @@ This function is called at the very end of Spacemacs initialization."
        ("p" "Phone call" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
         "* PHONE %? :PHONE:\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :clock-in t :clock-resume t)
        ("h" "Habit" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
-        "* NEXT %?\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n" :prepend t)))
+        "* NEXT %?\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n" :prepend t)
+       ("J" "Jira Task" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
+        "* TODO %^{Summary}\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:jira-project: CO\n:jira-type: Task\n:jira-priority: Major\n:jira-assignee: dhaley\n:jira-epic:\n:jira-component:\n:jira-labels:\n:jira-sprint:\n:END:\n%?" :prepend t)))
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)

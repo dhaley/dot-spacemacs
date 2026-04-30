@@ -208,21 +208,20 @@ or an alist with a 'name' key."
                  (fields (cdr (assoc 'fields data)))
                  (story-points (cdr (assoc 'customfield_10002 fields)))
                  (epic-key (cdr (assoc 'customfield_10006 fields)))
-                 ;; For epics themselves, customfield_10007 has the name
                  (epic-name-direct (cdr (assoc 'customfield_10007 fields)))
                  (issue-id (oref Issue issue-id)))
-            (save-excursion
-              (let ((p (org-find-entry-with-id issue-id)))
-                (when p
-                  (goto-char p)
-                  (when story-points
-                    (org-entry-put nil "story-points" (format "%g" story-points)))
-                  (when epic-key
-                    (org-entry-put nil "epic" epic-key)
-                    (let ((name (my/org-jira-get-epic-name epic-key)))
-                      (when name (org-entry-put nil "epic-name" name))))
-                  (when epic-name-direct
-                    (org-entry-put nil "epic-name" epic-name-direct)))))))
+            (org-with-wide-buffer
+             (let ((p (org-find-entry-with-id issue-id)))
+               (when p
+                 (goto-char p)
+                 (when story-points
+                   (org-entry-put nil "story-points" (format "%g" story-points)))
+                 (when epic-key
+                   (org-entry-put nil "epic" epic-key)
+                   (let ((name (my/org-jira-get-epic-name epic-key)))
+                     (when name (org-entry-put nil "epic-name" name))))
+                 (when epic-name-direct
+                   (org-entry-put nil "epic-name" epic-name-direct)))))))
       (error (message "Extra fields error: %s" (error-message-string err)))))
   (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
 

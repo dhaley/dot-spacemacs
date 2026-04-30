@@ -203,28 +203,28 @@ or an alist with a 'name' key."
 ;; Must be outside use-package so the advice is set up at load time
 (with-eval-after-load 'org-jira
   (defun my/org-jira-add-extra-fields (Issue)
-    "Add story points, epic link and other custom fields after org-jira renders ISSUE."
+    "Add story points, epic link after org-jira renders ISSUE."
     (condition-case err
         (when (and (slot-exists-p Issue 'data) (slot-boundp Issue 'data))
-          (let* ((data (oref Issue data))
-                 (fields (cdr (assoc 'fields data)))
-                 (story-points (cdr (assoc 'customfield_10002 fields)))
-                 (epic-key (cdr (assoc 'customfield_10006 fields)))
-                 (epic-name-direct (cdr (assoc 'customfield_10007 fields)))
-                 (issue-id (oref Issue issue-id)))
-            (org-with-wide-buffer
-             (let ((p (org-find-entry-with-id issue-id)))
-               (when p
-                 (goto-char p)
-                 (when story-points
-                   (org-entry-put nil "story-points" (format "%g" story-points)))
-                 (when epic-key
-                   (org-entry-put nil "epic" epic-key)
-                   (let ((name (my/org-jira-get-epic-name epic-key)))
-                     (when name (org-entry-put nil "epic-name" name))))
-                 (when epic-name-direct
-                   (org-entry-put nil "epic-name" epic-name-direct)))))))
-      (error (message "Extra fields error: %s" (error-message-string err)))))
+          (with-slots (issue-id) Issue
+            (let* ((data (oref Issue data))
+                   (fields (cdr (assoc 'fields data)))
+                   (story-points (cdr (assoc 'customfield_10002 fields)))
+                   (epic-key (cdr (assoc 'customfield_10006 fields)))
+                   (epic-name-direct (cdr (assoc 'customfield_10007 fields))))
+              ;; We're already at point on the issue heading inside render
+              ;; Just write the properties directly
+              (when story-points
+                (org-jira-entry-put (point) "story-points" (format "%g" story-points)))
+              (when epic-key
+                (org-jira-entry-put (point) "epic" epic-key)
+                (let ((name (my/org-jira-get-epic-name epic-key)))
+                  (when name (org-jira-entry-put (point) "epic-name" name))))
+              (when epic-name-direct
+                (org-jira-entry-put (point) "epic-name" epic-name-direct)))))
+      (error (message "Extra fields error for %s: %s"
+                      (if (slot-boundp Issue 'issue-id) (oref Issue issue-id) "?")
+                      (error-message-string err)))))
   (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
 
 ;;; ── Dynamic capture defaults ──

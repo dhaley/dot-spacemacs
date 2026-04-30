@@ -1295,11 +1295,20 @@ This function is called at the very end of Spacemacs initialization."
    '(org-beamer-frame-default-options "fragile")
    '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
    '(org-capture-templates
-     '(("t" "Task" entry
-        (file+headline
-         "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
-        "* TODO %?\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:"
-        :prepend t)))
+     '(("t" "todo" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+       ("r" "respond" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+       ("n" "note" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
+       ("j" "Journal" entry (file+datetree "/Users/dhaley/Library/CloudStorage/Box-Box/projects/diary.org")
+        "* %?\n%U\n" :clock-in t :clock-resume t)
+       ("m" "Meeting" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
+       ("p" "Phone call" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
+       ("h" "Habit" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
+        "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)

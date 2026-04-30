@@ -1341,7 +1341,7 @@ This function is called at the very end of Spacemacs initialization."
         "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :immediate-finish t)
        ("n" "note" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
         "* %? :NOTE:\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
-       ("j" "Journal" entry (file+datetree "/Users/dhaley/Library/CloudStorage/Box-Box/projects/diary.org")
+       ("j" "Journal" entry (file+olp+datetree "/Users/dhaley/Library/CloudStorage/Box-Box/projects/diary.org")
         "* %?\n%U\n")
        ("m" "Meeting" entry (file+headline "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt" "Inbox")
         "* MEETING with %? :MEETING:\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :clock-in t :clock-resume t)

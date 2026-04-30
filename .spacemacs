@@ -1055,7 +1055,7 @@ On subsequent calls, just brings the existing buffers to the foreground."
             (eat)))
         (other-window 1))))
   (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
-  (bind-key "C-c a" #'my/agent-workspace)
+  (bind-key "C-c A" #'my/agent-workspace)
 
   (defun my/az-login ()
     "Run az login with device code and open the auth page in Vivaldi."

@@ -36,6 +36,10 @@
                        (shell-command-to-string
                         "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
 
+  ;; Disable worklog sync — we don't use Jira time tracking
+  ;; This cuts sync time roughly in half
+  (setq org-jira-worklog-sync-p nil)
+
   ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
   (setq org-jira-priority-to-org-priority-alist
         '(("Blocker"  . ?A)

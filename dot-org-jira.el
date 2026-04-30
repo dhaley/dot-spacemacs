@@ -35,6 +35,14 @@
                       (string-trim
                        (shell-command-to-string
                         "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
+
+  ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
+  (setq org-jira-priority-to-org-priority-alist
+        '(("Blocker"  . ?A)
+          ("Critical" . ?A)
+          ("Major"    . ?B)
+          ("Minor"    . ?C)
+          ("Trivial"  . ?C)))
   :config
   ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only).
   (defun org-jira-read-labels ()

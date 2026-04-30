@@ -1,4 +1,4 @@
-;;; org-smart-capture --- Capture Gnus messages as tasks, with context
+;;; org-smart-capture --- Capture Gnus messages as tasks, with context -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2011 John Wiegley
 
@@ -27,11 +27,14 @@
 
 ;; I use: (define-key global-map [(meta ?m)] 'org-smart-capture)
 
-(require 'gnus-sum)
+;;; Code:
+
+(require 'org-macs)
 (require 'org-capture)
+(require 'gnus-sum)
 
 (defgroup org-smart-capture nil
-  "Capture Gnus messages as tasks, with context"
+  "Capture Gnus messages as tasks, with context."
   :group 'org)
 
 (defcustom org-smart-capture-use-lastname nil
@@ -49,16 +52,16 @@
   :type '(alist :key-type regexp :value-type regexp)
   :group 'org-smart-capture)
 
-(defun convert-dates ()
-  (interactive)
-  (while (re-search-forward ":Date:\\s-*\\(.+\\)" nil t)
-    (let ((date-sent (match-string 1)))
-      (goto-char (match-beginning 1))
-      (delete-region (match-beginning 1) (match-end 1))
-      (insert ?\[ (time-to-org-timestamp
-                   (apply 'encode-time
-                          (parse-time-string date-sent)) t t)
-              ?\]))))
+;; convert-dates is unused; commented out upstream as it uses deprecated APIs
+;; (defun convert-dates ()
+;;   (interactive)
+;;   (while (re-search-forward ":Date:\\s-*\\(.+?\\)$" nil t)
+;;     (let ((date-sent (match-string 1)))
+;;       (goto-char (match-beginning 1))
+;;       (delete-region (match-beginning 1) (match-end 1))
+;;       (insert ?\[ (org-encode-time
+;;                    (parse-time-string date-sent))
+;;               ?\]))))
 
 (defun org-smart-capture-article (&optional article multiple)
   (let* ((body (and (eq major-mode 'gnus-article-mode)
@@ -131,10 +134,9 @@
           (insert body))))
 
     (org-set-property "Date"
-                      (or date-sent
-                          (time-to-org-timestamp
-                           (apply 'encode-time
-                                  (parse-time-string date-sent)) t t)))
+                      (format-time-string
+                       (org-time-stamp-format 'long 'inactive)
+                       (org-encode-time (parse-time-string date-sent))))
     (org-set-property "Message"
                       (format "[[message://%s][%s]]"
                               (substring message-id 1 -1)
@@ -147,56 +149,69 @@
       (org-capture-finalize)
       (message "Captured: (%s) %s" fname subject))))
 
+(defun org-smart-capture-create-file-task ()
+  "Create Org task with attached file from Dired entry at point."
+  (interactive)
+  (require 'org-attach)
+  (unless (derived-mode-p 'dired-mode)
+    (user-error "Not in Dired buffer"))
+  (let* ((target-file (dired-get-filename nil t)))
+    (call-interactively #'org-capture)
+    (org-attach-attach target-file nil 'mv)))
+
 ;;;###autoload
 (defun org-smart-capture (&optional arg)
   (interactive "P")
-  (if (not (memq major-mode '(gnus-summary-mode gnus-article-mode)))
-      (call-interactively #'org-capture)
+  (cond ((and (eq major-mode 'dired-mode)
+              (y-or-n-p "Create task from file/directory as attachment?"))
+         (org-smart-capture-create-file-task))
+        ((not (memq major-mode '(gnus-summary-mode gnus-article-mode)))
+         (call-interactively #'org-capture))
 
-    (cond ((eq major-mode 'gnus-article-mode)
-           (org-smart-capture-article)
-           (with-current-buffer gnus-summary-buffer
-             (gnus-summary-mark-as-read
-              nil (unless (string= (buffer-name) "*Summary INBOX*")
-                    gnus-dormant-mark))))
+        ((eq major-mode 'gnus-article-mode)
+         (org-smart-capture-article)
+         (with-current-buffer gnus-summary-buffer
+           (gnus-summary-mark-as-read
+            nil (unless (string= (buffer-name) "*Summary INBOX*")
+                  gnus-dormant-mark))))
 
-          ((eq major-mode 'gnus-summary-mode)
-           (save-excursion
-             (let* ((current-article (gnus-summary-article-number))
-                    (articles (gnus-summary-work-articles nil))
-                    (multiple (> (length articles) 1)))
-               (dolist (article articles)
-                 (gnus-summary-remove-process-mark article)
-                 (gnus-summary-mark-as-read
-                  article (unless (string= (buffer-name gnus-summary-buffer)
-                                           "*Summary INBOX*")
-                            gnus-dormant-mark))
-                 (unless arg
-                   (save-excursion
-                     (org-smart-capture-article article multiple))))
+        ((eq major-mode 'gnus-summary-mode)
+         (save-excursion
+           (let* ((current-article (gnus-summary-article-number))
+                  (articles (gnus-summary-work-articles nil))
+                  (multiple (> (length articles) 1)))
+             (dolist (article articles)
+               (gnus-summary-remove-process-mark article)
+               (gnus-summary-mark-as-read
+                article (unless (string= (buffer-name gnus-summary-buffer)
+                                         "*Summary INBOX*")
+                          gnus-dormant-mark))
+               (unless arg
+                 (save-excursion
+                   (org-smart-capture-article article multiple))))
 
-               (when arg
-                 (let ((index 1))
-                   (org-smart-capture-article current-article)
+             (when arg
+               (let ((index 1))
+                 (org-smart-capture-article current-article)
 
-                   (dolist (article articles)
-                     (unless (eq article current-article)
-                       (let* ((ghead (gnus-data-header
-                                      (car (gnus-data-find-list article))))
-                              (message-id (mail-header-message-id ghead))
-                              (raw-subject (mail-header-subject ghead))
-                              (subject (and raw-subject
-                                            (rfc2047-decode-string raw-subject))))
+                 (dolist (article articles)
+                   (unless (eq article current-article)
+                     (let* ((ghead (gnus-data-header
+                                    (car (gnus-data-find-list article))))
+                            (message-id (mail-header-message-id ghead))
+                            (raw-subject (mail-header-subject ghead))
+                            (subject (and raw-subject
+                                          (rfc2047-decode-string raw-subject))))
 
-                         (org-set-property
-                          (format "Message%d" (setq index (1+ index)))
-                          (format "[[message://%s][%s]]"
-                                  (substring message-id 1 -1)
-                                  (subst-char-in-string
-                                   ?\[ ?\{ (subst-char-in-string
-                                            ?\] ?\} subject)))))))))))
-           (gnus-summary-position-point)
-           (gnus-set-mode-line 'summary)))))
+                       (org-set-property
+                        (format "Message%d" (setq index (1+ index)))
+                        (format "[[message://%s][%s]]"
+                                (substring message-id 1 -1)
+                                (subst-char-in-string
+                                 ?\[ ?\{ (subst-char-in-string
+                                          ?\] ?\} subject)))))))))))
+         (gnus-summary-position-point)
+         (gnus-set-mode-line 'summary))))
 
 (provide 'org-smart-capture)
 

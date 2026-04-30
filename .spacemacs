@@ -423,6 +423,10 @@ you should place your code here."
                org-jira-create-issue org-jira-browse-issue)
     :init
     (setq jiralib-url "https://jira.example.com")
+    ;; Jira Server uses REST API v2, not v3 (Cloud)
+    (setq jiralib-target-api-version 2)
+    ;; Jira Server uses "name" for assignee, not "accountId" (Cloud)
+    (setq org-jira-users '(("Unassigned" . nil)))
     (make-directory "~/.org-jira" t)
     (setq org-jira-working-dir "~/.org-jira")
     ;; Bearer PAT auth for Jira Server (reads token from authinfo)
@@ -445,6 +449,17 @@ you should place your code here."
                 (puthash label t labels)))
             (hash-table-keys labels))
         (error nil)))
+
+    ;; Jira Server expects assignee as {"name": "username"} not {"accountId": "..."}
+    (advice-add 'org-jira-build-issue-ticket-struct :filter-return
+                (lambda (ticket)
+                  (let* ((fields (cdr (assoc 'fields (car ticket))))
+                         (assignee (assoc 'assignee fields)))
+                    (when assignee
+                      (let ((account-id (cdr (assoc 'accountId (cdr assignee)))))
+                        (when account-id
+                          (setcdr assignee (list (cons 'name account-id)))))))
+                  ticket))
     (setq org-jira-custom-jqls
           '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                   :limit 50

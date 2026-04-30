@@ -287,6 +287,83 @@ canonical copy into ~/.org-jira/ for full org-jira management."
       (browse-url url)
       (message "Created Jira issue: %s (URL copied)" key))))
 
+(defun org-jira-sprint-report ()
+  "Generate a sprint report for the current active StratusOps sprint.
+Shows closed issues, open/carried-over issues, and story point totals."
+  (interactive)
+  (require 'org-jira)
+  (let* ((boards (jiralib--rest-call-it
+                  "/rest/agile/1.0/board?projectKeyOrId=CO&type=scrum" :type "GET"))
+         (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0))))
+         (active (jiralib--rest-call-it
+                  (format "/rest/agile/1.0/board/%s/sprint?state=active" board-id)
+                  :type "GET"))
+         (sprint (seq-find (lambda (s) (string-match-p "StratusOps" (cdr (assoc 'name s))))
+                           (append (cdr (assoc 'values active)) nil)))
+         (sprint-name (cdr (assoc 'name sprint)))
+         (sprint-id (cdr (assoc 'id sprint)))
+         ;; Closed issues in this sprint
+         (closed (jiralib-do-jql-search
+                  (format "project = CO AND sprint = %d AND assignee = dhaley AND status IN (Done, Closed) ORDER BY updated DESC"
+                          sprint-id)
+                  50))
+         ;; Open issues still in this sprint
+         (open (jiralib-do-jql-search
+                (format "project = CO AND sprint = %d AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY priority DESC"
+                        sprint-id)
+                50))
+         (buf (get-buffer-create "*Sprint Report*")))
+    (with-current-buffer buf
+      (erase-buffer)
+      (org-mode)
+      (insert (format "#+TITLE: Sprint Report — %s\n" sprint-name))
+      (insert (format "#+DATE: %s\n\n" (format-time-string "%Y-%m-%d %A")))
+      ;; Summary
+      (let ((closed-pts (cl-reduce #'+ (mapcar (lambda (i)
+                                                  (or (cdr (assoc 'customfield_10002
+                                                                  (cdr (assoc 'fields i)))) 0))
+                                                closed)
+                                   :initial-value 0))
+            (open-pts (cl-reduce #'+ (mapcar (lambda (i)
+                                               (or (cdr (assoc 'customfield_10002
+                                                               (cdr (assoc 'fields i)))) 0))
+                                             open)
+                                :initial-value 0)))
+        (insert "* Summary\n")
+        (insert (format "- Completed: %d issues (%g story points)\n" (length closed) closed-pts))
+        (insert (format "- Remaining: %d issues (%g story points)\n" (length open) open-pts))
+        (insert (format "- Total: %d issues (%g story points)\n\n"
+                        (+ (length closed) (length open))
+                        (+ closed-pts open-pts))))
+      ;; Closed
+      (insert "* Completed\n")
+      (if (null closed)
+          (insert "  /None/\n")
+        (dolist (issue closed)
+          (let* ((fields (cdr (assoc 'fields issue)))
+                 (key (cdr (assoc 'key issue)))
+                 (summary (cdr (assoc 'summary fields)))
+                 (pts (or (cdr (assoc 'customfield_10002 fields)) 0))
+                 (status (cdr (assoc 'name (cdr (assoc 'status fields))))))
+            (insert (format "** DONE [[%s/browse/%s][%s]] %s\n" jiralib-url key key summary))
+            (insert (format "   - Status: %s | Points: %g\n" status pts)))))
+      (insert "\n")
+      ;; Open / Carry-over
+      (insert "* Remaining / Carry-over\n")
+      (if (null open)
+          (insert "  /None — all work completed!/\n")
+        (dolist (issue open)
+          (let* ((fields (cdr (assoc 'fields issue)))
+                 (key (cdr (assoc 'key issue)))
+                 (summary (cdr (assoc 'summary fields)))
+                 (pts (or (cdr (assoc 'customfield_10002 fields)) 0))
+                 (status (cdr (assoc 'name (cdr (assoc 'status fields))))))
+            (insert (format "** TODO [[%s/browse/%s][%s]] %s\n" jiralib-url key key summary))
+            (insert (format "   - Status: %s | Points: %g\n" status pts))))))
+    (switch-to-buffer buf)
+    (goto-char (point-min))
+    (message "Sprint report generated for %s" sprint-name)))
+
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading))
 

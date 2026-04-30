@@ -186,26 +186,30 @@ or an alist with a 'name' key."
        :updated (path '(fields updated))
        :data (oref rec data))))
 
-  ;; Write story points as a property after each issue is rendered
+  ;; Write story points, epic link after each issue is rendered
   (defun my/org-jira-add-extra-fields (Issue)
     "Add story points, epic link and other custom fields after org-jira renders ISSUE."
-    (when (slot-boundp Issue 'data)
-      (let* ((data (oref Issue data))
-             (fields (cdr (assoc 'fields data)))
-             (story-points (cdr (assoc 'customfield_10002 fields)))
-             (epic-key (cdr (assoc 'customfield_10006 fields)))
-             (epic-name (cdr (assoc 'customfield_10007 fields)))
-             (issue-id (oref Issue issue-id)))
-        (save-excursion
-          (let ((p (org-find-entry-with-id issue-id)))
-            (when p
-              (goto-char p)
-              (when story-points
-                (org-entry-put nil "story-points" (format "%g" story-points)))
-              (when epic-key
-                (org-entry-put nil "epic" epic-key))
-              (when epic-name
-                (org-entry-put nil "epic-name" epic-name))))))))
+    (condition-case err
+        (when (and (slot-exists-p Issue 'data) (slot-boundp Issue 'data))
+          (let* ((data (oref Issue data))
+                 (fields (cdr (assoc 'fields data)))
+                 (story-points (cdr (assoc 'customfield_10002 fields)))
+                 (epic-key (cdr (assoc 'customfield_10006 fields)))
+                 (epic-name (cdr (assoc 'customfield_10007 fields)))
+                 (issue-id (oref Issue issue-id)))
+            (message "Extra fields for %s: sp=%s epic=%s epic-name=%s"
+                     issue-id story-points epic-key epic-name)
+            (save-excursion
+              (let ((p (org-find-entry-with-id issue-id)))
+                (when p
+                  (goto-char p)
+                  (when story-points
+                    (org-entry-put nil "story-points" (format "%g" story-points)))
+                  (when epic-key
+                    (org-entry-put nil "epic" epic-key))
+                  (when epic-name
+                    (org-entry-put nil "epic-name" epic-name)))))))
+      (error (message "Extra fields error: %s" (error-message-string err)))))
   (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
 
 ;;; ── Dynamic capture defaults ──

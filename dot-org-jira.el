@@ -40,6 +40,7 @@
   ;; Use C-c j C to download comments for the issue at point
   (setq org-jira-worklog-sync-p nil)
   (setq org-jira-download-comments nil)
+  (setq org-jira-verbosity 'debug)
 
   ;; Disable org-element cache during org-jira rendering — the cache
   ;; causes extreme slowness when programmatically modifying org buffers
@@ -118,7 +119,7 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
   (setq org-jira-custom-jqls
         '(;; Only sync my issues by default
           (:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
-                :limit 50
+                :limit 10
                 :filename "co-dhaley")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")

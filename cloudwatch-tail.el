@@ -8,6 +8,7 @@
 ;; Aliases are organized by namespace:
 ;;   ost/*  — ops-scheduledtagging Lambda/EventBridge log groups (static)
 ;;   ecs/*  — ECS service container log groups (dynamic, cached)
+;;   mcp/*  — local MCP server log files (~/Library/Logs)
 ;;
 ;; Usage:
 ;;   C-c L  (cwt-launch)      – two-step: pick namespace, then pick log
@@ -73,6 +74,14 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
         ("ost/error"            . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "?ERROR ?Exception"))
         ("ost/fail"             . ("/aws/lambda/ops-scheduledtagging-log-failure-lambda" "--filter-pattern" "TAGGING_FAILURE"))
         ("ost/success"          . ("/aws/lambda/ops-scheduledtagging-lambda-function" "--filter-pattern" "Successfully tagged resource"))))
+
+;; ── static mcp/* aliases (local log files) ─────────────────────────
+(defvar cwt-mcp-log-aliases
+  `(("mcp/appfleet" . ,(expand-file-name "~/Library/Logs/mcp-appfleet.log"))
+    ("mcp/entra"    . ,(expand-file-name "~/Library/Logs/mcp-entra.log"))
+    ("mcp/ce"       . ,(expand-file-name "~/Library/Logs/mcp-ce.log"))
+    ("mcp/ost"      . ,(expand-file-name "~/Library/Logs/mcp-ost.log")))
+  "Alist of (ALIAS . LOG-FILE-PATH) for local MCP server logs.")
 
 ;; ── ECS discovery & caching ────────────────────────────────────────
 (defvar cwt--ecs-cache nil
@@ -178,25 +187,27 @@ Returns an alist of (ALIAS . LOG-GROUP)."
 
 ;; ── command building ───────────────────────────────────────────────
 (defun cwt--build-cmd (alias)
-  "Build the full aws logs tail command string for ALIAS.
-Checks static aliases first, then ECS cache."
-  (let ((entry (cdr (assoc alias cwt-log-aliases))))
-    (unless entry
-      ;; Check ECS cache
-      (setq entry (cdr (assoc alias (cwt--ecs-ensure-cache)))))
-    (cond
-     ((null entry) (error "Unknown alias: %s" alias))
-     ((listp entry)
-      (let* ((group (car entry))
-             (extra (cdr entry))
-             (has-since (member "--since" extra))
-             (since-part (if has-since "" (format " --since '%s'" cwt-since)))
-             (extra-str (mapconcat (lambda (s)
-                                     (if (string-prefix-p "--" s) s
-                                       (shell-quote-argument s)))
-                                   extra " ")))
-        (format "aws logs tail '%s' --follow%s %s" group since-part extra-str)))
-     (t (format "aws logs tail '%s' --follow --since '%s'" entry cwt-since)))))
+  "Build the full tail command string for ALIAS.
+Uses `tail -f' for mcp/* aliases (local files), `aws logs tail' for others."
+  (let ((mcp-entry (cdr (assoc alias cwt-mcp-log-aliases))))
+    (if mcp-entry
+        (format "tail -f %s" (shell-quote-argument mcp-entry))
+      (let ((entry (cdr (assoc alias cwt-log-aliases))))
+        (unless entry
+          (setq entry (cdr (assoc alias (cwt--ecs-ensure-cache)))))
+        (cond
+         ((null entry) (error "Unknown alias: %s" alias))
+         ((listp entry)
+          (let* ((group (car entry))
+                 (extra (cdr entry))
+                 (has-since (member "--since" extra))
+                 (since-part (if has-since "" (format " --since '%s'" cwt-since)))
+                 (extra-str (mapconcat (lambda (s)
+                                         (if (string-prefix-p "--" s) s
+                                           (shell-quote-argument s)))
+                                       extra " ")))
+            (format "aws logs tail '%s' --follow%s %s" group since-part extra-str)))
+         (t (format "aws logs tail '%s' --follow --since '%s'" entry cwt-since)))))))
 
 ;; ── per-buffer background tints ────────────────────────────────────
 (defvar cwt--bg-colors-dark
@@ -371,8 +382,8 @@ Checks static aliases first, then ECS cache."
   (message "AWS credentials refreshed"))
 
 (defun cwt--all-aliases ()
-  "Return combined alist of static + ECS aliases."
-  (append cwt-log-aliases (cwt--ecs-ensure-cache)))
+  "Return combined alist of static + MCP + ECS aliases."
+  (append cwt-log-aliases cwt-mcp-log-aliases (cwt--ecs-ensure-cache)))
 
 (defun cwt--namespace-keys ()
   "Return sorted list of unique namespace prefixes (e.g. \"ost\", \"ecs\")."

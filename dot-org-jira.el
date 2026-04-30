@@ -513,7 +513,8 @@ Shows closed issues, open/carried-over issues, and story point totals."
                                               (message "Comments updated")))
   (define-key org-mode-map (kbd "C-c j m") #'org-jira-sync-team-member)
   (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint)
-  (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog))
+  (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog)
+  (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue))
 
 (provide 'dot-org-jira)
 

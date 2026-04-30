@@ -414,6 +414,7 @@ you should place your code here."
 
   (require 'org-tempo)
   (require 'ob-php)
+  (global-set-key (kbd "H-M-S-<return>") 'org-smart-capture)
 
   ;; ── org-jira: sync Jira issues to org-mode ──
   (use-package org-jira

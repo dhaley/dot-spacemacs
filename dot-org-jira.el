@@ -148,10 +148,10 @@ Reads jira-* properties and pushes to Jira. Only sends non-empty optional fields
         (org-set-property "Jira" key)
         (message "Created Jira issue: %s" key))))
 
-  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")
+  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"))
 
-  (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading)))
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading))
 
 (provide 'dot-org-jira)
 

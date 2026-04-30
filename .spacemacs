@@ -1252,7 +1252,8 @@ This function is called at the very end of Spacemacs initialization."
      '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
    '(org-agenda-files
      '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"
-       "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"))
+       "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"
+       "~/.org-jira/"))
    '(org-agenda-fontify-priorities t)
    '(org-agenda-include-diary nil)
    '(org-agenda-inhibit-startup t)

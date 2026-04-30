@@ -183,7 +183,8 @@ or an alist with a 'name' key."
        :summary (path '(fields summary))
        :type (path '(fields issuetype name))
        :type-id (path '(fields issuetype id))
-       :updated (path '(fields updated)))))
+       :updated (path '(fields updated))
+       :data (oref rec data))))
 
   ;; Write story points as a property after each issue is rendered
   (defun my/org-jira-add-extra-fields (Issue)

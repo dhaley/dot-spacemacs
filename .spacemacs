@@ -1502,7 +1502,14 @@ This function is called at the very end of Spacemacs initialization."
      '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
    '(org-time-clocksum-use-fractional t)
    '(org-todo-keyword-faces
-     '(("TODO" :inherit org-todo) ("PHONE" :foreground "forest green" :weight bold)))
+     '(("TODO" :foreground "red" :weight bold)
+       ("NEXT" :foreground "blue" :weight bold)
+       ("DONE" :foreground "forest green" :weight bold)
+       ("WAITING" :foreground "orange" :weight bold)
+       ("HOLD" :foreground "magenta" :weight bold)
+       ("CANCELLED" :foreground "forest green" :weight bold)
+       ("MEETING" :foreground "forest green" :weight bold)
+       ("PHONE" :foreground "forest green" :weight bold)))
    '(org-todo-keywords
      '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
        (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE"

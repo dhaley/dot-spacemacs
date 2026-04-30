@@ -1280,14 +1280,13 @@ This function is called at the very end of Spacemacs initialization."
         nil)))
    '(org-agenda-deadline-leaders '("!D!: " "D%02d: "))
    '(org-agenda-default-appointment-duration 60)
-   '(org-agenda-diary-file "/Users/dhaley/Box/projects/diary.org")
+   '(org-agenda-diary-file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/diary.org")
    '(org-agenda-dim-blocked-tasks nil)
    '(org-agenda-exporter-settings
      '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
    '(org-agenda-files
      '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"
-       "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"
-       "~/.org-jira/co-dhaley.org"))
+       "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"))
    '(org-agenda-fontify-priorities t)
    '(org-agenda-include-diary nil)
    '(org-agenda-inhibit-startup t)

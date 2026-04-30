@@ -601,7 +601,7 @@ end tell" (match-string 1))))
 (org-defkey org-mode-map [(control meta return)]
             'org-insert-heading-after-current)
 (org-defkey org-mode-map [(control return)] 'other-window)
-(org-defkey org-mode-map [return] 'org-return-indent)
+(org-defkey org-mode-map [return] (lambda () (interactive) (org-return t)))
 (org-defkey org-mode-map
             [(control ?c) (control ?x) ?@] 'visible-mode)
 (org-defkey org-mode-map [(control ?c) (control ?x) ?@] 'visible-mode)

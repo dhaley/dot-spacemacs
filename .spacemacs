@@ -1176,28 +1176,43 @@ This function is called at the very end of Spacemacs initialization."
        ("jd" "Damon (me)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
          (org-agenda-overriding-header "Jira: Damon")
-         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")))
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jw" "Whiteside" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
-         (org-agenda-overriding-header "Jira: Whiteside")))
+         (org-agenda-overriding-header "Jira: Whiteside")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jm" "Michael/Swapnil" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-mswapnil.org"))
-         (org-agenda-overriding-header "Jira: Swapnil")))
+         (org-agenda-overriding-header "Jira: Swapnil")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("ja" "Anna" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-aliao.org"))
-         (org-agenda-overriding-header "Jira: Anna")))
+         (org-agenda-overriding-header "Jira: Anna")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jr" "Rager" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-drager.org"))
-         (org-agenda-overriding-header "Jira: Rager")))
+         (org-agenda-overriding-header "Jira: Rager")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jv" "Andres" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-avillarr.org"))
-         (org-agenda-overriding-header "Jira: Andres")))
+         (org-agenda-overriding-header "Jira: Andres")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jh" "Dan Horton" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhorton.org"))
-         (org-agenda-overriding-header "Jira: Dan Horton")))
+         (org-agenda-overriding-header "Jira: Dan Horton")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("js" "Current Sprint (all)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-current-sprint.org"))
-         (org-agenda-overriding-header "Jira: Current Sprint")))
+         (org-agenda-overriding-header "Jira: Current Sprint")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        ("jt" "Entire Team" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"
                              "~/.org-jira/co-dwhitesi.org"
@@ -1206,7 +1221,9 @@ This function is called at the very end of Spacemacs initialization."
                              "~/.org-jira/co-drager.org"
                              "~/.org-jira/co-avillarr.org"
                              "~/.org-jira/co-dhorton.org"))
-         (org-agenda-overriding-header "Jira: Entire Team")))
+         (org-agenda-overriding-header "Jira: Entire Team")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"Backlog\") ")
+         (org-agenda-sorting-strategy '(alpha-up priority-down))))
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"

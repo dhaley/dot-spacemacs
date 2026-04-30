@@ -1254,7 +1254,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-inhibit-startup t)
    '(org-agenda-insert-diary-extract-time t)
    '(org-agenda-log-mode-items '(closed clock state))
-   '(org-agenda-ndays 1)
    '(org-agenda-persistent-filter t)
    '(org-agenda-prefix-format
      '((agenda . "  %-11c%?-12t% s") (timeline . "  % s") (todo . "  %-11c")
@@ -1262,8 +1261,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-repeating-timestamp-show-all t)
    '(org-agenda-restriction-lock-highlight-subtree nil)
    '(org-agenda-scheduled-leaders '("" "S%d: "))
-   '(org-agenda-scheduled-relative-text "S%d: ")
-   '(org-agenda-scheduled-text "")
    '(org-agenda-show-all-dates t)
    '(org-agenda-skip-additional-timestamps-same-entry t)
    '(org-agenda-skip-deadline-if-done t)

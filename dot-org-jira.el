@@ -186,6 +186,19 @@ or an alist with a 'name' key."
        :updated (path '(fields updated))
        :data (oref rec data))))
 
+  ;; Cache for epic key -> name lookups
+  (defvar my/org-jira-epic-cache (make-hash-table :test 'equal))
+
+  (defun my/org-jira-get-epic-name (epic-key)
+    "Get epic name for EPIC-KEY, using cache."
+    (or (gethash epic-key my/org-jira-epic-cache)
+        (condition-case nil
+            (let* ((issue (car (jiralib-do-jql-search (format "key = %s" epic-key) 1)))
+                   (name (cdr (assoc 'customfield_10007 (cdr (assoc 'fields issue))))))
+              (when name (puthash epic-key name my/org-jira-epic-cache))
+              name)
+          (error nil))))
+
   ;; Write story points, epic link after each issue is rendered
   (defun my/org-jira-add-extra-fields (Issue)
     "Add story points, epic link and other custom fields after org-jira renders ISSUE."
@@ -195,10 +208,9 @@ or an alist with a 'name' key."
                  (fields (cdr (assoc 'fields data)))
                  (story-points (cdr (assoc 'customfield_10002 fields)))
                  (epic-key (cdr (assoc 'customfield_10006 fields)))
-                 (epic-name (cdr (assoc 'customfield_10007 fields)))
+                 ;; For epics themselves, customfield_10007 has the name
+                 (epic-name-direct (cdr (assoc 'customfield_10007 fields)))
                  (issue-id (oref Issue issue-id)))
-            (message "Extra fields for %s: sp=%s epic=%s epic-name=%s"
-                     issue-id story-points epic-key epic-name)
             (save-excursion
               (let ((p (org-find-entry-with-id issue-id)))
                 (when p
@@ -206,9 +218,11 @@ or an alist with a 'name' key."
                   (when story-points
                     (org-entry-put nil "story-points" (format "%g" story-points)))
                   (when epic-key
-                    (org-entry-put nil "epic" epic-key))
-                  (when epic-name
-                    (org-entry-put nil "epic-name" epic-name)))))))
+                    (org-entry-put nil "epic" epic-key)
+                    (let ((name (my/org-jira-get-epic-name epic-key)))
+                      (when name (org-entry-put nil "epic-name" name))))
+                  (when epic-name-direct
+                    (org-entry-put nil "epic-name" epic-name-direct)))))))
       (error (message "Extra fields error: %s" (error-message-string err)))))
   (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
 

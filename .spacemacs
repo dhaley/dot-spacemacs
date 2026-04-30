@@ -92,7 +92,7 @@ values."
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
-     helm
+     compleseus
      auto-completion
      ;; better-defaults
      emacs-lisp
@@ -206,7 +206,9 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-light
+   dotspacemacs-themes '(modus-operandi
+                         modus-vivendi
+                         spacemacs-light
                          spacemacs-dark)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
@@ -270,19 +272,6 @@ values."
    dotspacemacs-auto-save-file-location 'cache
    ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 5
-   ;; If non nil, `helm' will try to minimize the space it uses. (default nil)
-   helm-enable-auto-resize nil
-   ;; if non nil, the helm header is hidden when there is only one source.
-   ;; (default nil)
-   helm-no-header nil
-   ;; define the position to display `helm', options are `bottom', `top',
-   ;; `left', or `right'. (default 'bottom)
-   helm-position 'bottom
-   ;; Controls fuzzy matching in helm. If set to `always', force fuzzy matching
-   ;; in all non-asynchronous sources. If set to `source', preserve individual
-   ;; source settings. Else, disable fuzzy matching in all sources.
-   ;; (default 'always)
-   helm-use-fuzzy nil
    ;; If non nil the paste micro-state is enabled. When enabled pressing `p`
    ;; several times cycle between the kill ring content. (default nil)
    dotspacemacs-enable-paste-transient-state nil
@@ -509,16 +498,8 @@ you should place your code here."
   (bind-key* "<C-return>" #'other-window)
 
 
-  (defun my-helm-do-grep ()
-    (interactive)
-    (helm-do-grep-1 (list default-directory)))
-
-  (defun my-helm-do-grep-r ()
-    (interactive)
-    (helm-do-grep-1 (list default-directory) t))
-
-  (bind-key "M-s f" #'my-helm-do-grep-r)
-  (bind-key "M-s g" #'my-helm-do-grep)
+  (bind-key "M-s f" #'consult-ripgrep)
+  (bind-key "M-s g" #'consult-grep)
 
 ;;; help-map
 
@@ -1096,7 +1077,14 @@ This function is called at the very end of Spacemacs initialization."
    '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
    '(browse-url-browser-function 'browse-url-default-browser)
    '(custom-safe-themes
-     '("9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0"
+     '("dde7fb0b1ed1bb5b61e62bf1a00696cf099a2b290718aee9b377365b3ed992f0"
+       "2b0fcc7cc9be4c09ec5c75405260a85e41691abb1ee28d29fcd5521e4fca575b"
+       "a75fc55d480accd6f651d1bae492b7ab4c5b28894350b63ef39bf947bb8fd453"
+       "f205f6f7fc55a6b1e206e88445931ac46ec9a70f124291667809707ddbe63c04"
+       "21c4c4b7d3ab161aaa28b15ca846854d395c33cfb7c6863ab601adfe10d70ce0"
+       "1b7e575c6681e66d8d83634c2c160b40af12f3756360a4dd81b8032f4495cb5e"
+       "8fbf2d585f1138caaafa9e523fa3a20614c1d1dcc6002c9808c3e40028e21df4"
+       "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0"
        "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476"
        "e6df46d5085fde0ad56a46ef69ebb388193080cc9819e2d6024c9c6e27388ba9"
        "7feeed063855b06836e0262f77f5c6d3f415159a98a9676d549bfeb6c49637c4"
@@ -1303,7 +1291,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-clock-out-switch-to-state nil)
    '(org-clock-out-when-done t)
    '(org-clock-persist t)
-   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el" t)
+   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el")
    '(org-clock-persist-query-resume nil)
    '(org-clock-report-include-clocking-task t)
    '(org-clock-resolve-expert t)

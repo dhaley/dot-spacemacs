@@ -371,6 +371,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
   ;; AWS CA bundle for boto3 through ORG proxy
   (setenv "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
+  ;; Ensure uv-installed tools (deepagents-cli) are found
+  (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
   (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
   ;; Also prepend to exec-path and PATH so gptel-bedrock--curl-version finds it
@@ -935,42 +937,64 @@ you should place your code here."
   ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
     :config
+    ;; Toggle: t = SSO-direct (auto-refresh), nil = exported creds file (proven fallback)
+    ;; To rollback: (setq my/deepagents-use-sso-direct nil) then restart agent-shell
+    (defvar my/deepagents-use-sso-direct t
+      "When non-nil, use SSO profile directly so boto3 can auto-refresh tokens.
+When nil, fall back to exported credentials file method.")
+
     (defun my/deepagents-refresh-creds ()
       "Generate fresh AWS credentials for deepagents subprocess."
       (interactive)
-      (message "Refreshing AWS credentials...")
-      (shell-command "/usr/local/bin/emacs-aws-refresh")
-      (message "AWS credentials refreshed"))
+      (if my/deepagents-use-sso-direct
+          (progn
+            (message "SSO-direct mode: ensuring SSO session is active...")
+            (unless (= 0 (call-process "aws" nil nil nil
+                                       "sts" "get-caller-identity"
+                                       "--profile" "work-aws-profile"))
+              (shell-command "aws sso login --profile work-aws-profile"))
+            (message "SSO session active"))
+        (message "Refreshing AWS credentials (exported file)...")
+        (shell-command "/usr/local/bin/emacs-aws-refresh")
+        (message "AWS credentials refreshed")))
 
     (defun my/deepagents-make-env ()
-      "Build environment variables with fresh credentials.
-Explicitly clear AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY so
-boto3 falls through to the profile/credentials-file chain instead
-of picking up stale keys from .spacemacs.env / process-environment."
-      (agent-shell-make-environment-variables
-       "HOME" (expand-file-name "~")
-       "PATH" (getenv "PATH")
-       "AWS_ACCESS_KEY_ID" ""
-       "AWS_SECRET_ACCESS_KEY" ""
-       "AWS_SESSION_TOKEN" ""
-       "AWS_PROFILE" "default"
-       "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.emacs")
-       "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")
-       "AWS_REGION" "us-west-2"
-       "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem")
-       "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
-       "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
-       "HTTPX_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem")
-       "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
-       "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
-       "LANGSMITH_PROJECT" "appfleet-agentic"
-       "LANGSMITH_TRACING" "true"
-       "JENKINS_API_USER" (getenv "JENKINS_API_USER")
-       "JENKINS_API_TOKEN" (getenv "JENKINS_API_TOKEN")
-       "jenkins_url" "https://jenkins.cloud.example.com"
-       "jenkins_username" (getenv "JENKINS_API_USER")
-       "jenkins_password" (getenv "JENKINS_API_TOKEN")
-       "jenkins_verify_ssl" "false"))
+      "Build environment variables for deepagents.
+When `my/deepagents-use-sso-direct' is non-nil, point at the real
+~/.aws/config so boto3 uses the SSO token cache and can auto-refresh.
+Otherwise, use the exported credentials file (proven fallback)."
+      (let ((ca-bundle (expand-file-name "~/.ssl/cacert.pem")))
+        (apply #'agent-shell-make-environment-variables
+               (append
+                (list
+                 "HOME" (expand-file-name "~")
+                 "PATH" (getenv "PATH")
+                 "AWS_ACCESS_KEY_ID" ""
+                 "AWS_SECRET_ACCESS_KEY" ""
+                 "AWS_SESSION_TOKEN" ""
+                 "AWS_REGION" "us-west-2"
+                 "SSL_CERT_FILE" ca-bundle
+                 "REQUESTS_CA_BUNDLE" ca-bundle
+                 "AWS_CA_BUNDLE" ca-bundle
+                 "HTTPX_CA_BUNDLE" ca-bundle
+                 "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
+                 "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
+                 "LANGSMITH_PROJECT" "appfleet-agentic"
+                 "LANGSMITH_TRACING" "true"
+                 "JENKINS_API_USER" (getenv "JENKINS_API_USER")
+                 "JENKINS_API_TOKEN" (getenv "JENKINS_API_TOKEN")
+                 "jenkins_url" "https://jenkins.cloud.example.com"
+                 "jenkins_username" (getenv "JENKINS_API_USER")
+                 "jenkins_password" (getenv "JENKINS_API_TOKEN")
+                 "jenkins_verify_ssl" "false")
+                (if my/deepagents-use-sso-direct
+                    (list
+                     "AWS_PROFILE" "work-aws-profile"
+                     "AWS_CONFIG_FILE" (expand-file-name "~/.aws/config"))
+                  (list
+                   "AWS_PROFILE" "default"
+                   "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.emacs")
+                   "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")))))))
 
     (add-to-list 'agent-shell-agent-configs
                  (agent-shell-make-agent-config

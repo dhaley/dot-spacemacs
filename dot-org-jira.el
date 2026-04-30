@@ -146,9 +146,12 @@ Reads jira-* properties and pushes to Jira. Only sends non-empty optional fields
         (push `(customfield_10005 . ,sprint-id) fields)))
     (let* ((ticket `((fields . ,fields)))
            (result (jiralib-create-issue ticket))
-           (key (cdr (assoc 'key result))))
+           (key (cdr (assoc 'key result)))
+           (url (format "%s/browse/%s" jiralib-url key)))
       (org-set-property "Jira" key)
-      (message "Created Jira issue: %s" key))))
+      (kill-new url)
+      (browse-url url)
+      (message "Created Jira issue: %s (URL copied)" key))))
 
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading))

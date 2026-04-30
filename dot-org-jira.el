@@ -36,9 +36,10 @@
                        (shell-command-to-string
                         "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
 
-  ;; Disable worklog sync — we don't use Jira time tracking
-  ;; This cuts sync time roughly in half
+  ;; Disable worklog and comment sync by default for fast fetching
+  ;; Use C-c j C to download comments for the issue at point
   (setq org-jira-worklog-sync-p nil)
+  (setq org-jira-download-comments nil)
 
   ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
   (setq org-jira-priority-to-org-priority-alist
@@ -452,7 +453,11 @@ Shows closed issues, open/carried-over issues, and story point totals."
     (message "Sprint report generated for %s" sprint-name)))
 
 (with-eval-after-load 'org
-  (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading))
+  (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading)
+  (define-key org-mode-map (kbd "C-c j C") (lambda () (interactive)
+                                              (require 'org-jira)
+                                              (org-jira-update-comments-for-current-issue)
+                                              (message "Comments updated"))))
 
 (provide 'dot-org-jira)
 

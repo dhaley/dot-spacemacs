@@ -127,7 +127,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat org-jira)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -414,6 +414,33 @@ you should place your code here."
 
   (require 'org-tempo)
   (require 'ob-php)
+
+  ;; ── org-jira: sync Jira issues to org-mode ──
+  (use-package org-jira
+    :defer t
+    :commands (org-jira-get-issues org-jira-get-issues-from-custom-jql
+               org-jira-create-issue org-jira-browse-issue)
+    :init
+    (setq jiralib-url "https://jira.example.com")
+    (make-directory "~/.org-jira" t)
+    (setq org-jira-working-dir "~/.org-jira")
+    ;; Bearer PAT auth for Jira Server (reads token from authinfo)
+    (setq jiralib-token
+          (cons "Authorization"
+                (concat "Bearer "
+                        (string-trim
+                         (shell-command-to-string
+                          "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
+    :config
+    (setq org-jira-custom-jqls
+          '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                  :limit 50
+                  :filename "co-my-issues")
+            (:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
+                  :limit 50
+                  :filename "co-current-sprint")))
+    (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"))
+
   (require 'cloudwatch-tail)
   (bind-key "C-c L" #'cwt-launch)
   (require 'aws-ops-dashboard)

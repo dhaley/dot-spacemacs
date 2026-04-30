@@ -308,6 +308,26 @@ or an alist with a 'name' key."
     ("dhorton"   . "Dan Horton"))
   "Alist of (username . display-name) for team members.")
 
+(defun org-jira-move-to-backlog ()
+  "Remove the issue at point from its sprint (move to backlog)."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (sprint-str (org-entry-get nil "sprint")))
+    (unless issue-id (error "No issue at point"))
+    (unless sprint-str (message "Already in backlog"))
+    (when sprint-str
+      ;; Find the sprint ID to remove from
+      (let* ((boards (jiralib--rest-call-it
+                      "/rest/agile/1.0/board?projectKeyOrId=CO&type=scrum" :type "GET"))
+             (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0)))))
+        (jiralib--rest-call-it
+         (format "/rest/agile/1.0/backlog" )
+         :type "POST"
+         :data (json-encode `((issues . [,issue-id]))))
+        (org-entry-delete nil "sprint")
+        (message "Moved %s to backlog" issue-id)))))
+
 (defun org-jira-sync-team-member (username)
   "Sync issues for a team member by USERNAME into ~/.org-jira/co-USERNAME.org."
   (interactive
@@ -492,7 +512,8 @@ Shows closed issues, open/carried-over issues, and story point totals."
                                               (org-jira-update-comments-for-current-issue)
                                               (message "Comments updated")))
   (define-key org-mode-map (kbd "C-c j m") #'org-jira-sync-team-member)
-  (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint))
+  (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint)
+  (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog))
 
 (provide 'dot-org-jira)
 

@@ -1329,7 +1329,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-clone-delete-id t)
    '(org-columns-default-format
      "%80ITEM(Task) %10Effort(Effort){:} %10Confidence(Confidence) %10CLOCKSUM")
-   '(org-completion-use-ido t)
    '(org-confirm-babel-evaluate nil)
    '(org-crypt-disable-auto-save nil)
    '(org-crypt-key "F0B66B40")

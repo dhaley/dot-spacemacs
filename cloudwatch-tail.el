@@ -77,7 +77,8 @@ Value is either a log group string, or a list of (LOG-GROUP &rest EXTRA-ARGS).")
   `(("mcp/appfleet" . ,(expand-file-name "~/Library/Logs/mcp-appfleet.log"))
     ("mcp/entra"    . ,(expand-file-name "~/Library/Logs/mcp-entra.log"))
     ("mcp/ce"       . ,(expand-file-name "~/Library/Logs/mcp-ce.log"))
-    ("mcp/ost"      . ,(expand-file-name "~/Library/Logs/mcp-ost.log")))
+    ("mcp/ost"      . ,(expand-file-name "~/Library/Logs/mcp-ost.log"))
+    ("mcp/jira"     . ,(expand-file-name "~/Library/Logs/mcp-jira.log")))
   "Alist of (ALIAS . LOG-FILE-PATH) for local MCP server logs.")
 
 ;; ── ECS discovery & caching ────────────────────────────────────────

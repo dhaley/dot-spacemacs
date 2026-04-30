@@ -1172,6 +1172,40 @@ This function is called at the very end of Spacemacs initialization."
        ("h" "Habits" tags-todo "STYLE=\"habit\""
         ((org-agenda-overriding-header "Habits")
          (org-agenda-sorting-strategy '(todo-state-down effort-up category-keep))))
+       ("j" . "Jira")
+       ("jd" "Damon (me)" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
+         (org-agenda-overriding-header "Jira: Damon")))
+       ("jw" "Whiteside" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
+         (org-agenda-overriding-header "Jira: Whiteside")))
+       ("jm" "Michael/Swapnil" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-mswapnil.org"))
+         (org-agenda-overriding-header "Jira: Swapnil")))
+       ("ja" "Anna" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-aliao.org"))
+         (org-agenda-overriding-header "Jira: Anna")))
+       ("jr" "Rager" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-drager.org"))
+         (org-agenda-overriding-header "Jira: Rager")))
+       ("jv" "Andres" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-avillarr.org"))
+         (org-agenda-overriding-header "Jira: Andres")))
+       ("jh" "Dan Horton" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-dhorton.org"))
+         (org-agenda-overriding-header "Jira: Dan Horton")))
+       ("js" "Current Sprint (all)" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-current-sprint.org"))
+         (org-agenda-overriding-header "Jira: Current Sprint")))
+       ("jt" "Entire Team" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-dhaley.org"
+                             "~/.org-jira/co-dwhitesi.org"
+                             "~/.org-jira/co-mswapnil.org"
+                             "~/.org-jira/co-aliao.org"
+                             "~/.org-jira/co-drager.org"
+                             "~/.org-jira/co-avillarr.org"
+                             "~/.org-jira/co-dhorton.org"))
+         (org-agenda-overriding-header "Jira: Entire Team")))
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"
@@ -1253,7 +1287,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-files
      '("/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt"
        "/Users/dhaley/Library/CloudStorage/Box-Box/projects/from-mobile.org"
-       "~/.org-jira/"))
+       "~/.org-jira/co-dhaley.org"))
    '(org-agenda-fontify-priorities t)
    '(org-agenda-include-diary nil)
    '(org-agenda-inhibit-startup t)

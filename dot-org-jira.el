@@ -81,11 +81,32 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+        '(;; ── My issues (in org-agenda by default) ──
+          (:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                 :limit 50
-                :filename "co-my-issues")
+                :filename "co-dhaley")
+          ;; ── Team members (not in org-agenda, use agenda filters to view) ──
+          (:jql "project = CO AND assignee = dwhitesi AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-dwhitesi")
+          (:jql "project = CO AND assignee = mswapnil AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-mswapnil")
+          (:jql "project = CO AND assignee = aliao AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-aliao")
+          (:jql "project = CO AND assignee = drager AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-drager")
+          (:jql "project = CO AND assignee = avillarr AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-avillarr")
+          (:jql "project = CO AND assignee = dhorton AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+                :limit 50
+                :filename "co-dhorton")
+          ;; ── Current sprint (all team, for sprint review) ──
           (:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
-                :limit 50
+                :limit 100
                 :filename "co-current-sprint")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"))

@@ -19,6 +19,10 @@
 
 (require 'seq)
 
+;; Disable org-element cache globally — it causes extreme slowness
+;; when org-jira programmatically modifies org buffers
+(setq org-element-use-cache nil)
+
 (use-package org-jira
   :defer t
   :commands (org-jira-get-issues org-jira-get-issues-from-custom-jql

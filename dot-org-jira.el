@@ -133,11 +133,11 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
 
   (setq org-jira-custom-jqls
         '(;; Only sync my issues by default
-          (:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
+          (:jql "project = CO AND assignee = dhaley AND statusCategory != Done ORDER BY updated DESC"
                 :limit 200
                 :filename "co-dhaley")))
 
-  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC")
+  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND statusCategory != Done ORDER BY updated DESC")
 
   ;; Override SDK to extract sprint name from customfield_10005 (Jira Server)
   ;; and add story points from customfield_10002.
@@ -315,7 +315,7 @@ or an alist with a 'name' key."
                           (mapcar #'car org-jira-team-members) nil t)))
   (require 'org-jira)
   (let ((org-jira-custom-jqls
-         `((:jql ,(format "project = CO AND assignee = %s AND status NOT IN (Done, Closed) ORDER BY updated DESC" username)
+         `((:jql ,(format "project = CO AND assignee = %s AND statusCategory != Done ORDER BY updated DESC" username)
                  :limit 50
                  :filename ,(format "co-%s" username)))))
     (org-jira-get-issues-from-custom-jql)))
@@ -325,7 +325,7 @@ or an alist with a 'name' key."
   (interactive)
   (require 'org-jira)
   (let ((org-jira-custom-jqls
-         '((:jql "project = CO AND status NOT IN (Done, Closed) AND sprint IN openSprints() ORDER BY priority DESC"
+         '((:jql "project = CO AND statusCategory != Done AND sprint IN openSprints() ORDER BY priority DESC"
                  :limit 100
                  :filename "co-current-sprint"))))
     (org-jira-get-issues-from-custom-jql)))
@@ -430,7 +430,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
                   50))
          ;; Open issues still in this sprint
          (open (jiralib-do-jql-search
-                (format "project = CO AND sprint = %d AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY priority DESC"
+                (format "project = CO AND sprint = %d AND assignee = dhaley AND statusCategory != Done ORDER BY priority DESC"
                         sprint-id)
                 50))
          (buf (get-buffer-create "*Sprint Report*")))

@@ -1175,7 +1175,8 @@ This function is called at the very end of Spacemacs initialization."
        ("j" . "Jira")
        ("jd" "Damon (me)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
-         (org-agenda-overriding-header "Jira: Damon")))
+         (org-agenda-overriding-header "Jira: Damon")
+         (org-agenda-prefix-format "  %-36(or (org-entry-get nil \"sprint\") \"\") ")))
        ("jw" "Whiteside" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
          (org-agenda-overriding-header "Jira: Whiteside")))

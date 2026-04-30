@@ -1308,7 +1308,7 @@ This function is called at the very end of Spacemacs initialization."
        ("p" "Phone call" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
         "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
        ("h" "Habit" entry (file "/Users/dhaley/Library/CloudStorage/Box-Box/projects/todo.txt")
-        "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+        "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n")))
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)

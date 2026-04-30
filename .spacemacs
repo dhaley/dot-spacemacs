@@ -433,8 +433,18 @@ you should place your code here."
                          (shell-command-to-string
                           "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
     :config
-    ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only)
-    (defun org-jira-read-labels () nil)
+    ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only).
+    ;; Fetch labels from existing project issues instead.
+    (defun org-jira-read-labels ()
+      (condition-case nil
+          (let* ((response (jiralib-do-jql-search
+                            "project = CO AND labels is not EMPTY" 100))
+                 (labels (make-hash-table :test 'equal)))
+            (dolist (issue response)
+              (dolist (label (org-jira-find-value issue 'fields 'labels))
+                (puthash label t labels)))
+            (hash-table-keys labels))
+        (error nil)))
     (setq org-jira-custom-jqls
           '((:jql "project = CO AND assignee = dhaley AND status NOT IN (Done, Closed) ORDER BY updated DESC"
                   :limit 50

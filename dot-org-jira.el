@@ -41,6 +41,15 @@
   (setq org-jira-worklog-sync-p nil)
   (setq org-jira-download-comments nil)
 
+  ;; Disable org-element cache during org-jira rendering — the cache
+  ;; causes extreme slowness when programmatically modifying org buffers
+  (defun my/org-jira-disable-element-cache (orig-fn &rest args)
+    "Disable org-element cache during org-jira issue rendering."
+    (let ((org-element-use-cache nil))
+      (apply orig-fn args)))
+  (advice-add 'org-jira--render-issues-from-issue-list
+              :around #'my/org-jira-disable-element-cache)
+
   ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
   (setq org-jira-priority-to-org-priority-alist
         '(("Blocker"  . ?A)

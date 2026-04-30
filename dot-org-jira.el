@@ -197,9 +197,11 @@ or an alist with a 'name' key."
                    (name (cdr (assoc 'customfield_10007 (cdr (assoc 'fields issue))))))
               (when name (puthash epic-key name my/org-jira-epic-cache))
               name)
-          (error nil))))
+          (error nil)))))
 
-  ;; Write story points, epic link after each issue is rendered
+;; Write story points, epic link after each issue is rendered
+;; Must be outside use-package so the advice is set up at load time
+(with-eval-after-load 'org-jira
   (defun my/org-jira-add-extra-fields (Issue)
     "Add story points, epic link and other custom fields after org-jira renders ISSUE."
     (condition-case err

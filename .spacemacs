@@ -1349,16 +1349,16 @@ This function is called at the very end of Spacemacs initialization."
    '(org-enable-github-support t t)
    '(org-enforce-todo-dependencies t)
    '(org-export-allow-BIND t)
-   '(org-export-html-inline-images t)
-   '(org-export-html-style-extra
+   '(org-html-inline-images t)
+   '(org-html-head
      "<link rel=\"stylesheet\" href=\"http://doc.norang.ca/org.css\" type=\"text/css\" />")
-   '(org-export-html-style-include-default nil)
-   '(org-export-html-xml-declaration
+   '(org-html-head-include-default-style nil)
+   '(org-html-xml-declaration
      '(("html" . "") ("was-html" . "<?xml version=\"1.0\" encoding=\"%s\"?>")
        ("php"
         . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>")))
-   '(org-export-htmlize-output-type 'css)
-   '(org-export-latex-classes
+   '(org-html-htmlize-output-type 'css)
+   '(org-latex-classes
      '(("article" "\\documentclass[11pt]{article}"
         ("\\section{%s}" . "\\section*{%s}")
         ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -1381,7 +1381,7 @@ This function is called at the very end of Spacemacs initialization."
         ("\\subsection{%s}" . "\\subsection*{%s}")
         ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
        ("beamer" "\\documentclass{beamer}" org-beamer-sectioning)))
-   '(org-export-latex-listings t)
+   '(org-latex-listings t)
    '(org-export-use-babel nil)
    '(org-export-with-section-numbers nil)
    '(org-export-with-sub-superscripts '{})

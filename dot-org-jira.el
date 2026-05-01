@@ -687,52 +687,71 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (interactive)
   (require 'org-jira)
   (let* ((issue-id (org-entry-get nil "ID"))
-         (fields '()))
+         (summary (org-get-heading t t t t))
+         (fields '())
+         (changes '()))
     (unless (and issue-id (string-match-p "^[A-Z]+-[0-9]+$" issue-id))
       (error "Not on a Jira issue heading"))
     ;; Story points
     (let ((sp (org-entry-get nil "story-points")))
-      (when sp (push `(customfield_10002 . ,(string-to-number sp)) fields)))
+      (when (and sp (not (string-empty-p sp)))
+        (push `(customfield_10002 . ,(string-to-number sp)) fields)
+        (push (format "  story-points: %s" sp) changes)))
     ;; Priority
     (let* ((pri-name (org-entry-get nil "priority"))
-           (pri-id (and pri-name (car (rassoc pri-name (jiralib-get-priorities))))))
-      (when pri-id (push `(priority (id . ,pri-id)) fields)))
+           (pri-id (and pri-name (not (string-empty-p pri-name))
+                        (car (rassoc pri-name (jiralib-get-priorities))))))
+      (when pri-id
+        (push `(priority (id . ,pri-id)) fields)
+        (push (format "  priority: %s" pri-name) changes)))
     ;; Assignee
     (let ((assignee (org-entry-get nil "assignee")))
-      (when assignee
+      (when (and assignee (not (string-empty-p assignee)))
         (let* ((project (replace-regexp-in-string "-[0-9]+" "" issue-id))
                (users (org-jira-get-assignable-users project))
                (username (cdr (assoc assignee users))))
-          (when username (push `(assignee (name . ,username)) fields)))))
+          (when username
+            (push `(assignee (name . ,username)) fields)
+            (push (format "  assignee: %s" assignee) changes)))))
     ;; Epic link
     (let ((epic (org-entry-get nil "epic")))
-      (when epic (push `(customfield_10006 . ,epic) fields)))
+      (when (and epic (not (string-empty-p epic)))
+        (push `(customfield_10006 . ,epic) fields)
+        (push (format "  epic: %s" epic) changes)))
     ;; Components
     (let ((components (org-entry-get nil "components")))
       (when (and components (not (string-empty-p components)))
         (push `(components . ,(vconcat (mapcar (lambda (c) `((name . ,(string-trim c))))
-                                               (split-string components "," t)))) fields)))
+                                               (split-string components "," t)))) fields)
+        (push (format "  components: %s" components) changes)))
     ;; Labels
     (let ((labels (org-entry-get nil "labels")))
       (when (and labels (not (string-empty-p labels)))
-        (push `(labels . ,(vconcat (split-string labels "," t "\\s-*"))) fields)))
+        (push `(labels . ,(vconcat (split-string labels "," t "\\s-*"))) fields)
+        (push (format "  labels: %s" labels) changes)))
     ;; ServiceNow Ticket Link
     (let ((snow (org-entry-get nil "servicenow-link")))
       (when (and snow (not (string-empty-p snow)))
-        (push `(customfield_11400 . ,snow) fields)))
+        (push `(customfield_11400 . ,snow) fields)
+        (push (format "  servicenow-link: %s" snow) changes)))
     ;; Sprint
     (let ((sprint (org-entry-get nil "sprint")))
       (when (and sprint (not (string-empty-p sprint)))
         (condition-case nil
             (let ((sprint-id (org-jira--resolve-sprint-id
                               (replace-regexp-in-string "-[0-9]+" "" issue-id) sprint)))
-              (push `(customfield_10005 . ,sprint-id) fields))
+              (push `(customfield_10005 . ,sprint-id) fields)
+              (push (format "  sprint: %s" sprint) changes))
           (error nil))))
-    (if fields
-        (progn
+    (if (null fields)
+        (message "No fields to push for %s" issue-id)
+      ;; Show changes and confirm
+      (let ((msg (format "Push to %s (%s)?\n\nFields:\n%s"
+                         issue-id summary
+                         (string-join (nreverse changes) "\n"))))
+        (when (y-or-n-p msg)
           (jiralib-update-issue issue-id fields)
-          (message "Pushed %d fields to %s" (length fields) issue-id))
-      (message "No fields to push for %s" issue-id))))
+          (message "Pushed %d fields to %s" (length fields) issue-id))))))
 
 (defun my/org-jira-ctrl-c-ctrl-c (&optional orig-fn &rest args)
   "If on a Jira heading, push changes. Otherwise run normal C-c C-c."
@@ -777,11 +796,22 @@ Shows closed issues, open/carried-over issues, and story point totals."
 
 ;; Hook C-c C-c to push Jira changes in org-jira buffers
 ;; Hook C-c C-t to use org-jira-progress-issue for status transitions
+(defun my/org-jira-progress-issue-safe ()
+  "Progress issue with confirmation."
+  (interactive)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (summary (org-get-heading t t t t))
+         (status (org-entry-get nil "status")))
+    (if (and issue-id (string-match-p "^[A-Z]+-[0-9]+$" issue-id))
+        (when (y-or-n-p (format "Transition %s (%s) [status: %s]? " issue-id summary status))
+          (org-jira-progress-issue))
+      ;; Not on a Jira issue, run normal org-todo
+      (org-todo))))
 (defun my/org-jira-ctrl-c-ctrl-c-hook ()
   "In org-jira buffers, override C-c C-c and C-c C-t."
   (when (bound-and-true-p org-jira-mode)
     (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)
-    (local-set-key (kbd "C-c C-t") #'org-jira-progress-issue)))
+    (local-set-key (kbd "C-c C-t") #'my/org-jira-progress-issue-safe)))
 (add-hook 'org-jira-mode-hook #'my/org-jira-ctrl-c-ctrl-c-hook)
 
 (with-eval-after-load 'org

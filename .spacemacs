@@ -1031,7 +1031,8 @@ Otherwise, use the exported credentials file (proven fallback)."
 
   (defun my/agent-workspace ()
     "Show Appfleet Agentic and eat side by side.
-On first call, starts the agent shell and eat terminal.
+On first call (no agent buffer), refreshes AWS credentials, restarts
+MCP servers, and starts the agent shell.
 On subsequent calls, just brings the existing buffers to the foreground."
     (interactive)
     (let ((agent-buf (my/find-buffer-by-prefix "Appfleet Agentic"))
@@ -1043,6 +1044,11 @@ On subsequent calls, just brings the existing buffers to the foreground."
         (delete-other-windows)
         (if agent-buf
             (switch-to-buffer agent-buf)
+          ;; Fresh start: refresh creds file and bounce MCP servers
+          (my/deepagents-refresh-creds)
+          (shell-command "/usr/local/bin/emacs-aws-refresh")
+          (call-process "launchctl" nil nil nil "stop" "mcp-ost")
+          (message "Refreshed credentials and restarted MCP servers")
           (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
                                   agent-shell-agent-configs)))
             (agent-shell-start :config config))

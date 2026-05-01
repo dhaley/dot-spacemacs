@@ -200,7 +200,6 @@ or an alist with a 'name' key."
           (error nil)))))
 
 ;; Write story points, epic link after each issue is rendered
-;; Must be outside use-package so the advice is set up at load time
 (with-eval-after-load 'org-jira
   (defun my/org-jira-add-extra-fields (Issue)
     "Add story points, epic link after org-jira renders ISSUE."
@@ -212,16 +211,20 @@ or an alist with a 'name' key."
                    (story-points (cdr (assoc 'customfield_10002 fields)))
                    (epic-key (cdr (assoc 'customfield_10006 fields)))
                    (epic-name-direct (cdr (assoc 'customfield_10007 fields))))
-              ;; We're already at point on the issue heading inside render
-              ;; Just write the properties directly
-              (when story-points
-                (org-jira-entry-put (point) "story-points" (format "%g" story-points)))
-              (when epic-key
-                (org-jira-entry-put (point) "epic" epic-key)
-                (let ((name (my/org-jira-get-epic-name epic-key)))
-                  (when name (org-jira-entry-put (point) "epic-name" name))))
-              (when epic-name-direct
-                (org-jira-entry-put (point) "epic-name" epic-name-direct)))))
+              ;; Find :END: of the property drawer and insert before it
+              (save-excursion
+                (goto-char (point-min))
+                (when (re-search-forward ":CUSTOM_ID:.*" nil t)
+                  (end-of-line)
+                  (when story-points
+                    (insert (format "\n:story-points: %g" story-points)))
+                  (when epic-key
+                    (insert (format "\n:epic: %s" epic-key))
+                    (let ((name (my/org-jira-get-epic-name epic-key)))
+                      (when name
+                        (insert (format "\n:epic-name: %s" name)))))
+                  (when (and epic-name-direct (not epic-key))
+                    (insert (format "\n:epic-name: %s" epic-name-direct))))))))
       (error (message "Extra fields error for %s: %s"
                       (if (slot-boundp Issue 'issue-id) (oref Issue issue-id) "?")
                       (error-message-string err)))))

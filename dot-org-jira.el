@@ -30,30 +30,62 @@
 (defface my/jira-sp-md '((t :foreground "#0031a9")) "Story points: 3-5 (medium)")        ; blue
 (defface my/jira-sp-lg '((t :foreground "#721045")) "Story points: 8+ (large)")          ; magenta
 (defface my/jira-active-sprint
-  '((t :weight bold :underline t))
+  '((t :weight bold))
   "Face for issues in the active sprint.")
+(defface my/jira-sprint-prefix
+  '((t :foreground "#5317ac" :weight light))
+  "Face for the sprint name column.")
+(defface my/jira-tag-issue-id
+  '((t :foreground "#8f0075"))
+  "Face for the issue ID tag.")
+(defface my/jira-tag-epic
+  '((t :foreground "#0031a9" :weight bold))
+  "Face for the epic short name tag.")
+(defface my/jira-tag-sp
+  '((t :foreground "#005e00" :weight bold))
+  "Face for the story points tag.")
+(defface my/jira-tag-active
+  '((t :foreground "#a60000" :weight bold))
+  "Face for the ACTIVE tag.")
+(defface my/jira-tag-label
+  '((t :foreground "#30517f"))
+  "Face for Jira label tags.")
 
 (defun my/org-jira-colorize-agenda ()
-  "Colorize Jira agenda lines by story points and highlight active sprint."
+  "Colorize Jira agenda lines: sprint prefix, tags, active sprint emphasis."
   (save-excursion
     (goto-char (point-min))
     (while (not (eobp))
-      (let ((marker (get-text-property (point) 'org-marker)))
+      (let ((marker (get-text-property (point) 'org-marker))
+            (bol (line-beginning-position))
+            (eol (line-end-position)))
         (when marker
-          (let* ((sp-str (org-entry-get marker "story-points"))
-                 (sp (and sp-str (string-to-number sp-str)))
-                 (tags (org-entry-get marker "ALLTAGS"))
-                 (active-p (and tags (string-match-p ":ACTIVE:" tags)))
-                 (face (cond
-                        ((or (null sp) (<= sp 1)) 'my/jira-sp-xs)
-                        ((= sp 2) 'my/jira-sp-sm)
-                        ((<= sp 5) 'my/jira-sp-md)
-                        (t 'my/jira-sp-lg)))
-                 (bol (line-beginning-position))
-                 (eol (line-end-position)))
-            (add-text-properties bol eol `(face ,face))
+          (let* ((tags (org-entry-get marker "ALLTAGS"))
+                 (active-p (and tags (string-match-p ":ACTIVE:" tags))))
+            ;; Bold the whole line for active sprint
             (when active-p
-              (add-face-text-property bol eol 'my/jira-active-sprint t)))))
+              (add-face-text-property bol eol 'my/jira-active-sprint t))
+            ;; Color the sprint prefix (first ~30 chars)
+            (let ((prefix-end (min (+ bol 32) eol)))
+              (add-face-text-property bol prefix-end 'my/jira-sprint-prefix t))
+            ;; Color individual tags at end of line
+            (save-excursion
+              (goto-char bol)
+              (while (re-search-forward ":\\([^:]+\\):" eol t)
+                (let ((tag (match-string 1))
+                      (mbeg (match-beginning 0))
+                      (mend (match-end 0)))
+                  (cond
+                   ((string-match-p "^CO_" tag)
+                    (add-face-text-property mbeg mend 'my/jira-tag-issue-id t))
+                   ((string-match-p "^SP_" tag)
+                    (add-face-text-property mbeg mend 'my/jira-tag-sp t))
+                   ((string= tag "ACTIVE")
+                    (add-face-text-property mbeg mend 'my/jira-tag-active t))
+                   ((string-match-p "^\\(maintenance\\|Stratus\\|Infrastructure\\|AI_ML\\|af2_migrate\\)" tag)
+                    (add-face-text-property mbeg mend 'my/jira-tag-label t))
+                   (t  ; epic short name and other tags
+                    (add-face-text-property mbeg mend 'my/jira-tag-epic t)))))))))
       (forward-line 1))))
 
 ;; Custom agenda comparator: sort by sprint with Backlog last

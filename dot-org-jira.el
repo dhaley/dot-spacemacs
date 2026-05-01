@@ -29,9 +29,12 @@
 (defface my/jira-sp-sm '((t :foreground "#813e00")) "Story points: 2 (small)")           ; brown/amber
 (defface my/jira-sp-md '((t :foreground "#0031a9")) "Story points: 3-5 (medium)")        ; blue
 (defface my/jira-sp-lg '((t :foreground "#721045")) "Story points: 8+ (large)")          ; magenta
+(defface my/jira-active-sprint
+  '((t :weight bold :underline t))
+  "Face for issues in the active sprint.")
 
 (defun my/org-jira-colorize-agenda ()
-  "Colorize Jira agenda lines by story points."
+  "Colorize Jira agenda lines by story points and highlight active sprint."
   (save-excursion
     (goto-char (point-min))
     (while (not (eobp))
@@ -39,14 +42,18 @@
         (when marker
           (let* ((sp-str (org-entry-get marker "story-points"))
                  (sp (and sp-str (string-to-number sp-str)))
+                 (tags (org-entry-get marker "ALLTAGS"))
+                 (active-p (and tags (string-match-p ":ACTIVE:" tags)))
                  (face (cond
                         ((or (null sp) (<= sp 1)) 'my/jira-sp-xs)
                         ((= sp 2) 'my/jira-sp-sm)
                         ((<= sp 5) 'my/jira-sp-md)
-                        (t 'my/jira-sp-lg))))
-            (let ((bol (line-beginning-position))
-                  (eol (line-end-position)))
-              (add-text-properties bol eol `(face ,face))))))
+                        (t 'my/jira-sp-lg)))
+                 (bol (line-beginning-position))
+                 (eol (line-end-position)))
+            (add-text-properties bol eol `(face ,face))
+            (when active-p
+              (add-face-text-property bol eol 'my/jira-active-sprint t)))))
       (forward-line 1))))
 
 ;; Custom agenda comparator: sort by sprint with Backlog last

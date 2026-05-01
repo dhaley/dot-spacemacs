@@ -1207,6 +1207,17 @@ This function is called at the very end of Spacemacs initialization."
           '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
+       ("jn" "Swapnil" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-sbhatkar.org"))
+         (org-agenda-overriding-header "Jira: Swapnil")
+         (org-agenda-prefix-format "  ")
+         (org-agenda-sorting-strategy '(user-defined-up priority-down))
+         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("ja" "Anna" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-aliao.org"))
          (org-agenda-overriding-header "Jira: Anna")
@@ -1267,6 +1278,7 @@ This function is called at the very end of Spacemacs initialization."
                              "~/.org-jira/co-dwhitesi.org"
                              "~/.org-jira/co-mswapnil.org"
                              "~/.org-jira/co-mbartlet.org"
+                             "~/.org-jira/co-sbhatkar.org"
                              "~/.org-jira/co-aliao.org"
                              "~/.org-jira/co-drager.org"
                              "~/.org-jira/co-avillarr.org"

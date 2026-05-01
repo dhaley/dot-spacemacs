@@ -435,6 +435,7 @@ or an alist with a 'name' key."
   '(("dhaley"    . "Damon")
     ("dwhitesi"  . "Whiteside")
     ("mbartlet"  . "Michael")
+    ("sbhatkar"  . "Swapnil")
     ("aliao"     . "Anna")
     ("drager"    . "Rager")
     ("avillarr"  . "Andres")
@@ -854,6 +855,34 @@ Shows closed issues, open/carried-over issues, and story point totals."
     (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)
     (local-set-key (kbd "C-c C-t") #'my/org-jira-progress-issue-safe)))
 (add-hook 'org-jira-mode-hook #'my/org-jira-ctrl-c-ctrl-c-hook)
+
+;;; ── Cycle through team agendas with ] and [ ──
+
+(defvar my/org-jira-agenda-keys
+  '("jd" "jw" "jm" "jn" "ja" "jr" "jv" "jh")
+  "Agenda dispatch keys for team members in cycle order.")
+
+(defvar my/org-jira-agenda-index 0
+  "Current index in the team agenda cycle.")
+
+(defun my/org-jira-cycle-team-agenda (&optional backward)
+  "Cycle to the next team member's Jira agenda. With prefix arg, go backward."
+  (interactive "P")
+  (let* ((len (length my/org-jira-agenda-keys))
+         (delta (if backward -1 1))
+         (idx (mod (+ my/org-jira-agenda-index delta) len))
+         (key (nth idx my/org-jira-agenda-keys)))
+    (setq my/org-jira-agenda-index idx)
+    (org-agenda nil key)))
+
+(defun my/org-jira-cycle-team-agenda-backward ()
+  "Cycle to the previous team member's Jira agenda."
+  (interactive)
+  (my/org-jira-cycle-team-agenda t))
+
+(with-eval-after-load 'org-agenda
+  (define-key org-agenda-mode-map (kbd "]") #'my/org-jira-cycle-team-agenda)
+  (define-key org-agenda-mode-map (kbd "[") #'my/org-jira-cycle-team-agenda-backward))
 
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading)

@@ -647,6 +647,99 @@ Shows closed issues, open/carried-over issues, and story point totals."
     (goto-char (point-min))
     (message "Sprint report generated for %s" sprint-name)))
 
+;;; ── C-c C-c to push all changes to Jira ──
+
+(defun my/org-jira-in-jira-buffer-p ()
+  "Return non-nil if current buffer has org-jira-mode."
+  (bound-and-true-p org-jira-mode))
+
+(defun org-jira-push-heading ()
+  "Push all Jira-relevant property changes from heading at point to Jira."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (fields '()))
+    (unless (and issue-id (string-match-p "^[A-Z]+-[0-9]+$" issue-id))
+      (error "Not on a Jira issue heading"))
+    ;; Story points
+    (let ((sp (org-entry-get nil "story-points")))
+      (when sp (push `(customfield_10002 . ,(string-to-number sp)) fields)))
+    ;; Priority
+    (let* ((pri-name (org-entry-get nil "priority"))
+           (pri-id (and pri-name (car (rassoc pri-name (jiralib-get-priorities))))))
+      (when pri-id (push `(priority (id . ,pri-id)) fields)))
+    ;; Assignee
+    (let ((assignee (org-entry-get nil "assignee")))
+      (when assignee
+        (let* ((project (replace-regexp-in-string "-[0-9]+" "" issue-id))
+               (users (org-jira-get-assignable-users project))
+               (username (cdr (assoc assignee users))))
+          (when username (push `(assignee (name . ,username)) fields)))))
+    ;; Epic link
+    (let ((epic (org-entry-get nil "epic")))
+      (when epic (push `(customfield_10006 . ,epic) fields)))
+    ;; Sprint
+    (let ((sprint (org-entry-get nil "sprint")))
+      (when (and sprint (not (string-empty-p sprint)))
+        (condition-case nil
+            (let ((sprint-id (org-jira--resolve-sprint-id
+                              (replace-regexp-in-string "-[0-9]+" "" issue-id) sprint)))
+              (push `(customfield_10005 . ,sprint-id) fields))
+          (error nil))))
+    (if fields
+        (progn
+          (jiralib-update-issue issue-id fields)
+          (message "Pushed %d fields to %s" (length fields) issue-id))
+      (message "No fields to push for %s" issue-id))))
+
+(defun my/org-jira-ctrl-c-ctrl-c (&optional orig-fn &rest args)
+  "If on a Jira heading, push changes. Otherwise run normal C-c C-c."
+  (if (and (my/org-jira-in-jira-buffer-p)
+           (org-entry-get nil "ID")
+           (string-match-p "^[A-Z]+-[0-9]+$" (or (org-entry-get nil "ID") "")))
+      (org-jira-push-heading)
+    (when orig-fn (apply orig-fn args))))
+
+;;; ── org-shiftup/down priority sync for org-jira buffers ──
+
+(defvar my/org-jira-org-to-jira-priority-alist
+  '((?A . "Blocker")
+    (?B . "Major")
+    (?C . "Minor"))
+  "Reverse mapping from org priority cookie to Jira priority name.")
+
+(defun my/org-jira-after-priority-change (&rest _)
+  "After org priority change, sync to Jira if in an org-jira buffer."
+  (when (my/org-jira-in-jira-buffer-p)
+    (let* ((issue-id (org-entry-get nil "ID"))
+           (pri-char (save-excursion
+                       (org-back-to-heading t)
+                       (when (looking-at org-heading-regexp)
+                         (org-get-priority (match-string 0)))))
+           (pri-letter (cond ((null pri-char) nil)
+                             ((>= pri-char (* 1000 (- org-priority-lowest org-priority-highest -1))) ?A)
+                             ((<= pri-char 1000) ?C)
+                             (t ?B)))
+           (jira-name (and pri-letter (cdr (assoc pri-letter my/org-jira-org-to-jira-priority-alist))))
+           (pri-id (and jira-name (car (rassoc jira-name (jiralib-get-priorities))))))
+      (when (and issue-id pri-id (string-match-p "^[A-Z]+-[0-9]+$" issue-id))
+        (condition-case err
+            (progn
+              (jiralib-update-issue issue-id `((priority (id . ,pri-id))))
+              (org-entry-put nil "priority" jira-name)
+              (message "Updated %s priority to %s" issue-id jira-name))
+          (error (message "Failed to sync priority: %s" (error-message-string err))))))))
+
+(advice-add 'org-priority-up :after #'my/org-jira-after-priority-change)
+(advice-add 'org-priority-down :after #'my/org-jira-after-priority-change)
+
+;; Hook C-c C-c to push Jira changes in org-jira buffers
+(defun my/org-jira-ctrl-c-ctrl-c-hook ()
+  "In org-jira buffers, add C-c C-c to push changes."
+  (when (bound-and-true-p org-jira-mode)
+    (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)))
+(add-hook 'org-jira-mode-hook #'my/org-jira-ctrl-c-ctrl-c-hook)
+
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-c j c") #'org-jira-create-from-heading)
   (define-key org-mode-map (kbd "C-c j C") (lambda () (interactive)
@@ -660,7 +753,8 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j a") #'org-jira-set-assignee)
   (define-key org-mode-map (kbd "C-c j S") #'org-jira-set-sprint)
   (define-key org-mode-map (kbd "C-c j P") #'org-jira-set-priority)
-  (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer))
+  (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer)
+  (define-key org-mode-map (kbd "C-c j u") #'org-jira-push-heading))
 
 (provide 'dot-org-jira)
 

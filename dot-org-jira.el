@@ -560,6 +560,16 @@ or an alist with a 'name' key."
                  :filename "co-current-sprint"))))
     (org-jira-get-issues-from-custom-jql)))
 
+(defun org-jira-sync-deputies ()
+  "Sync all issues for deputy team members."
+  (interactive)
+  (require 'org-jira)
+  (let ((org-jira-custom-jqls
+         '((:jql "project = CO AND statusCategory != Done AND (assignee = jgu2 OR assignee = nguba OR assignee = sclark OR assignee = jjenkins OR assignee = rhurst OR assignee = rolson2 OR assignee = pedwards OR assignee = jhuggins) ORDER BY assignee, updated DESC"
+                 :limit 100
+                 :filename "co-deputies"))))
+    (org-jira-get-issues-from-custom-jql)))
+
 (defun org-jira-create-from-heading ()
   "Create a Jira issue from the org heading at point.
 Reads jira-* properties and pushes to Jira. Only sends non-empty optional fields.

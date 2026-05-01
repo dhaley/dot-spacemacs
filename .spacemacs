@@ -1292,6 +1292,17 @@ This function is called at the very end of Spacemacs initialization."
           '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
+       ("jx" "Deputies" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-deputies.org"))
+         (org-agenda-overriding-header "Jira: Deputies")
+         (org-agenda-prefix-format "  ")
+         (org-agenda-sorting-strategy '(user-defined-up priority-down))
+         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"

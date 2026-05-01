@@ -1177,6 +1177,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jd" "Damon (me)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
          (org-agenda-overriding-header "Jira: Damon")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1187,6 +1188,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jw" "Whiteside" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
          (org-agenda-overriding-header "Jira: Whiteside")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1197,6 +1199,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jm" "Michael" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-mbartlet.org"))
          (org-agenda-overriding-header "Jira: Michael")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1207,6 +1210,7 @@ This function is called at the very end of Spacemacs initialization."
        ("ja" "Anna" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-aliao.org"))
          (org-agenda-overriding-header "Jira: Anna")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1217,6 +1221,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jr" "Rager" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-drager.org"))
          (org-agenda-overriding-header "Jira: Rager")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1227,6 +1232,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jv" "Andres" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-avillarr.org"))
          (org-agenda-overriding-header "Jira: Andres")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1237,6 +1243,7 @@ This function is called at the very end of Spacemacs initialization."
        ("jh" "Dan Horton" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhorton.org"))
          (org-agenda-overriding-header "Jira: Dan Horton")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1247,6 +1254,7 @@ This function is called at the very end of Spacemacs initialization."
        ("js" "Current Sprint (all)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-current-sprint.org"))
          (org-agenda-overriding-header "Jira: Current Sprint")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
@@ -1264,6 +1272,7 @@ This function is called at the very end of Spacemacs initialization."
                              "~/.org-jira/co-avillarr.org"
                              "~/.org-jira/co-dhorton.org"))
          (org-agenda-overriding-header "Jira: Entire Team")
+         (org-agenda-prefix-format "  ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))

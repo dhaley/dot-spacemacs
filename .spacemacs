@@ -368,6 +368,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setenv "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "CURL_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
+  (setq insert-directory-program "gls")
   (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
   ;; AWS CA bundle for boto3 through ORG proxy
   (setenv "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))

@@ -374,6 +374,30 @@ or an alist with a 'name' key."
     ("dhorton"   . "Dan Horton"))
   "Alist of (username . display-name) for team members.")
 
+(defun org-jira-update-story-points ()
+  "Update story points for the issue at point from the org property."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (sp (org-entry-get nil "story-points")))
+    (unless issue-id (error "No issue at point"))
+    (unless sp (error "No story-points property"))
+    (jiralib-update-issue issue-id
+                          `((customfield_10002 . ,(string-to-number sp))))
+    (message "Updated %s story points to %s" issue-id sp)))
+
+(defun org-jira-update-epic-link ()
+  "Update epic link for the issue at point from the org property."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (epic (org-entry-get nil "epic")))
+    (unless issue-id (error "No issue at point"))
+    (unless epic (error "No epic property"))
+    (jiralib-update-issue issue-id
+                          `((customfield_10006 . ,epic)))
+    (message "Updated %s epic link to %s" issue-id epic)))
+
 (defun org-jira-move-to-backlog ()
   "Remove the issue at point from its sprint (move to backlog)."
   (interactive)

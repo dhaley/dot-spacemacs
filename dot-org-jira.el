@@ -374,6 +374,39 @@ or an alist with a 'name' key."
     ("dhorton"   . "Dan Horton"))
   "Alist of (username . display-name) for team members.")
 
+(defun org-jira-set-assignee ()
+  "Change the assignee of the issue at point with completion."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (project (replace-regexp-in-string "-[0-9]+" "" issue-id))
+         (users (org-jira-get-assignable-users project))
+         (user (completing-read "Assignee: " (mapcar #'car users) nil t))
+         (username (cdr (assoc user users))))
+    (jiralib-update-issue issue-id `((assignee (name . ,username))))
+    (org-entry-put nil "assignee" user)
+    (message "Assigned %s to %s" issue-id user)))
+
+(defun org-jira-set-sprint ()
+  "Change the sprint of the issue at point with completion."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (boards (jiralib--rest-call-it
+                  "/rest/agile/1.0/board?projectKeyOrId=CO&type=scrum" :type "GET"))
+         (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0))))
+         (sprints-data (jiralib--rest-call-it
+                        (format "/rest/agile/1.0/board/%s/sprint?state=active,future" board-id)
+                        :type "GET"))
+         (sprints (append (cdr (assoc 'values sprints-data)) nil))
+         (names (mapcar (lambda (s) (cdr (assoc 'name s))) sprints))
+         (choice (completing-read "Sprint: " names nil t))
+         (sprint (seq-find (lambda (s) (string= (cdr (assoc 'name s)) choice)) sprints))
+         (sprint-id (cdr (assoc 'id sprint))))
+    (jiralib-update-issue issue-id `((customfield_10005 . ,sprint-id)))
+    (org-entry-put nil "sprint" choice)
+    (message "Moved %s to %s" issue-id choice)))
+
 (defun org-jira-update-story-points ()
   "Update story points for the issue at point from the org property."
   (interactive)
@@ -605,6 +638,8 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint)
   (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog)
   (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue)
+  (define-key org-mode-map (kbd "C-c j a") #'org-jira-set-assignee)
+  (define-key org-mode-map (kbd "C-c j S") #'org-jira-set-sprint)
   (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer))
 
 (provide 'dot-org-jira)

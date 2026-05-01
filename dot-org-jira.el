@@ -115,7 +115,8 @@
   (setq org-jira-custom-field-mappings
         '((customfield_10002 . "story-points")
           (customfield_10006 . "epic")
-          (customfield_10007 . "epic-name")))
+          (customfield_10007 . "epic-name")
+          (customfield_11400 . "servicenow-link")))
 
   ;; Disable org-element cache during org-jira rendering — the cache
   ;; causes extreme slowness when programmatically modifying org buffers
@@ -706,6 +707,19 @@ Shows closed issues, open/carried-over issues, and story point totals."
     ;; Epic link
     (let ((epic (org-entry-get nil "epic")))
       (when epic (push `(customfield_10006 . ,epic) fields)))
+    ;; Components
+    (let ((components (org-entry-get nil "components")))
+      (when (and components (not (string-empty-p components)))
+        (push `(components . ,(vconcat (mapcar (lambda (c) `((name . ,(string-trim c))))
+                                               (split-string components "," t)))) fields)))
+    ;; Labels
+    (let ((labels (org-entry-get nil "labels")))
+      (when (and labels (not (string-empty-p labels)))
+        (push `(labels . ,(vconcat (split-string labels "," t "\\s-*"))) fields)))
+    ;; ServiceNow Ticket Link
+    (let ((snow (org-entry-get nil "servicenow-link")))
+      (when (and snow (not (string-empty-p snow)))
+        (push `(customfield_11400 . ,snow) fields)))
     ;; Sprint
     (let ((sprint (org-entry-get nil "sprint")))
       (when (and sprint (not (string-empty-p sprint)))

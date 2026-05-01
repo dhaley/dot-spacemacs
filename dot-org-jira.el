@@ -374,6 +374,25 @@ or an alist with a 'name' key."
     ("dhorton"   . "Dan Horton"))
   "Alist of (username . display-name) for team members.")
 
+(defun org-jira-set-priority ()
+  "Set priority of the issue at point with completion, updating Jira and org."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (priorities (jiralib-get-priorities))
+         (names (mapcar #'cdr priorities))
+         (choice (completing-read "Priority: " names nil t))
+         (priority-id (car (rassoc choice priorities)))
+         (org-cookie (cdr (assoc choice org-jira-priority-to-org-priority-alist))))
+    (unless issue-id (error "No issue at point"))
+    (jiralib-update-issue issue-id `((priority (id . ,priority-id))))
+    (org-entry-put nil "priority" choice)
+    (when org-cookie
+      (save-excursion
+        (org-back-to-heading t)
+        (org-priority org-cookie)))
+    (message "Set %s priority to %s" issue-id choice)))
+
 (defun org-jira-set-assignee ()
   "Change the assignee of the issue at point with completion."
   (interactive)
@@ -640,6 +659,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue)
   (define-key org-mode-map (kbd "C-c j a") #'org-jira-set-assignee)
   (define-key org-mode-map (kbd "C-c j S") #'org-jira-set-sprint)
+  (define-key org-mode-map (kbd "C-c j P") #'org-jira-set-priority)
   (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer))
 
 (provide 'dot-org-jira)

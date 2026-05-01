@@ -58,13 +58,19 @@
 
 ;; Custom agenda comparator: sort by sprint with Backlog last
 (defun my/org-jira-sprint-sort (a b)
-  "Sort agenda items by sprint property, putting Backlog last."
+  "Sort agenda items by sprint (Backlog last), then TODO state (NEXT before TODO), then priority."
   (let* ((ma (org-find-text-property-in-string 'org-marker a))
          (mb (org-find-text-property-in-string 'org-marker b))
          (sprint-a (or (and ma (org-entry-get ma "sprint")) "zzz-Backlog"))
-         (sprint-b (or (and mb (org-entry-get mb "sprint")) "zzz-Backlog")))
+         (sprint-b (or (and mb (org-entry-get mb "sprint")) "zzz-Backlog"))
+         ;; TODO state ordering: NEXT=1, TODO=2, HOLD=3, DONE=4, CANCELLED=5
+         (state-order '(("NEXT" . 1) ("TODO" . 2) ("HOLD" . 3) ("DONE" . 4) ("CANCELLED" . 5)))
+         (state-a (or (cdr (assoc (get-text-property 1 'todo-state a) state-order)) 9))
+         (state-b (or (cdr (assoc (get-text-property 1 'todo-state b) state-order)) 9)))
     (cond ((string< sprint-a sprint-b) -1)
           ((string< sprint-b sprint-a) +1)
+          ((< state-a state-b) -1)
+          ((> state-a state-b) +1)
           (t nil))))
 
 (use-package org-jira

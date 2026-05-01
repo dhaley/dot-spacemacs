@@ -82,6 +82,20 @@
   ;; Use C-c j C to download comments for the issue at point
   (setq org-jira-worklog-sync-p nil)
   (setq org-jira-download-comments nil)
+
+  ;; Map Jira statuses to org TODO keywords
+  (setq org-jira-jira-status-to-org-keyword-alist
+        '(("Ready" . "TODO")
+          ("On Deck" . "TODO")
+          ("On Hold" . "HOLD")
+          ("In Progress" . "NEXT")
+          ("Testing" . "NEXT")
+          ("Testing/Acceptance" . "NEXT")
+          ("Review" . "NEXT")
+          ("Blocked" . "HOLD")
+          ("Done" . "DONE")
+          ("Cancelled" . "CANCELLED")
+          ("Rejected" . "CANCELLED")))
   (setq org-jira-verbosity 'debug)
 
   ;; Map Jira custom fields to org properties
@@ -734,10 +748,12 @@ Shows closed issues, open/carried-over issues, and story point totals."
 (advice-add 'org-priority-down :after #'my/org-jira-after-priority-change)
 
 ;; Hook C-c C-c to push Jira changes in org-jira buffers
+;; Hook C-c C-t to use org-jira-progress-issue for status transitions
 (defun my/org-jira-ctrl-c-ctrl-c-hook ()
-  "In org-jira buffers, add C-c C-c to push changes."
+  "In org-jira buffers, override C-c C-c and C-c C-t."
   (when (bound-and-true-p org-jira-mode)
-    (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)))
+    (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)
+    (local-set-key (kbd "C-c C-t") #'org-jira-progress-issue)))
 (add-hook 'org-jira-mode-hook #'my/org-jira-ctrl-c-ctrl-c-hook)
 
 (with-eval-after-load 'org

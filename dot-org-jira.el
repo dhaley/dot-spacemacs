@@ -23,6 +23,32 @@
 ;; when org-jira programmatically modifies org buffers
 (setq org-element-use-cache nil)
 
+;; Color-code Jira agenda items by story points
+;; Uses modus-operandi-compatible colors
+(defface my/jira-sp-xs '((t :foreground "#005e00")) "Story points: 0-1 (extra small)")  ; green
+(defface my/jira-sp-sm '((t :foreground "#813e00")) "Story points: 2 (small)")           ; brown/amber
+(defface my/jira-sp-md '((t :foreground "#0031a9")) "Story points: 3-5 (medium)")        ; blue
+(defface my/jira-sp-lg '((t :foreground "#721045")) "Story points: 8+ (large)")          ; magenta
+
+(defun my/org-jira-colorize-agenda ()
+  "Colorize Jira agenda lines by story points."
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (let ((marker (get-text-property (point) 'org-marker)))
+        (when marker
+          (let* ((sp-str (org-entry-get marker "story-points"))
+                 (sp (and sp-str (string-to-number sp-str)))
+                 (face (cond
+                        ((or (null sp) (<= sp 1)) 'my/jira-sp-xs)
+                        ((= sp 2) 'my/jira-sp-sm)
+                        ((<= sp 5) 'my/jira-sp-md)
+                        (t 'my/jira-sp-lg))))
+            (let ((bol (line-beginning-position))
+                  (eol (line-end-position)))
+              (add-text-properties bol eol `(face ,face))))))
+      (forward-line 1))))
+
 ;; Custom agenda comparator: sort by sprint with Backlog last
 (defun my/org-jira-sprint-sort (a b)
   "Sort agenda items by sprint property, putting Backlog last."

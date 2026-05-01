@@ -1188,9 +1188,9 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
-       ("jm" "Michael/Swapnil" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-mswapnil.org"))
-         (org-agenda-overriding-header "Jira: Swapnil")
+       ("jm" "Michael" alltodo ""
+        ((org-agenda-files '("~/.org-jira/co-mbartlet.org"))
+         (org-agenda-overriding-header "Jira: Michael")
          (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
@@ -1234,6 +1234,7 @@ This function is called at the very end of Spacemacs initialization."
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"
                              "~/.org-jira/co-dwhitesi.org"
                              "~/.org-jira/co-mswapnil.org"
+                             "~/.org-jira/co-mbartlet.org"
                              "~/.org-jira/co-aliao.org"
                              "~/.org-jira/co-drager.org"
                              "~/.org-jira/co-avillarr.org"

@@ -395,6 +395,7 @@ or an alist with a 'name' key."
 (defvar org-jira-team-members
   '(("dhaley"    . "Damon")
     ("dwhitesi"  . "Whiteside")
+    ("mbartlet"  . "Michael")
     ("aliao"     . "Anna")
     ("drager"    . "Rager")
     ("avillarr"  . "Andres")

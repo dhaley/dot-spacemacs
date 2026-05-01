@@ -35,6 +35,7 @@
           (t nil))))
 
 (use-package org-jira
+  :load-path "~/src/org-jira"
   :defer t
   :commands (org-jira-get-issues org-jira-get-issues-from-custom-jql
              org-jira-create-issue org-jira-browse-issue)
@@ -56,6 +57,12 @@
   (setq org-jira-worklog-sync-p nil)
   (setq org-jira-download-comments nil)
   (setq org-jira-verbosity 'debug)
+
+  ;; Map Jira custom fields to org properties
+  (setq org-jira-custom-field-mappings
+        '((customfield_10002 . "story-points")
+          (customfield_10006 . "epic")
+          (customfield_10007 . "epic-name")))
 
   ;; Disable org-element cache during org-jira rendering — the cache
   ;; causes extreme slowness when programmatically modifying org buffers
@@ -199,36 +206,40 @@ or an alist with a 'name' key."
               name)
           (error nil)))))
 
-;; Write story points, epic link after each issue is rendered
-(with-eval-after-load 'org-jira
-  (defun my/org-jira-add-extra-fields (Issue)
-    "Add story points, epic link after org-jira renders ISSUE."
-    (condition-case err
-        (when (and (slot-exists-p Issue 'data) (slot-boundp Issue 'data))
-          (with-slots (issue-id) Issue
-            (let* ((data (oref Issue data))
-                   (fields (cdr (assoc 'fields data)))
-                   (story-points (cdr (assoc 'customfield_10002 fields)))
-                   (epic-key (cdr (assoc 'customfield_10006 fields)))
-                   (epic-name-direct (cdr (assoc 'customfield_10007 fields))))
-              ;; Find :END: of the property drawer and insert before it
-              (save-excursion
-                (goto-char (point-min))
-                (when (re-search-forward ":CUSTOM_ID:.*" nil t)
-                  (end-of-line)
-                  (when story-points
-                    (insert (format "\n:story-points: %g" story-points)))
-                  (when epic-key
-                    (insert (format "\n:epic: %s" epic-key))
-                    (let ((name (my/org-jira-get-epic-name epic-key)))
-                      (when name
-                        (insert (format "\n:epic-name: %s" name)))))
-                  (when (and epic-name-direct (not epic-key))
-                    (insert (format "\n:epic-name: %s" epic-name-direct))))))))
-      (error (message "Extra fields error for %s: %s"
-                      (if (slot-boundp Issue 'issue-id) (oref Issue issue-id) "?")
-                      (error-message-string err)))))
-  (advice-add 'org-jira--render-issue :after #'my/org-jira-add-extra-fields))
+;; Enrich org-jira files with custom fields (story points, epic)
+;; Run after org-jira-get-issues-from-custom-jql completes
+(defun org-jira-enrich-buffer ()
+  "Add story points and epic name to all issues in current org-jira buffer."
+  (interactive)
+  (require 'org-jira)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((count 0))
+      (while (re-search-forward "^:CUSTOM_ID: +\\(\\S-+\\)" nil t)
+        (let* ((issue-id (match-string-no-properties 1))
+               (issue (car (jiralib-do-jql-search (format "key = %s" issue-id) 1)))
+               (fields (cdr (assoc 'fields issue)))
+               (sp (cdr (assoc 'customfield_10002 fields)))
+               (epic-key (cdr (assoc 'customfield_10006 fields)))
+               (epic-name (cdr (assoc 'customfield_10007 fields))))
+          ;; Delete old custom props if present
+          (save-excursion
+            (let ((bound (save-excursion (re-search-forward "^:END:" nil t))))
+              (when bound
+                (while (re-search-forward "^:\\(story-points\\|epic\\|epic-name\\):.*\n" bound t)
+                  (replace-match "")))))
+          ;; Insert after CUSTOM_ID line
+          (end-of-line)
+          (when sp (insert (format "\n:story-points: %g" sp)))
+          (when epic-key
+            (insert (format "\n:epic: %s" epic-key))
+            (let ((name (or epic-name (my/org-jira-get-epic-name epic-key))))
+              (when name (insert (format "\n:epic-name: %s" name)))))
+          (when (and epic-name (not epic-key))
+            (insert (format "\n:epic-name: %s" epic-name)))
+          (setq count (1+ count))
+          (message "Enriched %d issues..." count)))
+      (message "Enriched %d issues with story points and epic links" count))))
 
 ;;; ── Dynamic capture defaults ──
 
@@ -543,7 +554,8 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j m") #'org-jira-sync-team-member)
   (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint)
   (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog)
-  (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue))
+  (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue)
+  (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer))
 
 (provide 'dot-org-jira)
 

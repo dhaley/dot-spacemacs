@@ -704,15 +704,18 @@ Shows closed issues, open/carried-over issues, and story point totals."
       (when pri-id
         (push `(priority (id . ,pri-id)) fields)
         (push (format "  priority: %s" pri-name) changes)))
-    ;; Assignee
+    ;; Assignee — only push if we can resolve to a username
     (let ((assignee (org-entry-get nil "assignee")))
-      (when (and assignee (not (string-empty-p assignee)))
+      (when (and assignee (not (string-empty-p assignee))
+                 (not (string= assignee "Unassigned")))
         (let* ((project (replace-regexp-in-string "-[0-9]+" "" issue-id))
                (users (org-jira-get-assignable-users project))
                (username (cdr (assoc assignee users))))
-          (when username
-            (push `(assignee (name . ,username)) fields)
-            (push (format "  assignee: %s" assignee) changes)))))
+          (if username
+              (progn
+                (push `(assignee (name . ,username)) fields)
+                (push (format "  assignee: %s (%s)" assignee username) changes))
+            (message "Warning: could not resolve assignee '%s' — skipping" assignee)))))
     ;; Epic link
     (let ((epic (org-entry-get nil "epic")))
       (when (and epic (not (string-empty-p epic)))

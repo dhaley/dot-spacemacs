@@ -127,7 +127,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat org-jira)
+   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat org-jira org-super-agenda)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -1177,59 +1177,83 @@ This function is called at the very end of Spacemacs initialization."
        ("jd" "Damon (me)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
          (org-agenda-overriding-header "Jira: Damon")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jw" "Whiteside" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
          (org-agenda-overriding-header "Jira: Whiteside")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jm" "Michael" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-mbartlet.org"))
          (org-agenda-overriding-header "Jira: Michael")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("ja" "Anna" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-aliao.org"))
          (org-agenda-overriding-header "Jira: Anna")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jr" "Rager" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-drager.org"))
          (org-agenda-overriding-header "Jira: Rager")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jv" "Andres" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-avillarr.org"))
          (org-agenda-overriding-header "Jira: Andres")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jh" "Dan Horton" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhorton.org"))
          (org-agenda-overriding-header "Jira: Dan Horton")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("js" "Current Sprint (all)" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-current-sprint.org"))
          (org-agenda-overriding-header "Jira: Current Sprint")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        ("jt" "Entire Team" alltodo ""
         ((org-agenda-files '("~/.org-jira/co-dhaley.org"
                              "~/.org-jira/co-dwhitesi.org"
@@ -1240,10 +1264,13 @@ This function is called at the very end of Spacemacs initialization."
                              "~/.org-jira/co-avillarr.org"
                              "~/.org-jira/co-dhorton.org"))
          (org-agenda-overriding-header "Jira: Entire Team")
-         (org-agenda-prefix-format "  %-30(or (org-entry-get nil \"sprint\") \"Backlog\") ")
          (org-agenda-sorting-strategy '(user-defined-up priority-down))
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))))
+         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
+         (org-super-agenda-groups
+          '((:name "Active Sprint" :tag "ACTIVE")
+            (:auto-property "sprint")
+            (:name "Backlog" :anything t)))))
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"

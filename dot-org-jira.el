@@ -35,6 +35,12 @@
 (defface my/jira-sprint-prefix
   '((t :foreground "#5317ac" :weight light))
   "Face for the sprint name column.")
+
+;; org-super-agenda for grouped Jira views
+(use-package org-super-agenda
+  :defer t
+  :config
+  (org-super-agenda-mode 1))
 (defface my/jira-tag-issue-id
   '((t :foreground "#8f0075"))
   "Face for the issue ID tag.")

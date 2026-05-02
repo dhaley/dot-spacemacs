@@ -517,6 +517,36 @@ or an alist with a 'name' key."
                           `((customfield_10006 . ,epic)))
     (message "Updated %s epic link to %s" issue-id epic)))
 
+(defun org-jira-set-epic ()
+  "Set the epic of the issue or heading at point with completion."
+  (interactive)
+  (require 'org-jira)
+  (let* ((epics-raw (jiralib-do-jql-search
+                     "project = CO AND issuetype = Epic ORDER BY updated DESC"
+                     200))
+         (epics (mapcar (lambda (e)
+                          (let* ((key (cdr (assoc 'key e)))
+                                 (fields (cdr (assoc 'fields e)))
+                                 (name (or (cdr (assoc 'customfield_10007 fields))
+                                           (cdr (assoc 'summary fields))
+                                           key)))
+                            (cons (format "%s — %s" name key) key)))
+                        epics-raw))
+         (choice (completing-read "Epic: " (mapcar #'car epics) nil t))
+         (epic-key (cdr (assoc choice epics)))
+         (epic-name (car (split-string choice " — ")))
+         (issue-id (org-entry-get nil "ID")))
+    ;; Update org properties
+    (org-entry-put nil "jira-epic" epic-name)
+    (org-entry-put nil "epic" epic-key)
+    (org-entry-put nil "epic-name" epic-name)
+    ;; Push to Jira if this is a synced issue
+    (when (and issue-id (string-match-p "\\`[A-Z]+-[0-9]+\\'" issue-id))
+      (jiralib-update-issue issue-id `((customfield_10006 . ,epic-key)))
+      (message "Set %s epic to %s (%s)" issue-id epic-name epic-key))
+    (unless (and issue-id (string-match-p "\\`[A-Z]+-[0-9]+\\'" issue-id))
+      (message "Set epic to %s (%s) — will be applied on create" epic-name epic-key))))
+
 (defun org-jira-move-to-backlog ()
   "Remove the issue at point from its sprint (move to backlog)."
   (interactive)
@@ -907,6 +937,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j S") #'org-jira-set-sprint)
   (define-key org-mode-map (kbd "C-c j P") #'org-jira-set-priority)
   (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer)
+  (define-key org-mode-map (kbd "C-c j E") #'org-jira-set-epic)
   (define-key org-mode-map (kbd "C-c j u") #'org-jira-push-heading))
 
 (provide 'dot-org-jira)

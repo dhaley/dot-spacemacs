@@ -175,7 +175,7 @@ The `.spacemacs` file works standalone with generic defaults. Machine-specific c
 ### Templates
 
 - **`home.el.template`** — Minimal starter for a home machine (org paths, email)
-- For work config, see `private-git-server/dot-emacs-work`
+- For work config, create a private repo and clone to `~/.local/emacs/`
 
 ### Timing
 

@@ -339,9 +339,9 @@ Uses `tail -f' for mcp/* aliases (local files), `aws logs tail' for others."
     "AWS_ACCESS_KEY_ID="
     "AWS_SECRET_ACCESS_KEY="
     "AWS_SESSION_TOKEN="
-    ,(concat "SSL_CERT_FILE=" (expand-file-name "~/.ssl/cacert.pem"))
-    ,(concat "AWS_CA_BUNDLE=" (expand-file-name "~/.ssl/cacert.pem"))
-    ,(concat "REQUESTS_CA_BUNDLE=" (expand-file-name "~/.ssl/cacert.pem")))
+    ,(concat "SSL_CERT_FILE=" (or (getenv "SSL_CERT_FILE") ""))
+    ,(concat "AWS_CA_BUNDLE=" (or (getenv "AWS_CA_BUNDLE") ""))
+    ,(concat "REQUESTS_CA_BUNDLE=" (or (getenv "REQUESTS_CA_BUNDLE") "")))
   "Extra env vars prepended to `process-environment' for cwt buffers.")
 
 (defun cwt--shell-command (cmd)

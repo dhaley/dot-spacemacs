@@ -673,9 +673,40 @@ canonical copy into ~/.org-jira/ for full org-jira management."
            (key (cdr (assoc 'key result)))
            (url (format "%s/browse/%s" jiralib-url key)))
       (org-set-property "Jira" key)
+      ;; Auto-add watchers for break-fix issues
+      (let ((watchers (or (org-entry-get nil "jira-watchers")
+                          (when (and labels-str (string-match-p "break-fix" labels-str))
+                            "dhorton"))))
+        (when watchers
+          (dolist (user (split-string watchers "," t "\\s-*"))
+            (condition-case nil
+                (jiralib--rest-call-it
+                 (format "/rest/api/2/issue/%s/watchers" key)
+                 :type "POST"
+                 :data (json-encode user))
+              (error nil))
+            (message "Added watcher %s to %s" user key))))
       (kill-new url)
       (browse-url url)
       (message "Created Jira issue: %s (URL copied)" key))))
+
+(defun org-jira-add-watcher ()
+  "Add a watcher to the Jira issue at point with completion."
+  (interactive)
+  (require 'org-jira)
+  (let* ((jira-key (org-entry-get nil "Jira"))
+         (id (org-entry-get nil "ID"))
+         (issue-id (or jira-key
+                       (when (and id (string-match-p "\\`[A-Z]+-[0-9]+\\'" id)) id)))
+         (users (org-jira-get-assignable-users "CO"))
+         (user (completing-read "Add watcher: " (mapcar #'car users) nil t))
+         (username (cdr (assoc user users))))
+    (unless issue-id (error "No Jira issue at point"))
+    (jiralib--rest-call-it
+     (format "/rest/api/2/issue/%s/watchers" issue-id)
+     :type "POST"
+     :data (json-encode username))
+    (message "Added %s as watcher on %s" user issue-id)))
 
 (defun org-jira-sprint-report ()
   "Generate a sprint report for the current active StratusOps sprint.
@@ -938,6 +969,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j P") #'org-jira-set-priority)
   (define-key org-mode-map (kbd "C-c j e") #'org-jira-enrich-buffer)
   (define-key org-mode-map (kbd "C-c j E") #'org-jira-set-epic)
+  (define-key org-mode-map (kbd "C-c j w") #'org-jira-add-watcher)
   (define-key org-mode-map (kbd "C-c j u") #'org-jira-push-heading))
 
 (provide 'dot-org-jira)

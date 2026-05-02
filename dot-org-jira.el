@@ -580,6 +580,28 @@ or an alist with a 'name' key."
                  :filename ,(format "co-%s" username)))))
     (org-jira-get-issues-from-custom-jql)))
 
+(defvar my/org-jira-active-sprint-names nil
+  "Cached list of active sprint names. Refreshed by `my/org-jira-refresh-active-sprints'.")
+
+(defun my/org-jira-refresh-active-sprints ()
+  "Fetch active sprint names from Jira and cache them."
+  (condition-case nil
+      (let* ((boards (jiralib--rest-call-it
+                      "/rest/agile/1.0/board?projectKeyOrId=CO&type=scrum" :type "GET"))
+             (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0))))
+             (active (jiralib--rest-call-it
+                      (format "/rest/agile/1.0/board/%s/sprint?state=active" board-id)
+                      :type "GET"))
+             (names (mapcar (lambda (s) (cdr (assoc 'name s)))
+                            (append (cdr (assoc 'values active)) nil))))
+        (setq my/org-jira-active-sprint-names names))
+    (error my/org-jira-active-sprint-names)))
+
+(defun my/org-jira-in-active-sprint-p ()
+  "Predicate for org-super-agenda: t if item's sprint is an active sprint."
+  (when-let ((sprint (org-entry-get (point) "sprint")))
+    (member (string-trim sprint) my/org-jira-active-sprint-names)))
+
 (defun org-jira-sync-current-sprint ()
   "Sync all issues in the current sprint."
   (interactive)
@@ -926,6 +948,9 @@ Shows closed issues, open/carried-over issues, and story point totals."
     (local-set-key (kbd "C-c C-c") #'org-jira-push-heading)
     (local-set-key (kbd "C-c C-t") #'my/org-jira-progress-issue-safe)))
 (add-hook 'org-jira-mode-hook #'my/org-jira-ctrl-c-ctrl-c-hook)
+
+;; Refresh active sprint cache when entering org-jira buffers
+(add-hook 'org-jira-mode-hook (lambda () (ignore-errors (my/org-jira-refresh-active-sprints))))
 
 ;;; ── Cycle through team agendas with ] and [ ──
 

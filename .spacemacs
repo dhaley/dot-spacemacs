@@ -672,34 +672,6 @@ you should place your code here."
 
     (bind-key "C-i" #'yas-next-field-or-maybe-expand yas-keymap))
 
-  ;; (use-package projectile-drupal
-  ;;   :load-path "~/.emacs.d/lisp/projectile-drupal"
-
-  ;;   :init
-  ;;   (progn
-  ;;     (defun dkh-get-site-name ()
-  ;;       "Gets site name based on University WWNG standard or standalone."
-  ;;       (if (locate-dominating-file default-directory
-  ;;                                   "current")
-  ;;           (let* ((project-root-dir (locate-dominating-file default-directory
-  ;;                                                            "current"))
-  ;;                  (path (split-string project-root-dir "/")))     ; path as list
-  ;;             (car (last (nbutlast path 1))))
-  ;;         (projectile-project-name)))
-
-  ;;     (defun dkh-get-base-url ()
-  ;;       "Gets the projectile-drupal-base-url based on University WWNG standard or standalone."
-  ;;       (let* ((uri
-  ;;               (if (equal projectile-drupal-site-name "admissions_undergraduate")
-  ;;                   "ww/admissions/undergraduate"
-  ;;                 (concat "colorado.dev/" projectile-drupal-site-name))))
-  ;;         (concat "http://" uri)))
-
-  ;;     (bind-key "C-H-M-<" 'projectile-switch-to-prev-buffer)
-  ;;     (bind-key "C-H-M->" 'projectile-switch-to-next-buffer)
-  ;;     (bind-key "C-H-M-p" 'revert-buffer)
-  ;;     (bind-key "C-H-M-\"" 'kill-buffer)))
-
   (bind-key "<H-down>" #'shrink-window)
   (bind-key "<H-left>" #'shrink-window-horizontally)
   (bind-key "<H-right>" #'enlarge-window-horizontally)
@@ -839,67 +811,15 @@ you should place your code here."
     (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
-    (global-set-key (kbd "C-c M-g") #'gptel-menu)
-    :config
-    ;; Patch: gptel-bedrock--curl-version hardcodes "curl" — make it respect gptel-use-curl
-    (require 'gptel-bedrock)
-    (defun gptel-bedrock--curl-version ()
-      "Check Curl version required for gptel-bedrock."
-      (let* ((curl-cmd (if (stringp gptel-use-curl) gptel-use-curl "curl"))
-             (output (shell-command-to-string (concat curl-cmd " --version")))
-             (version (and (string-match "^curl \\([0-9.]+\\)" output)
-                           (match-string 1 output))))
-        version))
+    (global-set-key (kbd "C-c M-g") #'gptel-menu))
 
-    ;; Register Bedrock backend with your inference profiles
-    (setq gptel-model 'claude-sonnet-4-20250514
-          gptel-backend
-          (gptel-make-bedrock "Appfleet-Agentic"
-            :stream t
-            :region "us-west-2"
-            :models '(claude-sonnet-4-20250514
-                      claude-3-5-haiku-20241022)
-            :model-region 'us))
+  ;; gptel-bedrock, MCP, and tool config in ~/.local/emacs/work.el
 
-    ;; System prompt matching the agent
-    (setq gptel-directives
-          '((default . "You are Appfleet Agentic, an AI operations assistant for Stratus Cloud infrastructure at ORG. You help with AWS infrastructure, ECS deployments, Jenkins pipelines, and Appfleet application management.")
-            (code . "You are a senior software engineer. Write clean, minimal code with brief explanations.")
-            (terraform . "You are a Terraform expert for AWS. Follow least-privilege IAM, use modules, and tag all resources with billingId, org, owner, manifest.")
-            (writing . "You are a technical writer. Be concise and direct.")))
-
-    ;; Enable tool-use with MCP
-    (setq gptel-use-tools t
-          gptel-confirm-tool-calls t
-          gptel-include-tool-results 'auto))
-
-  ;; ── mcp.el: Connect gptel to Cloud MCP servers ──
   (use-package mcp
     :ensure t
     :after gptel
     :config
-    (require 'mcp-hub)
-    ;; mcp-hub-servers set by ~/.local/emacs/work.el
-    (defun my/mcp-plist-to-gptel-tool (plist)
-      "Convert an mcp.el tool plist to a gptel-tool struct."
-      (gptel-make-tool
-       :function (plist-get plist :function)
-       :name (plist-get plist :name)
-       :description (plist-get plist :description)
-       :args (plist-get plist :args)
-       :async (plist-get plist :async)
-       :category (plist-get plist :category)))
-    (defun my/mcp-register-tools ()
-      "Start MCP servers if needed and register tools with gptel."
-      (unless (and gptel-tools (> (length gptel-tools) 0))
-        (mcp-hub-start-all-server)
-        (run-with-timer 5 nil
-                        (lambda ()
-                          (let ((mcp-tools (mcp-hub-get-all-tool :categoryp t)))
-                            (setq gptel-tools
-                                  (mapcar #'my/mcp-plist-to-gptel-tool mcp-tools))
-                            (message "Registered %d MCP tools with gptel" (length gptel-tools)))))))
-    (add-hook 'gptel-mode-hook #'my/mcp-register-tools))
+    (require 'mcp-hub))
 
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
   ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).
@@ -1020,136 +940,7 @@ This function is called at the very end of Spacemacs initialization."
        ("h" "Habits" tags-todo "STYLE=\"habit\""
         ((org-agenda-overriding-header "Habits")
          (org-agenda-sorting-strategy '(todo-state-down effort-up category-keep))))
-       ("j" . "Jira")
-       ("jd" "Damon (me)" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-dhaley.org"))
-         (org-agenda-overriding-header "Jira: Damon")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jw" "Whiteside" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-dwhitesi.org"))
-         (org-agenda-overriding-header "Jira: Whiteside")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jm" "Michael" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-mbartlet.org"))
-         (org-agenda-overriding-header "Jira: Michael")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jn" "Swapnil" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-sbhatkar.org"))
-         (org-agenda-overriding-header "Jira: Swapnil")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("ja" "Anna" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-aliao.org"))
-         (org-agenda-overriding-header "Jira: Anna")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jr" "Rager" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-drager.org"))
-         (org-agenda-overriding-header "Jira: Rager")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jv" "Andres" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-avillarr.org"))
-         (org-agenda-overriding-header "Jira: Andres")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jh" "Dan Horton" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-dhorton.org"))
-         (org-agenda-overriding-header "Jira: Dan Horton")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("js" "Current Sprint (all)" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-current-sprint.org"))
-         (org-agenda-overriding-header "Jira: Current Sprint")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jt" "Entire Team" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-dhaley.org"
-                             "~/.org-jira/co-dwhitesi.org"
-                             "~/.org-jira/co-mswapnil.org"
-                             "~/.org-jira/co-mbartlet.org"
-                             "~/.org-jira/co-sbhatkar.org"
-                             "~/.org-jira/co-aliao.org"
-                             "~/.org-jira/co-drager.org"
-                             "~/.org-jira/co-avillarr.org"
-                             "~/.org-jira/co-dhorton.org"))
-         (org-agenda-overriding-header "Jira: Entire Team")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
-       ("jx" "Deputies" alltodo ""
-        ((org-agenda-files '("~/.org-jira/co-deputies.org"))
-         (org-agenda-overriding-header "Jira: Deputies")
-         (org-agenda-prefix-format "  ")
-         (org-agenda-sorting-strategy '(user-defined-up priority-down))
-         (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
-         (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
-         (org-super-agenda-groups
-          '((:name "Active Sprint" :tag "ACTIVE")
-            (:auto-property "sprint")
-            (:name "Backlog" :anything t)))))
+       ;; Jira team agenda commands added by ~/.local/emacs/work.el
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"
@@ -1406,7 +1197,7 @@ This function is called at the very end of Spacemacs initialization."
        ("map" . "http://maps.google.com/maps?q=%s")
        ("github_org" . "https://github.example.com")
        ("github" . "https://github.com")
-       ("ndg" . "https://github.example.com/ExampleDrupal/%s")))
+       ))
    '(org-link-elisp-confirm-function nil)
    '(org-link-frame-setup
      '((vm . vm-visit-folder) (gnus . org-gnus-no-new-news) (file . find-file)))

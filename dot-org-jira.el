@@ -114,7 +114,8 @@
   :load-path "~/src/org-jira"
   :defer t
   :commands (org-jira-get-issues org-jira-get-issues-from-custom-jql
-             org-jira-create-issue org-jira-browse-issue)
+             org-jira-create-issue org-jira-browse-issue
+             org-jira-progress-issue org-jira-refresh-issue)
   :init
   (setq jiralib-url "https://jira.example.com")
   (setq jiralib-target-api-version 2)

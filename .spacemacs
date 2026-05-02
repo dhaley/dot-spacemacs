@@ -359,19 +359,11 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  ;; Ensure exec-path-from-shell copies ORG SSL cert vars for Copilot
+  ;; Ensure exec-path-from-shell copies SSL cert vars
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
           "JENKINS_API_USER" "JENKINS_API_TOKEN"))
-  ;; Set ORG SSL trust directly in case exec-path-from-shell doesn't run (batch mode)
-  (setenv "SSL_CERT_FILE" (expand-file-name "~/.ssl/cacert.pem"))
-  (setenv "REQUESTS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
-  (setenv "CURL_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
-  (setenv "NODE_OPTIONS" "--max-old-space-size=8192 --use-openssl-ca")
   (setq insert-directory-program "/opt/homebrew/bin/gls")
-  (setenv "NODE_EXTRA_CA_CERTS" (expand-file-name "~/.ssl/cacert.pem"))
-  ;; AWS CA bundle for boto3 through ORG proxy
-  (setenv "AWS_CA_BUNDLE" (expand-file-name "~/.ssl/cacert.pem"))
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads

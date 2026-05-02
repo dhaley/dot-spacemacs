@@ -492,6 +492,15 @@ or an alist with a 'name' key."
          (sprint-id (cdr (assoc 'id sprint))))
     (jiralib-update-issue issue-id `((customfield_10005 . ,sprint-id)))
     (org-entry-put nil "sprint" choice)
+    ;; Update ACTIVE tag: add if moving to active sprint, remove otherwise
+    (let* ((active-data (jiralib--rest-call-it
+                         (format "/rest/agile/1.0/board/%s/sprint?state=active" board-id)
+                         :type "GET"))
+           (active-names (mapcar (lambda (s) (cdr (assoc 'name s)))
+                                 (append (cdr (assoc 'values active-data)) nil))))
+      (if (member choice active-names)
+          (org-toggle-tag "ACTIVE" 'on)
+        (org-toggle-tag "ACTIVE" 'off)))
     (message "Moved %s to %s" issue-id choice)))
 
 (defun org-jira-update-story-points ()

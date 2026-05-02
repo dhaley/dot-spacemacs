@@ -1188,7 +1188,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jw" "Whiteside" alltodo ""
@@ -1199,7 +1199,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jm" "Michael" alltodo ""
@@ -1210,7 +1210,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jn" "Swapnil" alltodo ""
@@ -1221,7 +1221,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("ja" "Anna" alltodo ""
@@ -1232,7 +1232,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jr" "Rager" alltodo ""
@@ -1243,7 +1243,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jv" "Andres" alltodo ""
@@ -1254,7 +1254,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jh" "Dan Horton" alltodo ""
@@ -1265,7 +1265,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("js" "Current Sprint (all)" alltodo ""
@@ -1276,7 +1276,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jt" "Entire Team" alltodo ""
@@ -1295,7 +1295,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        ("jx" "Deputies" alltodo ""
@@ -1306,7 +1306,7 @@ This function is called at the very end of Spacemacs initialization."
          (org-agenda-cmp-user-defined #'my/org-jira-sprint-sort)
          (org-agenda-finalize-hook '(my/org-jira-colorize-agenda))
          (org-super-agenda-groups
-          '((:name "Active Sprint" :pred my/org-jira-in-active-sprint-p)
+          '((:name "Active Sprint" :tag "ACTIVE")
             (:auto-property "sprint")
             (:name "Backlog" :anything t)))))
        (" " "Agenda"

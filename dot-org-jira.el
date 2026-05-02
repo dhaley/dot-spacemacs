@@ -908,6 +908,37 @@ Shows closed issues, open/carried-over issues, and story point totals."
 
 ;; Hook C-c C-c to push Jira changes in org-jira buffers
 ;; Hook C-c C-t to use org-jira-progress-issue for status transitions
+;; Patched progress-issue that handles Jira Server resolution field
+(defun my/org-jira-progress-issue ()
+  "Progress issue workflow, with Jira Server resolution field support."
+  (interactive)
+  (ensure-on-issue
+    (let* ((issue-id (org-jira-id))
+           (actions (jiralib-get-available-actions
+                     issue-id
+                     (org-jira-get-issue-val-from-org 'status)))
+           (action (org-jira-read-action actions))
+           ;; Get raw transition fields via REST to avoid jiralib parsing bug
+           (transition-data (jiralib--rest-call-it
+                             (format "/rest/api/2/issue/%s/transitions?expand=transitions.fields" issue-id)
+                             :type "GET"))
+           (transitions (append (cdr (assoc 'transitions transition-data)) nil))
+           (selected (seq-find (lambda (t) (string= (cdr (assoc 'id t)) action)) transitions))
+           (fields (cdr (assoc 'fields selected)))
+           (resolution-required (cdr (assoc 'resolution fields)))
+           (custom-fields nil))
+      (when resolution-required
+        (let* ((resolutions (jiralib-get-resolutions))
+               (names (mapcar #'cdr resolutions))
+               (choice (completing-read "Resolution: " names nil t nil nil "Done"))
+               (res-id (car (rassoc choice resolutions))))
+          (push (list 'resolution (cons 'id res-id)) custom-fields)))
+      (jiralib-progress-workflow-action
+       issue-id action custom-fields
+       (cl-function
+        (lambda (&key data &allow-other-keys)
+          (org-jira-refresh-issue)))))))
+
 (defun my/org-jira-progress-issue-safe ()
   "Progress issue with confirmation."
   (interactive)
@@ -916,7 +947,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
          (status (org-entry-get nil "status")))
     (if (and issue-id (string-match-p "^[A-Z]+-[0-9]+$" issue-id))
         (when (y-or-n-p (format "Transition %s (%s) [status: %s]? " issue-id summary status))
-          (org-jira-progress-issue))
+          (my/org-jira-progress-issue))
       ;; Not on a Jira issue, run normal org-todo
       (org-todo))))
 (defun my/org-jira-ctrl-c-ctrl-c-hook ()
@@ -963,7 +994,7 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j m") #'org-jira-sync-team-member)
   (define-key org-mode-map (kbd "C-c j s") #'org-jira-sync-current-sprint)
   (define-key org-mode-map (kbd "C-c j b") #'org-jira-move-to-backlog)
-  (define-key org-mode-map (kbd "C-c j p") #'org-jira-progress-issue)
+  (define-key org-mode-map (kbd "C-c j p") #'my/org-jira-progress-issue)
   (define-key org-mode-map (kbd "C-c j a") #'org-jira-set-assignee)
   (define-key org-mode-map (kbd "C-c j S") #'org-jira-set-sprint)
   (define-key org-mode-map (kbd "C-c j P") #'org-jira-set-priority)

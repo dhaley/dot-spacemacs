@@ -91,7 +91,25 @@ brew install trash             # macOS trash for file deletion
 # Optional
 brew install git-lfs           # large file support
 brew install git-filter-repo   # history rewriting
+brew install screen            # org-babel screen sessions
+brew install nvm               # Node version management
 brew install --cask font-source-code-pro  # default Spacemacs font
+```
+
+### Shell configuration
+
+Add to `~/.bash_profile` or `~/.zshrc`:
+
+```bash
+# Homebrew
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# uv-installed tools (deepagents-cli, etc.)
+export PATH="$HOME/.local/bin:$PATH"
+
+# NVM (optional, for Node version management)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 ```
 
 ## Configuration

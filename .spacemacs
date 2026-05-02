@@ -8,42 +8,10 @@
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'load-path "~/dot-spacemacs")
 
-;; (defun add-to-load-path (path &optional dir)
-
-;;   (setq load-path
-;;         (cons (expand-file-name path (or dir user-emacs-directory)) load-path)))
-
-
-;; Add top-level lisp directories, in case they were not setup by the
-;; environment.
-
-;; (dolist (dir (nreverse
-;;               (list
-
-;;                user-site-lisp-directory)))
-;;   (dolist (entry (nreverse (directory-files-and-attributes dir)))
-;;     (if (cadr entry)
-;;         (add-to-load-path (car entry) dir))))
-
-;; (eval-and-compile
-;;   (mapc
-;;    #'(lambda (path)
-;;        (push (expand-file-name path user-emacs-directory) load-path))
-;;    '("site-lisp" "lisp" "lisp/use-package" ""))
-
-;;   (defun agda-site-lisp ()
-;;     (let ((agda
-;;            (nth 1 (split-string
-;;                    (shell-command-to-string "load-env-agda which agda")
-;;                    "\n")))))))
-
 (eval-and-compile
   (defvar use-package-verbose nil)
-  ;; (defvar use-package-expand-minimally t)
   (eval-after-load 'advice
     `(setq ad-redefinition-action 'accept))
-  ;; (require 'cl)
-  ;; (require 'use-package)
   )
 
 (defun dotspacemacs/layers ()
@@ -953,23 +921,7 @@ you should place your code here."
 
   ;; my/agent-workspace and C-c u binding defined in ~/.local/emacs/work.el
 
-  (defun my/az-login ()
-    "Run az login with device code and open the auth page in Vivaldi."
-    (interactive)
-    (let ((buf (generate-new-buffer "*az-login*")))
-      (async-shell-command "AZURE_CORE_NO_COLOR=1 az login --use-device-code 2>&1" buf)
-      (run-at-time 2 nil
-                   (lambda ()
-                     (with-current-buffer "*az-login*"
-                       (goto-char (point-min))
-                       (when (re-search-forward "enter the code \\([A-Z0-9]+\\)" nil t)
-                         (let ((code (match-string 1)))
-                           (kill-new code)
-                           (message "Device code %s copied to clipboard" code)
-                           (start-process "vivaldi" nil
-                                          "/Applications/Vivaldi.app/Contents/MacOS/Vivaldi"
-                                          "https://login.microsoft.com/device"))))))))
-  (bind-key "C-c z" #'my/az-login)
+  ;; my/az-login defined in ~/.local/emacs/work.el
 
   ;; ── vterm fallback: af-agent in terminal emulator ──
   (defun my/af-agent ()

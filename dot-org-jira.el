@@ -117,17 +117,17 @@
              org-jira-create-issue org-jira-browse-issue
              org-jira-progress-issue org-jira-refresh-issue)
   :init
-  (setq jiralib-url "https://jira.example.com")
+  (setq jiralib-url (or (bound-and-true-p my/jira-url) "https://jira.example.com"))
   (setq jiralib-target-api-version 2)
   (setq org-jira-users '(("Unassigned" . nil)))
   (make-directory "~/.org-jira" t)
   (setq org-jira-working-dir "~/.org-jira")
-  (setq jiralib-token
-        (cons "Authorization"
-              (concat "Bearer "
-                      (string-trim
-                       (shell-command-to-string
-                        "/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:JIRA_TOKEN' ~/Library/LaunchAgents/mcp-jira.plist")))))
+  (when (bound-and-true-p my/jira-token-command)
+    (setq jiralib-token
+          (cons "Authorization"
+                (concat "Bearer "
+                        (string-trim
+                         (shell-command-to-string my/jira-token-command))))))
 
   ;; Disable worklog and comment sync by default for fast fetching
   ;; Use C-c j C to download comments for the issue at point

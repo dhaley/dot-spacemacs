@@ -388,6 +388,14 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+  ;; Load optional local config (work-specific, not in public repo)
+  (let ((local-config-path (expand-file-name "~/.local/emacs")))
+    (when (file-directory-p local-config-path)
+      (dolist (f (directory-files local-config-path t "\\.elc?$"))
+        (load f t)
+        (message "Loaded local config: %s" f))))
+
   ;; Load beamer export backend so C-c C-e l B/P are available
   (require 'ox-beamer)
   ;; LuaLaTeX for beamer presentations
@@ -912,10 +920,9 @@ you should place your code here."
     :config
     (require 'mcp-hub)
     (setq mcp-hub-servers
-          '(("appfleet-config"    . (:url "https://cloud-mcp-appfleet.cloud.example.com/mcp"))
-            ("appfleet-migration" . (:url "http://localhost:9000/mcp"))
-            ("lex"                . (:url "https://cloud-mcp-lex-dev.cloud.example.com/mcp"))
-            ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp"))))
+          (or (bound-and-true-p my/mcp-server-urls)
+              '(("appfleet-migration" . (:url "http://localhost:9000/mcp"))
+                ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp")))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool
@@ -982,13 +989,13 @@ Otherwise, use the exported credentials file (proven fallback)."
                  "REQUESTS_CA_BUNDLE" ca-bundle
                  "AWS_CA_BUNDLE" ca-bundle
                  "HTTPX_CA_BUNDLE" ca-bundle
-                 "LANGSMITH_API_URL" "https://langsmith.cloud.example.com/api/v1"
-                 "LANGSMITH_ENDPOINT" "https://langsmith.cloud.example.com/api/v1"
+                 "LANGSMITH_API_URL" (or (bound-and-true-p my/langsmith-api-url) "")
+                 "LANGSMITH_ENDPOINT" (or (bound-and-true-p my/langsmith-api-url) "")
                  "LANGSMITH_PROJECT" "appfleet-agentic"
                  "LANGSMITH_TRACING" "true"
                  "JENKINS_API_USER" (getenv "JENKINS_API_USER")
                  "JENKINS_API_TOKEN" (getenv "JENKINS_API_TOKEN")
-                 "jenkins_url" "https://jenkins.cloud.example.com"
+                 "jenkins_url" (or (bound-and-true-p my/jenkins-url) "")
                  "jenkins_username" (getenv "JENKINS_API_USER")
                  "jenkins_password" (getenv "JENKINS_API_TOKEN")
                  "jenkins_verify_ssl" "false")
@@ -1048,6 +1055,9 @@ On subsequent calls, just brings the existing buffers to the foreground."
           (my/deepagents-refresh-creds)
           (shell-command "/usr/local/bin/emacs-aws-refresh")
           (call-process "launchctl" nil nil nil "stop" "mcp-ost")
+          (dolist (svc (bound-and-true-p my/mcp-launchagent-services))
+            (call-process "launchctl" nil nil nil "stop" svc)
+            (call-process "launchctl" nil nil nil "start" svc))
           (message "Refreshed credentials and restarted MCP servers")
           (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
                                   agent-shell-agent-configs)))
@@ -1563,9 +1573,7 @@ This function is called at the very end of Spacemacs initialization."
      '(("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
        ("google" . "http://www.google.com/search?q=%s")
        ("map" . "http://maps.google.com/maps?q=%s")
-       ("github_org" . "https://github.example.com")
-       ("github" . "https://github.com")
-       ("ndg" . "https://github.example.com/ExampleDrupal/%s")))
+       ("github" . "https://github.com")))
    '(org-link-elisp-confirm-function nil)
    '(org-link-frame-setup
      '((vm . vm-visit-folder) (gnus . org-gnus-no-new-news) (file . find-file)))

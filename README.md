@@ -16,20 +16,27 @@ git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
 git clone git@github.com:dhaley/dot-spacemacs.git ~/dot-spacemacs
 ln -s ~/dot-spacemacs/.spacemacs ~/.spacemacs
 
-# 4. Set up local config
+# 4. Symlink elisp files into Spacemacs load-path
+mkdir -p ~/.emacs.d/lisp
+ln -s ~/dot-spacemacs/dot-org.el ~/.emacs.d/lisp/dot-org.el
+ln -s ~/dot-spacemacs/org-smart-capture.el ~/.emacs.d/lisp/org-smart-capture.el
+ln -s ~/dot-spacemacs/dot-org-jira.el ~/.emacs.d/lisp/dot-org-jira.el
+ln -s ~/dot-spacemacs/cloudwatch-tail.el ~/.emacs.d/lisp/cloudwatch-tail.el
+
+# 5. Set up local config
 mkdir -p ~/.local/emacs
 cp ~/dot-spacemacs/home.el.template ~/.local/emacs/home.el
 # Edit ~/.local/emacs/home.el — set your org file path and email
 
-# 5. Create org files
+# 6. Create org files
 mkdir -p ~/Documents/org
 echo "* Inbox                                                :REFILE:" > ~/Documents/org/todo.txt
 touch ~/Documents/org/diary.org
 
-# 6. Install dependencies
+# 7. Install dependencies
 brew install aspell coreutils curl git node ripgrep tree-sitter cmake python@3.12 trash
 
-# 7. Launch Emacs — Spacemacs will install all packages (takes a few minutes)
+# 8. Launch Emacs — Spacemacs will install all packages (takes a few minutes)
 emacs
 # After packages install, restart Emacs
 ```

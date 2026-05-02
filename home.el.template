@@ -1,0 +1,37 @@
+;;; home.el --- Home machine Emacs configuration -*- lexical-binding: t -*-
+;;
+;; Starter template for ~/.local/emacs/home.el
+;; Copy this file and customize the paths for your home setup.
+;;
+;; Setup:
+;;   mkdir -p ~/.local/emacs
+;;   cp home.el.template ~/.local/emacs/home.el
+;;   # Edit the paths below
+
+;;; Org file paths
+;; Set this to wherever you keep your org files
+(setq my/org-base-dir (expand-file-name "~/Documents/org"))
+
+;; Override org paths after Spacemacs init
+(add-hook 'emacs-startup-hook
+  (lambda ()
+    (let ((base my/org-base-dir))
+      ;; Create the directory if it doesn't exist
+      (make-directory base t)
+      (setq org-agenda-diary-file (expand-file-name "diary.org" base))
+      (setq org-agenda-files (list (expand-file-name "todo.txt" base)))
+      (setq org-default-notes-file (expand-file-name "todo.txt" base))
+      ;; Update capture templates
+      (setq org-capture-templates
+            `(("t" "todo" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
+               "* TODO %?\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+              ("n" "note" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
+               "* %? :NOTE:\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+              ("j" "Journal" entry (file+olp+datetree ,(expand-file-name "diary.org" base))
+               "* %?\n%U\n"))))))
+
+;;; User identity
+;; (setq user-mail-address "you@example.com")
+
+(provide 'home)
+;;; home.el ends here

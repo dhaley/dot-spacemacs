@@ -379,6 +379,13 @@ before packages are loaded. If you are unsure, you should try in setting them in
   ;; Also prepend to exec-path and PATH so gptel-bedrock--curl-version finds it
   (add-to-list 'exec-path "/opt/homebrew/opt/curl/bin")
   (setenv "PATH" (concat "/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
+
+  ;; Load optional local config (work-specific, not in public repo)
+  ;; Loaded here in user-init so variables are set BEFORE use-package :config blocks run
+  (let ((local-config-path (expand-file-name "~/.local/emacs")))
+    (when (file-directory-p local-config-path)
+      (dolist (f (directory-files local-config-path t "\\.elc?$"))
+        (load f t))))
   )
 
 (defun dotspacemacs/user-config ()
@@ -388,11 +395,6 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  ;; Load optional local config (work-specific overrides, not in public repo)
-  (let ((local-config-path (expand-file-name "~/.local/emacs")))
-    (when (file-directory-p local-config-path)
-      (dolist (f (directory-files local-config-path t "\\.elc?$"))
-        (load f t))))
 
   ;; Load beamer export backend so C-c C-e l B/P are available
   (require 'ox-beamer)
@@ -917,11 +919,11 @@ you should place your code here."
     :after gptel
     :config
     (require 'mcp-hub)
-    (setq mcp-hub-servers
-          '(("appfleet-config"    . (:url "https://cloud-mcp-appfleet.stratus.example.com/mcp"))
-            ("appfleet-migration" . (:url "http://localhost:9000/mcp"))
-            ("lex"                . (:url "https://cloud-mcp-lex-dev.stratus.example.com/mcp"))
-            ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp"))))
+    ;; mcp-hub-servers set by ~/.local/emacs/work.el if present
+    (unless mcp-hub-servers
+      (setq mcp-hub-servers
+            '(("appfleet-migration" . (:url "http://localhost:9000/mcp"))
+              ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp")))))
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool

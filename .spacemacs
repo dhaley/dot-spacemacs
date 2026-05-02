@@ -911,11 +911,7 @@ you should place your code here."
     :after gptel
     :config
     (require 'mcp-hub)
-    ;; mcp-hub-servers set by ~/.local/emacs/work.el if present
-    (unless mcp-hub-servers
-      (setq mcp-hub-servers
-            '(("appfleet-migration" . (:url "http://localhost:9000/mcp"))
-              ("ops-scheduledtagging" . (:url "http://localhost:8101/mcp")))))
+    ;; mcp-hub-servers set by ~/.local/emacs/work.el
     (defun my/mcp-plist-to-gptel-tool (plist)
       "Convert an mcp.el tool plist to a gptel-tool struct."
       (gptel-make-tool
@@ -941,81 +937,7 @@ you should place your code here."
   ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).
   ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
-    :config
-    ;; Toggle: t = SSO-direct (auto-refresh), nil = exported creds file (proven fallback)
-    ;; To rollback: (setq my/deepagents-use-sso-direct nil) then restart agent-shell
-    (defvar my/deepagents-use-sso-direct t
-      "When non-nil, use SSO profile directly so boto3 can auto-refresh tokens.
-When nil, fall back to exported credentials file method.")
-
-    (defun my/deepagents-refresh-creds ()
-      "Generate fresh AWS credentials for deepagents subprocess."
-      (interactive)
-      (if my/deepagents-use-sso-direct
-          (progn
-            (message "SSO-direct mode: ensuring SSO session is active...")
-            (unless (= 0 (call-process "aws" nil nil nil
-                                       "sts" "get-caller-identity"
-                                       "--profile" "work-aws-profile"))
-              (shell-command "aws sso login --profile work-aws-profile"))
-            (message "SSO session active"))
-        (message "Refreshing AWS credentials (exported file)...")
-        (shell-command "/usr/local/bin/emacs-aws-refresh")
-        (message "AWS credentials refreshed")))
-
-    (defun my/deepagents-make-env ()
-      "Build environment variables for deepagents.
-When `my/deepagents-use-sso-direct' is non-nil, point at the real
-~/.aws/config so boto3 uses the SSO token cache and can auto-refresh.
-Otherwise, use the exported credentials file (proven fallback)."
-      (let ((ca-bundle (expand-file-name "~/.ssl/cacert.pem")))
-        (apply #'agent-shell-make-environment-variables
-               (append
-                (list
-                 "HOME" (expand-file-name "~")
-                 "PATH" (getenv "PATH")
-                 "AWS_ACCESS_KEY_ID" ""
-                 "AWS_SECRET_ACCESS_KEY" ""
-                 "AWS_SESSION_TOKEN" ""
-                 "AWS_REGION" "us-west-2"
-                 "SSL_CERT_FILE" ca-bundle
-                 "REQUESTS_CA_BUNDLE" ca-bundle
-                 "AWS_CA_BUNDLE" ca-bundle
-                 "HTTPX_CA_BUNDLE" ca-bundle
-                 "LANGSMITH_API_URL" "https://langsmith.stratus.example.com/api/v1"
-                 "LANGSMITH_ENDPOINT" "https://langsmith.stratus.example.com/api/v1"
-                 "LANGSMITH_PROJECT" "appfleet-agentic"
-                 "LANGSMITH_TRACING" "true"
-                 "JENKINS_API_USER" (getenv "JENKINS_API_USER")
-                 "JENKINS_API_TOKEN" (getenv "JENKINS_API_TOKEN")
-                 "jenkins_url" "https://jenkins.stratus.example.com"
-                 "jenkins_username" (getenv "JENKINS_API_USER")
-                 "jenkins_password" (getenv "JENKINS_API_TOKEN")
-                 "jenkins_verify_ssl" "false")
-                (if my/deepagents-use-sso-direct
-                    (list
-                     "AWS_PROFILE" "work-aws-profile"
-                     "AWS_CONFIG_FILE" (expand-file-name "~/.aws/config"))
-                  (list
-                   "AWS_PROFILE" "default"
-                   "AWS_SHARED_CREDENTIALS_FILE" (expand-file-name "~/shared_credentials_files/credentials.emacs")
-                   "AWS_CONFIG_FILE" (expand-file-name "~/shared_credentials_files/.aws/config")))))))
-
-    (add-to-list 'agent-shell-agent-configs
-                 (agent-shell-make-agent-config
-                  :identifier 'deepagents
-                  :mode-line-name "Appfleet"
-                  :buffer-name "Appfleet Agentic"
-                  :shell-prompt "deepagents> "
-                  :shell-prompt-regexp "deepagents> "
-                  :client-maker (lambda (buffer)
-                                  (my/deepagents-refresh-creds)
-                                  (agent-shell--make-acp-client
-                                   :command "deepagents"
-                                   :command-params '("--acp")
-                                   :environment-variables (my/deepagents-make-env)
-                                   :context-buffer buffer))
-                  :install-instructions "Install: uv tool install 'deepagents-cli[bedrock]'")))
+    :defer t)
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat
@@ -1029,40 +951,7 @@ Otherwise, use the exported credentials file (proven fallback)."
     (seq-find (lambda (b) (string-prefix-p prefix (buffer-name b)))
               (buffer-list)))
 
-  (defun my/agent-workspace ()
-    "Show Appfleet Agentic and eat side by side.
-On first call (no agent buffer), refreshes AWS credentials, restarts
-MCP servers, and starts the agent shell.
-On subsequent calls, just brings the existing buffers to the foreground."
-    (interactive)
-    (let ((agent-buf (my/find-buffer-by-prefix "Appfleet Agentic"))
-          (eat-buf (get-buffer "*eat*")))
-      (if (and agent-buf eat-buf
-               (get-buffer-window agent-buf)
-               (get-buffer-window eat-buf))
-          (select-window (get-buffer-window agent-buf))
-        (delete-other-windows)
-        (if agent-buf
-            (switch-to-buffer agent-buf)
-          ;; Fresh start: refresh creds file and bounce MCP servers
-          (my/deepagents-refresh-creds)
-          (shell-command "/usr/local/bin/emacs-aws-refresh")
-          (call-process "launchctl" nil nil nil "stop" "com.dhaley.mcp-ost")
-          (message "Refreshed credentials and restarted MCP servers")
-          (let ((config (seq-find (lambda (c) (eq (map-elt c :identifier) 'deepagents))
-                                  agent-shell-agent-configs)))
-            (agent-shell-start :config config))
-          (setq agent-buf (my/find-buffer-by-prefix "Appfleet Agentic"))
-          (when agent-buf (switch-to-buffer agent-buf)))
-        (split-window-right)
-        (other-window 1)
-        (if eat-buf
-            (switch-to-buffer eat-buf)
-          (let ((default-directory (expand-file-name "~/src/")))
-            (eat)))
-        (other-window 1))))
-  (spacemacs/set-leader-keys "ow" 'my/agent-workspace)
-  (bind-key "C-c u" #'my/agent-workspace)
+  ;; my/agent-workspace and C-c u binding defined in ~/.local/emacs/work.el
 
   (defun my/az-login ()
     "Run az login with device code and open the auth page in Vivaldi."

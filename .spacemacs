@@ -95,7 +95,14 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch geben writeroom-mode ob-php gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda)
+   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php
+                                       gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
+                                       ;; From JW's config
+                                       olivetti restclient
+                                       helpful org-appear org-modern
+                                       magit-todos pdf-tools direnv sudo-edit crux backup-each-save
+                                       ;; Already installed but pinned explicitly to prevent pruning
+                                       vundo string-inflection)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -835,6 +842,45 @@ you should place your code here."
         (switch-to-buffer "*af-agent*")
       (vterm "*af-agent*")
       (vterm-send-string "af-agent\n")))
+
+  ;; ── helpful: replace standard help buffers ──────────────────────────────
+  (with-eval-after-load 'helpful
+    (global-set-key (kbd "C-h f") #'helpful-callable)
+    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h k") #'helpful-key)
+    (global-set-key (kbd "C-h x") #'helpful-command))
+
+  ;; ── vundo: visual undo tree on C-x u ────────────────────────────────────
+  (with-eval-after-load 'vundo
+    (global-set-key (kbd "C-x u") #'vundo))
+
+  ;; ── pdf-tools ───────────────────────────────────────────────────────────
+  (with-eval-after-load 'pdf-tools
+    (pdf-tools-install :no-query))
+
+  ;; ── org-appear: show emphasis markers when cursor is on them ────────────
+  (with-eval-after-load 'org
+    (add-hook 'org-mode-hook #'org-appear-mode))
+
+  ;; ── org-modern: modern org styling ──────────────────────────────────────
+  (with-eval-after-load 'org
+    (add-hook 'org-mode-hook #'org-modern-mode))
+
+  ;; ── magit-todos ─────────────────────────────────────────────────────────
+  (with-eval-after-load 'magit
+    (magit-todos-mode 1))
+
+  ;; ── direnv: auto-activate .envrc on directory change ────────────────────
+  (when (executable-find "direnv")
+    (direnv-mode))
+
+  ;; ── backup-each-save ────────────────────────────────────────────────────
+  (with-eval-after-load 'backup-each-save
+    (add-hook 'after-save-hook #'backup-each-save))
+
+  ;; ── crux: smarter C-a (indent then BOL) ─────────────────────────────────
+  (with-eval-after-load 'crux
+    (global-set-key (kbd "C-a") #'crux-move-beginning-of-line))
   )
 
 

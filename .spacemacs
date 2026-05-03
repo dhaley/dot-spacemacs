@@ -387,11 +387,6 @@ you should place your code here."
 
   (require 'dot-org-jira)
 
-  (require 'cloudwatch-tail)
-  (bind-key "C-c L" #'cwt-launch)
-  (require 'aws-ops-dashboard)
-  (bind-key "C-c D" #'aod-status)
-
   ;; Copilot: set default indentation offset, disable in large org files
   (with-eval-after-load 'copilot
     (add-to-list 'copilot-indentation-alist '(org-mode 2))
@@ -762,25 +757,14 @@ you should place your code here."
   (bind-key "C-c m" #'emacs-toggle-size)
 
 
+  ;; Cross-machine registers — same on every installation.
+  ;; Machine-specific registers belong in ~/.local/emacs/<machine>.el
   (dolist
-      (r `((?i (file . "~/.spacemacs"))
-           ;; (?a (file . "~/.emacs.d/.abbrev_defs"))
-           (?a (file . "~/~/Documents/org/ace_communications/website_administration_and_deployment_charter.org"))
-           (?b (file . "~/.profile"))
+      (r '((?i (file . "~/dot-spacemacs/.spacemacs"))
+           (?b (file . "~/.bash_profile"))
            (?B (file . "~/.bashrc"))
            (?e (file . "~/"))
-           (?t (file . "~/Documents/org/todo.txt"))
-           (?s (file . "~/.emacs.d/settings.el"))
-           (?o (file . "~/.emacs.d/dot-org.el"))
-           (?g (file . "~/.emacs.d/dot-gnus.el"))
-           (?O (file . "~/.emacs.d/org-settings.el"))
-           (?r (file . "~/src/drupal_scripts/release.sh"))
-           (?G (file . "~/.emacs.d/gnus-settings.el"))
-           (?u (file . "~/.emacs.d/site-lisp/xmsi-math-symbols-input.el"))
-           (?z (file . "~/.zshrc"))
-           (?h (file . "~/Box/projects/computational-science-general-home-page.org"))
-           (?S (file . "~/Box/projects/standup.org"))
-           ))
+           (?o (file . "~/.emacs.d/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 
   (setq w3m-home-page "https://www.google.com")
@@ -1098,11 +1082,10 @@ This function is called at the very end of Spacemacs initialization."
    '(org-clock-out-switch-to-state nil)
    '(org-clock-out-when-done t)
    '(org-clock-persist t)
-   '(org-clock-persist-file "~/.emacs.d/data/org-clock-save.el")
+   '(org-clock-persist-file "~/.emacs.d/.cache/org-clock-save.el")
    '(org-clock-persist-query-resume nil)
    '(org-clock-report-include-clocking-task t)
    '(org-clock-resolve-expert t)
-   '(org-clock-sound "/usr/local/lib/tngchime.wav")
    '(org-clone-delete-id t)
    '(org-columns-default-format
      "%80ITEM(Task) %10Effort(Effort){:} %10Confidence(Confidence) %10CLOCKSUM")
@@ -1115,7 +1098,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-deadline-warning-days 14)
    '(org-default-notes-file
      "~/Documents/org/todo.txt")
-   '(org-directory "/Users/dhaley/Box/projects")
    '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
    '(org-emphasis-alist
      '(("*" bold "<b>" "</b>") ("/" italic "<i>" "</i>")
@@ -1180,7 +1162,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-hide-leading-stars t)
    '(org-html-checkbox-type "unicode")
    '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
-   '(org-id-locations-file "~/.emacs.d/data/org-id-locations")
+   '(org-id-locations-file "~/.emacs.d/.cache/org-id-locations")
    '(org-id-method 'uuidgen)
    '(org-image-actual-width '(800))
    '(org-indirect-buffer-display 'current-window)

@@ -6,32 +6,45 @@
 ;; Setup:
 ;;   mkdir -p ~/.local/emacs
 ;;   cp home.el.template ~/.local/emacs/home.el
-;;   # Edit the paths below
-
-;;; Org file paths
-;; Set this to wherever you keep your org files
-(setq my/org-base-dir (expand-file-name "~/Documents/org"))
-
-;; Override org paths after Spacemacs init
-(add-hook 'emacs-startup-hook
-  (lambda ()
-    (let ((base my/org-base-dir))
-      ;; Create the directory if it doesn't exist
-      (make-directory base t)
-      (setq org-agenda-diary-file (expand-file-name "diary.org" base))
-      (setq org-agenda-files (list (expand-file-name "todo.txt" base)))
-      (setq org-default-notes-file (expand-file-name "todo.txt" base))
-      ;; Update capture templates
-      (setq org-capture-templates
-            `(("t" "todo" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
-               "* TODO %?\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
-              ("n" "note" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
-               "* %? :NOTE:\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
-              ("j" "Journal" entry (file+olp+datetree ,(expand-file-name "diary.org" base))
-               "* %?\n%U\n"))))))
+;;   # Edit the values below
 
 ;;; User identity
-;; (setq user-mail-address "you@example.com")
+(setq user-full-name "Your Name")
+(setq user-mail-address "you@example.com")
+
+;;; Org file paths
+;; Set this to wherever you keep your org files on this machine.
+;; Home example:  "~/Documents/org"
+;; Work example:  "~/Box/projects"  or  "~/Dropbox/org"
+(setq my/org-base-dir (expand-file-name "~/Documents/org"))
+(setq diary-file (expand-file-name "diary.org" my/org-base-dir))
+
+;; Override org paths after Spacemacs init.
+;; Uses emacs-startup-hook because custom-set-variables in .spacemacs runs
+;; after dotspacemacs/user-init, so setq here would be overridden otherwise.
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (let ((base my/org-base-dir))
+              (make-directory base t)
+              (setq org-directory base)
+              (setq org-agenda-diary-file (expand-file-name "diary.org" base))
+              (setq org-agenda-files (list (expand-file-name "todo.txt" base)))
+              (setq org-default-notes-file (expand-file-name "todo.txt" base))
+              (setq org-capture-templates
+                    `(("t" "todo" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
+                       "* TODO %?\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+                      ("n" "note" entry (file+headline ,(expand-file-name "todo.txt" base) "Inbox")
+                       "* %? :NOTE:\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+                      ("j" "Journal" entry (file+olp+datetree ,(expand-file-name "diary.org" base))
+                       "* %?\n%U\n"))))))
+
+;; Machine-specific register shortcuts.
+;; The cross-machine set (?i ?b ?B ?e ?o) is already in .spacemacs.
+;; Add anything specific to this machine here (C-x r j <key> to jump).
+;;
+;; (set-register ?t '(file . "~/Documents/org/todo.txt"))
+;; (set-register ?z '(file . "~/.zshrc"))
+;; (set-register ?h '(file . "~/Documents/org/someproject.org"))
 
 (provide 'home)
 ;;; home.el ends here

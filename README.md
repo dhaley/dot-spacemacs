@@ -257,3 +257,22 @@ Restart Emacs. If still failing, run `M-m f e R` to re-sync.
 ### Local config not loading
 
 Check that `~/.local/emacs/` exists and contains `.el` files (not `.el~` or other extensions).
+
+### modus-themes wrong-number-of-arguments error
+
+Symptom: `Debugger entered--Lisp error: (wrong-number-of-arguments #[(name palette &optional overrides) ...])`
+
+Cause: Emacs 30 ships modus-themes 4.4.0 in `etc/themes/`. The MELPA `modus-themes` package occasionally ships with `.elc` files compiled against the old 3-argument `modus-themes-theme` macro while the `.el` source has been updated to a newer API (9-argument function). This mismatch causes the error on load.
+
+Fix: Don't install the MELPA package — the built-in version is complete and self-consistent. The `themes-megapack` layer was removed from this config for this reason. If you re-add `themes-megapack`, add `modus-themes` to `dotspacemacs-excluded-packages` to prevent it from being installed:
+
+```elisp
+dotspacemacs-excluded-packages '(... modus-themes)
+```
+
+Then delete any existing stale installation and sync:
+
+```bash
+rm -rf ~/.emacs.d/elpa/develop/modus-themes-*/
+# then M-m f e R in Emacs
+```

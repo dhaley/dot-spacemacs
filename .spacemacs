@@ -1084,7 +1084,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-log-mode-items '(closed clock state))
    '(org-agenda-persistent-filter t)
    '(org-agenda-prefix-format
-     '((agenda . "  %-11c%?-12t% s") (timeline . "  % s") (todo . "  %-11c")
+     '((agenda . "  %-11c% s") (timeline . "  % s") (todo . "  %-11c")
        (tags . "  %-11c")))
    '(org-agenda-repeating-timestamp-show-all t)
    '(org-agenda-restriction-lock-highlight-subtree nil)

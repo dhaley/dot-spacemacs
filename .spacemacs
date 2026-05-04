@@ -803,8 +803,8 @@ you should place your code here."
     :init
     ;; Must be set before gptel loads — Bedrock needs curl >= 8.9 for sigv4
     (setq gptel-use-curl (or (executable-find "/opt/homebrew/opt/curl/bin/curl")
-                              (executable-find "/usr/local/opt/curl/bin/curl")
-                              t))
+                             (executable-find "/usr/local/opt/curl/bin/curl")
+                             t))
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
     (global-set-key (kbd "C-c M-g") #'gptel-menu)
@@ -861,6 +861,11 @@ you should place your code here."
         (switch-to-buffer "*af-agent*")
       (vterm "*af-agent*")
       (vterm-send-string "af-agent\n")))
+
+  ;; ── free-keys: show unbound keys in current context ─────────────────────
+  (use-package free-keys
+    :ensure t
+    :commands free-keys)
 
   ;; ── helpful: replace standard help buffers ──────────────────────────────
   (with-eval-after-load 'helpful
@@ -957,7 +962,6 @@ This function is called at the very end of Spacemacs initialization."
        "7aaee3a00f6eb16836f5b28bdccde9e1079654060d26ce4b8f49b56689c51904"
        "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
        "621595cbf6c622556432e881945dda779528e48bb57107b65d428e61a8bb7955" default))
-   '(docker-image-run-arguments '("-i" "-t" "--rm") t)
    '(evil-want-Y-yank-to-eol nil)
    '(hl-todo-keyword-faces
      '(("TODO" . "#dc752f") ("NEXT" . "#dc752f") ("THEM" . "#2d9574")
@@ -1396,8 +1400,8 @@ This function is called at the very end of Spacemacs initialization."
                  evil-surround evil-tutor evil-unimpaired evil-visual-mark-mode
                  evil-visualstar exec-path-from-shell expand-region eyebrowse f
                  fancy-battery fill-column-indicator flx flx-ido flycheck
-                 flycheck-pos-tip flyspell-correct flyspell-correct-helm geben
-                 geben-helm-projectile ggtags gh-md git-link git-messenger
+                 flycheck-pos-tip flyspell-correct flyspell-correct-helm free-keys
+                 geben geben-helm-projectile ggtags gh-md git-link git-messenger
                  git-timemachine gitattributes-mode gitconfig-mode gitignore-mode
                  gntp gnuplot go-eldoc go-guru go-mode google-translate goto-chg
                  haml-mode helm helm-ag helm-aws helm-c-yasnippet helm-company

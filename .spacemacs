@@ -849,6 +849,51 @@ you should place your code here."
         (switch-to-buffer "*af-agent*")
       (vterm "*af-agent*")
       (vterm-send-string "af-agent\n")))
+
+  ;; ── helpful: replace standard help buffers ──────────────────────────────
+  (with-eval-after-load 'helpful
+    (global-set-key (kbd "C-h f") #'helpful-callable)
+    (global-set-key (kbd "C-h v") #'helpful-variable)
+    (global-set-key (kbd "C-h k") #'helpful-key)
+    (global-set-key (kbd "C-h x") #'helpful-command))
+
+  ;; ── vundo: visual undo tree on C-x u ────────────────────────────────────
+  (with-eval-after-load 'vundo
+    (global-set-key (kbd "C-x u") #'vundo))
+
+  ;; ── pdf-tools ───────────────────────────────────────────────────────────
+  (with-eval-after-load 'pdf-tools
+    (pdf-tools-install :no-query))
+
+  ;; ── org-refile: exclude DONE headings from targets ───────────────────────
+  (defun my/verify-refile-target ()
+    (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
+  ;; ── org-appear: show emphasis markers when cursor is on them ────────────
+  (with-eval-after-load 'org
+    (add-hook 'org-mode-hook #'org-appear-mode))
+
+  ;; ── org-modern: modern org styling ──────────────────────────────────────
+  (with-eval-after-load 'org-modern
+    (setq org-modern-star ["◉" "○" "✸" "✿" "◆" "◇"]))
+  (with-eval-after-load 'org
+    (add-hook 'org-mode-hook #'org-modern-mode))
+
+  ;; ── magit-todos ─────────────────────────────────────────────────────────
+  (with-eval-after-load 'magit
+    (magit-todos-mode 1))
+
+  ;; ── direnv: auto-activate .envrc on directory change ────────────────────
+  (when (executable-find "direnv")
+    (direnv-mode))
+
+  ;; ── backup-each-save ────────────────────────────────────────────────────
+  (with-eval-after-load 'backup-each-save
+    (add-hook 'after-save-hook #'backup-each-save))
+
+  ;; ── crux: smarter C-a (indent then BOL) ─────────────────────────────────
+  (with-eval-after-load 'crux
+    (global-set-key (kbd "C-a") #'crux-move-beginning-of-line))
   )
 
 
@@ -1219,9 +1264,11 @@ This function is called at the very end of Spacemacs initialization."
        (67 :foreground "dark gray" :slant italic)))
    '(org-priority-lowest 69)
    '(org-refile-allow-creating-parent-nodes 'confirm)
-   '(org-refile-target-verify-function 'bh/verify-refile-target)
-   '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
-   '(org-refile-use-outline-path t)
+   '(org-refile-target-verify-function 'my/verify-refile-target)
+   '(org-refile-targets '((org-agenda-files :level . 1)))
+   '(org-refile-use-cache t)
+   '(org-refile-use-outline-path 'file)
+   '(org-outline-path-complete-in-steps nil)
    '(org-remove-highlights-with-change t)
    '(org-return-follows-link t)
    '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")

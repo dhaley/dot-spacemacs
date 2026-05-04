@@ -774,6 +774,7 @@ you should place your code here."
            (?b (file . "~/.bash_profile"))
            (?B (file . "~/.bashrc"))
            (?e (file . "~/.spacemacs"))
+           (?j (file . "~/dot-spacemacs/dot-org.el"))
            (?o (file . "~/.emacs.d/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 

@@ -343,6 +343,14 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq insert-directory-program "/opt/homebrew/bin/gls")
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
+  ;; Add nvm node bin dirs so GUI Emacs finds `claude` and other node tools
+  (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
+    (when (file-directory-p nvm-node-dir)
+      (dolist (v (directory-files nvm-node-dir t "^v"))
+        (let ((bin (expand-file-name "bin" v)))
+          (when (file-directory-p bin)
+            (add-to-list 'exec-path bin)
+            (setenv "PATH" (concat bin ":" (getenv "PATH"))))))))
   ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
   (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
   ;; Also prepend to exec-path and PATH so gptel-bedrock--curl-version finds it

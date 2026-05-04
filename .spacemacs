@@ -7,6 +7,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'load-path "~/dot-spacemacs")
+(add-to-list 'load-path "~/src/dot-emacs/lisp/claude-code-ide")
+(add-to-list 'load-path "~/src/dot-emacs/lisp")
 
 (eval-and-compile
   (defvar use-package-verbose nil)
@@ -97,6 +99,7 @@ values."
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php
                                                          gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
+                                                         websocket web-server
                                                          ;; From JW's config
                                                          olivetti restclient
                                                          helpful org-appear org-modern
@@ -770,7 +773,7 @@ you should place your code here."
       (r '((?i (file . "~/dot-spacemacs/.spacemacs"))
            (?b (file . "~/.bash_profile"))
            (?B (file . "~/.bashrc"))
-           (?e (file . "~/"))
+           (?e (file . "~/.spacemacs"))
            (?o (file . "~/.emacs.d/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 
@@ -782,8 +785,8 @@ you should place your code here."
   (setq w3m-command-arguments '("-cookie" "-F"))
   (setq w3m-use-cookies t)
   ;; W3M use cookies
-  (setq browse-url-browser-function 'w3m-browse-url)
-  ;; Browse url function use w3m
+  (setq browse-url-browser-function 'browse-url-default-macosx-browser)
+  ;; Browse url function use macOS default browser (Safari)
   (setq w3m-view-this-url-new-session-in-background t)
   ;; W3M view url new session in background
   (setq flycheck-python-flake8-executable "flake8")
@@ -799,10 +802,17 @@ you should place your code here."
     :defer t
     :init
     ;; Must be set before gptel loads — Bedrock needs curl >= 8.9 for sigv4
-    (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+    (setq gptel-use-curl (or (executable-find "/opt/homebrew/opt/curl/bin/curl")
+                              (executable-find "/usr/local/opt/curl/bin/curl")
+                              t))
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
-    (global-set-key (kbd "C-c M-g") #'gptel-menu))
+    (global-set-key (kbd "C-c M-g") #'gptel-menu)
+    :config
+    (require 'gptel-anthropic-oauth)
+    (let ((claude (gptel-make-anthropic-oauth "Claude" :stream t)))
+      (setq gptel-backend claude
+            gptel-model 'claude-sonnet-4-6)))
 
   ;; gptel-bedrock, MCP, and tool config in ~/.local/emacs/work.el
 
@@ -811,6 +821,15 @@ you should place your code here."
     :after gptel
     :config
     (require 'mcp-hub))
+
+  ;; ── claude-code-ide: Claude Code CLI ↔ Emacs via WebSocket MCP ──
+  (use-package claude-code-ide
+    :demand t
+    :bind ("C-x c c" . claude-code-ide-menu)
+    :custom
+    (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
+    :config
+    (claude-code-ide-emacs-tools-setup))
 
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
   ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).

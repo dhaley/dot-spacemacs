@@ -104,7 +104,7 @@ values."
                                                          helpful org-appear org-modern
                                                          magit-todos pdf-tools direnv sudo-edit crux backup-each-save
                                                          ;; Already installed but pinned explicitly to prevent pruning
-                                                         vundo string-inflection)
+                                                         vundo string-inflection free-keys)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -825,11 +825,37 @@ you should place your code here."
   ;; ── claude-code-ide: Claude Code CLI ↔ Emacs via WebSocket MCP ──
   (use-package claude-code-ide
     :demand t
-    :bind ("C-x c c" . claude-code-ide-menu)
+    :bind (("C-x c c" . claude-code-ide-menu)
+           ("C-'"     . my/claude-code-ide-switch-to-any))
     :custom
     (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
     :config
-    (claude-code-ide-emacs-tools-setup))
+    (claude-code-ide-emacs-tools-setup)
+    (defun my/claude-code-ide-switch-to-any ()
+      "Switch to the Claude buffer for the current project.
+Falls back to the sole active session or prompts when project has none."
+      (interactive)
+      (condition-case nil
+          (claude-code-ide-switch-to-buffer)
+        (user-error
+         (let ((count (hash-table-count claude-code-ide--processes)))
+           (cond
+            ((= count 0)
+             (let ((orphan (seq-find
+                            (lambda (b) (string-match-p "^\\*claude-code" (buffer-name b)))
+                            (buffer-list))))
+               (if orphan
+                   (claude-code-ide--display-buffer-in-side-window orphan)
+                 (claude-code-ide))))
+            ((= count 1)
+             (let* ((dir (car (hash-table-keys claude-code-ide--processes)))
+                    (buf (get-buffer (funcall claude-code-ide-buffer-name-function dir))))
+               (if buf
+                   (if-let ((win (get-buffer-window buf)))
+                       (select-window win)
+                     (claude-code-ide--display-buffer-in-side-window buf))
+                 (user-error "Claude buffer for session no longer exists"))))
+            (t (claude-code-ide-list-sessions))))))))
 
   ;; ── agent-shell: Run af-agent (deepagents-cli) natively in Emacs ──
   ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).

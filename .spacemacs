@@ -858,11 +858,17 @@ you should place your code here."
   (with-eval-after-load 'pdf-tools
     (pdf-tools-install :no-query))
 
+  ;; ── org-refile: exclude DONE headings from targets ───────────────────────
+  (defun my/verify-refile-target ()
+    (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
   ;; ── org-appear: show emphasis markers when cursor is on them ────────────
   (with-eval-after-load 'org
     (add-hook 'org-mode-hook #'org-appear-mode))
 
   ;; ── org-modern: modern org styling ──────────────────────────────────────
+  (with-eval-after-load 'org-modern
+    (setq org-modern-star ["◉" "○" "✸" "✿" "◆" "◇"]))
   (with-eval-after-load 'org
     (add-hook 'org-mode-hook #'org-modern-mode))
 
@@ -1249,9 +1255,11 @@ This function is called at the very end of Spacemacs initialization."
        (67 :foreground "dark gray" :slant italic)))
    '(org-priority-lowest 69)
    '(org-refile-allow-creating-parent-nodes 'confirm)
-   '(org-refile-target-verify-function 'bh/verify-refile-target)
-   '(org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9)))
-   '(org-refile-use-outline-path t)
+   '(org-refile-target-verify-function 'my/verify-refile-target)
+   '(org-refile-targets '((org-agenda-files :level . 1)))
+   '(org-refile-use-cache t)
+   '(org-refile-use-outline-path 'file)
+   '(org-outline-path-complete-in-steps nil)
    '(org-remove-highlights-with-change t)
    '(org-return-follows-link t)
    '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")

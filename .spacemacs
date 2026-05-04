@@ -96,17 +96,17 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php
-                                       gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
-                                       ;; From JW's config
-                                       olivetti restclient
-                                       helpful org-appear org-modern
-                                       magit-todos pdf-tools direnv sudo-edit crux backup-each-save
-                                       ;; Already installed but pinned explicitly to prevent pruning
-                                       vundo string-inflection)
+                                                         gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
+                                                         ;; From JW's config
+                                                         olivetti restclient
+                                                         helpful org-appear org-modern
+                                                         magit-todos pdf-tools direnv sudo-edit crux backup-each-save
+                                                         ;; Already installed but pinned explicitly to prevent pruning
+                                                         vundo string-inflection)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -909,7 +909,8 @@ This function is called at the very end of Spacemacs initialization."
    '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
    '(browse-url-browser-function 'browse-url-default-browser)
    '(custom-safe-themes
-     '("dde7fb0b1ed1bb5b61e62bf1a00696cf099a2b290718aee9b377365b3ed992f0"
+     '("967c23e9ba179b80560774419f081df22e7674aac23c5c550b817e4a1ce7d058"
+       "dde7fb0b1ed1bb5b61e62bf1a00696cf099a2b290718aee9b377365b3ed992f0"
        "2b0fcc7cc9be4c09ec5c75405260a85e41691abb1ee28d29fcd5521e4fca575b"
        "a75fc55d480accd6f651d1bae492b7ab4c5b28894350b63ef39bf947bb8fd453"
        "f205f6f7fc55a6b1e206e88445931ac46ec9a70f124291667809707ddbe63c04"
@@ -976,7 +977,6 @@ This function is called at the very end of Spacemacs initialization."
        ("h" "Habits" tags-todo "STYLE=\"habit\""
         ((org-agenda-overriding-header "Habits")
          (org-agenda-sorting-strategy '(todo-state-down effort-up category-keep))))
-       ;; Jira team agenda commands added by ~/.local/emacs/work.el
        (" " "Agenda"
         ((agenda "" nil)
          (tags "REFILE"
@@ -1056,8 +1056,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-exporter-settings
      '((org-agenda-write-buffer-name "Damon's VC-Rsrch/Dean-Grad Agenda")))
    '(org-agenda-files
-     '("~/Documents/org/todo.txt"
-       "~/Documents/org/from-mobile.org"))
+     '("~/Documents/org/todo.txt" "~/Documents/org/from-mobile.org"))
    '(org-agenda-fontify-priorities t)
    '(org-agenda-include-diary nil)
    '(org-agenda-inhibit-startup t)
@@ -1105,23 +1104,32 @@ This function is called at the very end of Spacemacs initialization."
    '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
    '(org-capture-templates
      '(("t" "todo" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* TODO %?\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+        "* TODO %?\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t)
        ("a" "article" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* TODO %?\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+        "* TODO %?\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t)
        ("r" "respond" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :immediate-finish t)
+        "* NEXT Respond to %:from on %:subject\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t :immediate-finish t)
        ("n" "note" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* %? :NOTE:\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t)
+        "* %? :NOTE:\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t)
        ("j" "Journal" entry (file+olp+datetree "~/Documents/org/diary.org")
-        "* %?\n%U\n")
+        "* %?\12%U\12")
        ("m" "Meeting" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* MEETING with %? :MEETING:\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :clock-in t :clock-resume t)
+        "* MEETING with %? :MEETING:\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t :clock-in t :clock-resume t)
        ("p" "Phone call" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* PHONE %? :PHONE:\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:END:\n" :prepend t :clock-in t :clock-resume t)
+        "* PHONE %? :PHONE:\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:END:\12"
+        :prepend t :clock-in t :clock-resume t)
        ("h" "Habit" entry (file+headline "~/Documents/org/todo.txt" "Inbox")
-        "* NEXT %?\nSCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n" :prepend t)
-       ("J" "Jira Task" entry (file+headline "~/Documents/org/todo.txt" "Org Jira")
-        "* TODO %^{Summary}\nSCHEDULED: %t\n:PROPERTIES:\n:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\n:jira-project: CO\n:jira-type: Task\n:jira-priority: Major\n:jira-assignee: dhaley\n:jira-epic: OPS INT - Misc\n:jira-sprint: %(org-jira--capture-default-sprint)\n:jira-component: Ops\n:jira-labels: maintenance\n:jira-story-points: 1\n:jira-due-date: %(org-jira--capture-default-due-date)\n:jira-servicenow-link:\n:jira-task-number:\n:jira-contact-email:\n:jira-fix-version:\n:END:\n%?" :prepend t)))
+        "* NEXT %?\12SCHEDULED: %(format-time-string \"%<<%Y-%m-%d %a .+1d/3d>>\")\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:STYLE: habit\12:REPEAT_TO_STATE: NEXT\12:END:\12"
+        :prepend t)
+       ("J" "Jira Task" entry
+        (file+headline "~/Documents/org/todo.txt" "Org Jira")
+        "* TODO %^{Summary}\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:jira-project: CO\12:jira-type: Task\12:jira-priority: Major\12:jira-assignee: dhaley\12:jira-epic: OPS INT - Misc\12:jira-sprint: %(org-jira--capture-default-sprint)\12:jira-component: Ops\12:jira-labels: maintenance\12:jira-story-points: 1\12:jira-due-date: %(org-jira--capture-default-due-date)\12:jira-servicenow-link:\12:jira-task-number:\12:jira-contact-email:\12:jira-fix-version:\12:END:\12%?"
+        :prepend t)))
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)
@@ -1148,8 +1156,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-cycle-include-plain-lists t)
    '(org-cycle-separator-lines 0)
    '(org-deadline-warning-days 14)
-   '(org-default-notes-file
-     "~/Documents/org/todo.txt")
+   '(org-default-notes-file "~/Documents/org/todo.txt")
    '(org-ditaa-jar-path "~/bin/DitaaEps/DitaaEps.jar")
    '(org-emphasis-alist
      '(("*" bold "<b>" "</b>") ("/" italic "<i>" "</i>")
@@ -1160,15 +1167,42 @@ This function is called at the very end of Spacemacs initialization."
    '(org-enable-github-support t t)
    '(org-enforce-todo-dependencies t)
    '(org-export-allow-BIND t)
-   '(org-html-inline-images t)
+   '(org-export-use-babel nil)
+   '(org-export-with-section-numbers nil)
+   '(org-export-with-sub-superscripts '{})
+   '(org-export-with-timestamps nil)
+   '(org-extend-today-until 7)
+   '(org-fast-tag-selection-single-key 'expert)
+   '(org-file-apps
+     '((auto-mode . emacs) ("\\.mm\\'" . system) ("\\.x?html?\\'" . system)
+       ("\\.pdf\\'" . "open -a Skim %s")))
+   '(org-fold-catch-invisible-edits 'error)
+   '(org-fontify-done-headline t)
+   '(org-footnote-section nil)
+   '(org-global-properties
+     '(("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
+       ("Confidence_ALL" . "low medium high") ("STYLE_ALL" . "habit")))
+   '(org-habit-graph-column 50)
+   '(org-habit-preceding-days 42)
+   '(org-habit-today-glyph 45)
+   '(org-hide-leading-stars t)
+   '(org-html-checkbox-type "unicode")
    '(org-html-head
      "<link rel=\"stylesheet\" href=\"http://doc.norang.ca/org.css\" type=\"text/css\" />")
    '(org-html-head-include-default-style nil)
+   '(org-html-htmlize-output-type 'css)
+   '(org-html-inline-images t)
    '(org-html-xml-declaration
      '(("html" . "") ("was-html" . "<?xml version=\"1.0\" encoding=\"%s\"?>")
        ("php"
         . "<?php echo \"<?xml version=\\\"1.0\\\" encoding=\\\"%s\\\" ?>\"; ?>")))
-   '(org-html-htmlize-output-type 'css)
+   '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+   '(org-id-locations-file "~/.emacs.d/.cache/org-id-locations")
+   '(org-id-method 'uuidgen)
+   '(org-image-actual-width '(800))
+   '(org-indirect-buffer-display 'current-window)
+   '(org-insert-heading-respect-content t)
+   '(org-irc-link-to-logs t t)
    '(org-latex-classes
      '(("article" "\\documentclass[11pt]{article}"
         ("\\section{%s}" . "\\section*{%s}")
@@ -1192,45 +1226,17 @@ This function is called at the very end of Spacemacs initialization."
         ("\\subsection{%s}" . "\\subsection*{%s}")
         ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
        ("beamer" "\\documentclass{beamer}" org-beamer-sectioning)))
-   '(org-latex-listings t)
-   '(org-export-use-babel nil)
-   '(org-export-with-section-numbers nil)
-   '(org-export-with-sub-superscripts '{})
-   '(org-export-with-timestamps nil)
-   '(org-extend-today-until 7)
-   '(org-fast-tag-selection-single-key 'expert)
-   '(org-file-apps
-     '((auto-mode . emacs) ("\\.mm\\'" . system) ("\\.x?html?\\'" . system)
-       ("\\.pdf\\'" . "open -a Skim %s")))
-   '(org-fold-catch-invisible-edits 'error)
-   '(org-fontify-done-headline t)
-   '(org-footnote-section nil)
-   '(org-global-properties
-     '(("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
-       ("Confidence_ALL" . "low medium high") ("STYLE_ALL" . "habit")))
-   '(org-habit-graph-column 50)
-   '(org-habit-preceding-days 42)
-   '(org-habit-today-glyph 45)
-   '(org-hide-leading-stars t)
-   '(org-html-checkbox-type "unicode")
-   '(org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
-   '(org-id-locations-file "~/.emacs.d/.cache/org-id-locations")
-   '(org-id-method 'uuidgen)
-   '(org-image-actual-width '(800))
-   '(org-indirect-buffer-display 'current-window)
-   '(org-insert-heading-respect-content t)
-   '(org-irc-link-to-logs t t)
    '(org-latex-default-packages-alist
      '(("T1" "fontenc" t) ("" "fixltx2e" nil) ("" "graphicx" t) ("" "longtable" nil)
        ("" "float" nil) ("" "wrapfig" nil) ("" "rotating" nil)
        ("normalem" "ulem" t) ("" "amsmath" t) ("" "textcomp" t) ("" "marvosym" t)
        ("" "wasysym" t) ("" "amssymb" t) ("" "hyperref" nil) "\\tolerance=1000"))
+   '(org-latex-src-block-backend t)
    '(org-link-abbrev-alist
      '(("gmail" . "https://mail.google.com/mail/u/0/#all/%s")
        ("google" . "http://www.google.com/search?q=%s")
        ("map" . "http://maps.google.com/maps?q=%s")
-       ("github" . "https://github.com")
-       ))
+       ("github" . "https://github.com")))
    '(org-link-elisp-confirm-function nil)
    '(org-link-frame-setup
      '((vm . vm-visit-folder) (gnus . org-gnus-no-new-news) (file . find-file)))
@@ -1259,7 +1265,6 @@ This function is called at the very end of Spacemacs initialization."
    '(org-refile-targets '((org-agenda-files :level . 1)))
    '(org-refile-use-cache t)
    '(org-refile-use-outline-path 'file)
-   '(org-outline-path-complete-in-steps nil)
    '(org-remove-highlights-with-change t)
    '(org-return-follows-link t)
    '(org-reveal-root "/Users/dhaley/src/reveal.js/js/reveal.js")

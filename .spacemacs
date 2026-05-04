@@ -341,14 +341,6 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq insert-directory-program "/opt/homebrew/bin/gls")
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
-  ;; Add nvm node bin dirs so GUI Emacs finds `claude` and other node tools
-  (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
-    (when (file-directory-p nvm-node-dir)
-      (dolist (v (directory-files nvm-node-dir t "^v"))
-        (let ((bin (expand-file-name "bin" v)))
-          (when (file-directory-p bin)
-            (add-to-list 'exec-path bin)
-            (setenv "PATH" (concat bin ":" (getenv "PATH"))))))))
   ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
   (setq gptel-use-curl (or (executable-find "/opt/homebrew/opt/curl/bin/curl")
                            (executable-find "/usr/local/opt/curl/bin/curl")
@@ -824,12 +816,30 @@ you should place your code here."
     :config
     (require 'mcp-hub))
 
+  ;; ── nvm node bins: add after exec-path-from-shell-initialize runs ────────
+  (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
+    (when (file-directory-p nvm-node-dir)
+      (dolist (v (directory-files nvm-node-dir t "^v"))
+        (let ((bin (expand-file-name "bin" v)))
+          (when (file-directory-p bin)
+            (add-to-list 'exec-path bin t)
+            (setenv "PATH" (concat (getenv "PATH") ":" bin)))))))
+
   ;; ── claude-code-ide: Claude Code CLI ↔ Emacs via WebSocket MCP ──
   (use-package claude-code-ide
     :demand t
     :bind (("C-x c c" . claude-code-ide-menu)
            ("C-'"     . my/claude-code-ide-switch-to-any))
     :custom
+    (claude-code-ide-cli-path
+     (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
+       (or (executable-find "claude")
+           (cl-some (lambda (v)
+                      (let ((p (expand-file-name "bin/claude" v)))
+                        (when (file-executable-p p) p)))
+                    (and (file-directory-p nvm-node-dir)
+                         (directory-files nvm-node-dir t "^v")))
+           "claude")))
     (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
     :config
     (claude-code-ide-emacs-tools-setup)

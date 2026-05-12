@@ -808,11 +808,20 @@ you should place your code here."
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
     (global-set-key (kbd "C-c M-g") #'gptel-menu)
+    (global-set-key (kbd "C-\"") #'my/gptel-switch-to-claude)
     :config
     (require 'gptel-anthropic-oauth)
     (let ((claude (gptel-make-anthropic-oauth "Claude" :stream t)))
       (setq gptel-backend claude
-            gptel-model 'claude-sonnet-4-6)))
+            gptel-model 'claude-sonnet-4-6))
+    (defun my/gptel-switch-to-claude ()
+      "Switch to the *Claude* gptel buffer, creating it if needed."
+      (interactive)
+      (if-let ((buf (get-buffer "*Claude*")))
+          (if-let ((win (get-buffer-window buf)))
+              (select-window win)
+            (switch-to-buffer buf))
+        (gptel "*Claude*"))))
 
   ;; gptel-bedrock, MCP, and tool config in ~/.local/emacs/work.el
 

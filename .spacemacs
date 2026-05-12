@@ -822,15 +822,6 @@ you should place your code here."
     :config
     (require 'mcp-hub))
 
-  ;; ── nvm node bins: add after exec-path-from-shell-initialize runs ────────
-  (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
-    (when (file-directory-p nvm-node-dir)
-      (dolist (v (directory-files nvm-node-dir t "^v"))
-        (let ((bin (expand-file-name "bin" v)))
-          (when (file-directory-p bin)
-            (add-to-list 'exec-path bin t)
-            (setenv "PATH" (concat (getenv "PATH") ":" bin)))))))
-
   ;; ── claude-code-ide: Claude Code CLI ↔ Emacs via WebSocket MCP ──
   (use-package claude-code-ide
     :demand t
@@ -838,14 +829,8 @@ you should place your code here."
            ("C-'"     . my/claude-code-ide-switch-to-any))
     :custom
     (claude-code-ide-cli-path
-     (let ((nvm-node-dir (expand-file-name "~/.nvm/versions/node")))
-       (or (executable-find "claude")
-           (cl-some (lambda (v)
-                      (let ((p (expand-file-name "bin/claude" v)))
-                        (when (file-executable-p p) p)))
-                    (and (file-directory-p nvm-node-dir)
-                         (directory-files nvm-node-dir t "^v")))
-           "claude")))
+     (let ((p (string-trim (shell-command-to-string "bash -l -c 'which claude 2>/dev/null'"))))
+       (if (string-empty-p p) "claude" p)))
     (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
     :config
     (claude-code-ide-emacs-tools-setup)

@@ -231,12 +231,12 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '(;; Include all states but only from open/future sprints
-          (:jql "project = CO AND assignee = dhaley AND sprint in openSprints() ORDER BY updated DESC"
+        '(;; All states from active/future sprints + backlog (no sprint)
+          (:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC"
                 :limit 200
                 :filename "co-dhaley")))
 
-  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND sprint in openSprints() ORDER BY updated DESC")
+  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC")
 
   ;; Override SDK to extract sprint name from customfield_10005 (Jira Server)
   ;; and add story points from customfield_10002.

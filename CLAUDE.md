@@ -23,6 +23,21 @@ This setup uses **holy-mode** (standard Emacs keybindings), NOT evil-mode or vim
 - `master` — shared config that works on both home and work machines
 - Machine-specific config lives in `~/.local/emacs/` (not in this repo)
 
+## What goes where
+
+### In `.spacemacs` (shared):
+- Package declarations (use-package, additional-packages)
+- Keybindings (C-c g, C-', C-", etc.)
+- UI/UX preferences (themes, org-mode, helpful, etc.)
+- claude-code-ide use-package (CLI path resolution works everywhere)
+
+### In `~/.local/emacs/` (machine-specific):
+- **gptel backends/providers** — home uses Anthropic OAuth, work uses AWS Bedrock
+- **gptel model selection** — different models available per account
+- **MCP server configs** — different tools at home vs work
+- **Credentials/tokens** — API keys, AWS profiles
+- Any config that references account-specific resources (inference profiles, endpoints)
+
 ## Switching home from `home` branch to `master`
 
 The `home` branch has Claude-specific config baked into `.spacemacs`. On `master`, that config must move to `~/.local/emacs/home.el`.
@@ -38,30 +53,23 @@ The `home` branch has Claude-specific config baked into `.spacemacs`. On `master
 ```elisp
 ;;; home.el — Home-specific Emacs config (Claude, personal accounts)
 
-;; ── Load paths for claude-code-ide ────────────────────────────────────────
-(add-to-list 'load-path "~/src/dot-emacs/lisp/claude-code-ide")
-(add-to-list 'load-path "~/src/dot-emacs/lisp")
-
-;; ── gptel: use personal Claude account via OAuth ──────────────────────────
+;; ── gptel: configure Claude subscription backend ──────────────────────────
+;; The shared .spacemacs defines keybindings (C-c g, C-c G, C-c M-g) and
+;; the my/gptel-with-backend selector. Backends themselves are defined here
+;; because they differ between home (Anthropic OAuth) and work (AWS Bedrock).
 (with-eval-after-load 'gptel
   (require 'gptel-anthropic-oauth)
-  (let ((claude (gptel-make-anthropic-oauth "Claude" :stream t)))
-    (setq gptel-backend claude
-          gptel-model 'claude-sonnet-4-6)))
+  (setq gptel-model 'claude-sonnet-4-6
+        gptel-backend
+        (gptel-make-anthropic-oauth "Claude" :stream t))
 
-;; ── claude-code-ide: Claude Code CLI ↔ Emacs via WebSocket MCP ────────────
-(use-package claude-code-ide
-  :demand t
-  :bind ("C-x c c" . claude-code-ide-menu)
-  :custom
-  (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
-  :config
-  (claude-code-ide-emacs-tools-setup))
+  ;; Optional: add a second backend for variety
+  ;; (gptel-make-anthropic-oauth "Claude-Opus" :stream t)
+  )
 
-;; ── free-keys: show unbound keys in current context ───────────────────────
-(use-package free-keys
-  :ensure t
-  :commands free-keys)
+;; ── claude-code-ide: uses personal Claude subscription via CLI ────────────
+;; The CLI authenticates via `claude login` (not Bedrock).
+;; No env vars needed — the CLI handles auth itself.
 ```
 
 ### What changed between `home` and `master`:

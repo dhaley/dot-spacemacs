@@ -7,8 +7,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'load-path "~/dot-spacemacs")
-(add-to-list 'load-path "~/src/dot-emacs/lisp/claude-code-ide")
-(add-to-list 'load-path "~/src/dot-emacs/lisp")
+(add-to-list 'load-path "~/dot-spacemacs/lisp/claude-code-ide")
+(add-to-list 'load-path "~/dot-spacemacs/lisp")
 
 (eval-and-compile
   (defvar use-package-verbose nil)

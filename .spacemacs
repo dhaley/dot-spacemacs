@@ -841,7 +841,7 @@ you should place your code here."
   (use-package claude-code-ide
     :demand t
     :bind (("C-x c c" . claude-code-ide-menu)
-           ("C-'"     . my/claude-code-ide-switch-to-any))
+           ("C-!"     . my/claude-code-ide-switch-to-any))
     :custom
     (claude-code-ide-cli-path
      (let ((p (string-trim (shell-command-to-string "bash -l -c 'which claude 2>/dev/null'"))))

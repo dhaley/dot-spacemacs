@@ -387,8 +387,6 @@ you should place your code here."
 
   (require 'dot-org-jira)
 
-  (require 'cloudwatch-tail)
-  (bind-key "C-c L" #'cwt-launch)
   (require 'aws-ops-dashboard)
   (bind-key "C-c D" #'aod-status)
 

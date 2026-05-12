@@ -831,6 +831,7 @@ you should place your code here."
     (claude-code-ide-cli-path
      (let ((p (string-trim (shell-command-to-string "bash -l -c 'which claude 2>/dev/null'"))))
        (if (string-empty-p p) "claude" p)))
+    (claude-code-ide-terminal-backend 'eat)
     (claude-code-ide-cli-extra-flags "--dangerously-skip-permissions")
     :config
     (claude-code-ide-emacs-tools-setup)

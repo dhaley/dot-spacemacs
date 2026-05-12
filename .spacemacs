@@ -341,6 +341,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
           "JENKINS_API_USER" "JENKINS_API_TOKEN"))
   (setq insert-directory-program "/opt/homebrew/bin/gls")
+  ;; libgccjit needs GCC runtime libs for native-comp at runtime
+  (setenv "LIBRARY_PATH"
+          (string-join '("/opt/homebrew/lib/gcc/current"
+                         "/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/15")
+                       ":"))
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; Add nvm node bin dirs so GUI Emacs finds `claude` and other node tools

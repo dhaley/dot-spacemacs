@@ -231,12 +231,12 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '(;; Only sync my issues by default
-          (:jql "project = CO AND assignee = dhaley AND statusCategory != Done ORDER BY updated DESC"
+        '(;; Include all states — done tasks show in sprint summary
+          (:jql "project = CO AND assignee = dhaley ORDER BY updated DESC"
                 :limit 200
                 :filename "co-dhaley")))
 
-  (setq org-jira-default-jql "project = CO AND assignee = dhaley AND statusCategory != Done ORDER BY updated DESC")
+  (setq org-jira-default-jql "project = CO AND assignee = dhaley ORDER BY updated DESC")
 
   ;; Override SDK to extract sprint name from customfield_10005 (Jira Server)
   ;; and add story points from customfield_10002.

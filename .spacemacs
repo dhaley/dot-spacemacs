@@ -108,7 +108,7 @@ values."
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -344,7 +344,9 @@ before packages are loaded. If you are unsure, you should try in setting them in
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; Prefer Homebrew curl (newer) for better streaming support in gptel
-  (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
+  (setq gptel-use-curl (or (executable-find "/opt/homebrew/opt/curl/bin/curl")
+                           (executable-find "/usr/local/opt/curl/bin/curl")
+                           t))
   (add-to-list 'exec-path "/opt/homebrew/opt/curl/bin")
   (setenv "PATH" (concat "/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
 
@@ -785,7 +787,7 @@ you should place your code here."
   (setq w3m-use-cookies t)
   ;; W3M use cookies
   (setq browse-url-browser-function 'browse-url-default-macosx-browser)
-  ;; Browse url function use macOS default browser (Safari)
+  ;; Browse url function use macOS default browser
   (setq w3m-view-this-url-new-session-in-background t)
   ;; W3M view url new session in background
   (setq flycheck-python-flake8-executable "flake8")
@@ -807,20 +809,17 @@ you should place your code here."
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
     (global-set-key (kbd "C-c M-g") #'gptel-menu)
-    (global-set-key (kbd "C-\"") #'my/gptel-switch-to-claude)
-    :config
-    (require 'gptel-anthropic-oauth)
-    (let ((claude (gptel-make-anthropic-oauth "Claude" :stream t)))
-      (setq gptel-backend claude
-            gptel-model 'claude-sonnet-4-6))
-    (defun my/gptel-switch-to-claude ()
-      "Switch to the *Claude* gptel buffer, creating it if needed."
-      (interactive)
-      (if-let ((buf (get-buffer "*Claude*")))
-          (if-let ((win (get-buffer-window buf)))
-              (select-window win)
-            (switch-to-buffer buf))
-        (gptel "*Claude*"))))
+    (global-set-key (kbd "C-\"") #'my/gptel-switch-to-claude))
+
+  ;; gptel backend/model configured in ~/.local/emacs/home.el (OAuth) or work.el (Bedrock)
+  (defun my/gptel-switch-to-claude ()
+    "Switch to the *Claude* gptel buffer, creating it if needed."
+    (interactive)
+    (if-let ((buf (get-buffer "*Claude*")))
+        (if-let ((win (get-buffer-window buf)))
+            (select-window win)
+          (switch-to-buffer buf))
+      (gptel "*Claude*")))
 
   ;; gptel Bedrock backend and work-specific MCP/tool config in ~/.local/emacs/work.el
 
@@ -904,6 +903,7 @@ Falls back to the sole active session or prompts when project has none."
   (use-package free-keys
     :ensure t
     :commands free-keys)
+
 
   ;; ── helpful: replace standard help buffers ──────────────────────────────
   (with-eval-after-load 'helpful

@@ -1,6 +1,6 @@
 ;; -*- mode: emacs-lisp -*-
 ;; This file is loaded by Spacemacs at startup.
-y;; It must be stored in your home directory.
+;; It must be stored in your home directory.
 
 (defconst user-site-lisp-directory
   (expand-file-name "site-lisp/" user-emacs-directory))

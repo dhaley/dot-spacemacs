@@ -235,8 +235,8 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
           (:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC"
                 :limit 200
                 :filename "co-dhaley")
-          ;; Closed sprints this FY (separate file)
-          (:jql "project = CO AND assignee = dhaley AND sprint in closedSprints() AND updated >= 2025-10-01 ORDER BY updated DESC"
+          ;; Closed sprints this FY (separate file) - ordered by sprint for reverse-chrono grouping
+          (:jql "project = CO AND assignee = dhaley AND sprint in closedSprints() AND updated >= 2025-10-01 ORDER BY sprint DESC, updated DESC"
                 :limit 200
                 :filename "co-dhaley-closed")))
 

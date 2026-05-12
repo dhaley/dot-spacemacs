@@ -231,10 +231,14 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '(;; All states from active/future sprints + backlog + closed sprints this FY
-          (:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY OR (sprint in closedSprints() AND updated >= 2025-10-01)) ORDER BY updated DESC"
+        '(;; Active/future sprints + backlog
+          (:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC"
                 :limit 200
-                :filename "co-dhaley")))
+                :filename "co-dhaley")
+          ;; Closed sprints this FY (separate file)
+          (:jql "project = CO AND assignee = dhaley AND sprint in closedSprints() AND updated >= 2025-10-01 ORDER BY updated DESC"
+                :limit 200
+                :filename "co-dhaley-closed")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC")
 

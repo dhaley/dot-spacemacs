@@ -343,9 +343,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq insert-directory-program "/opt/homebrew/bin/gls")
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
-  ;; gptel Bedrock backend needs curl >= 8.9 for sigv4 — set before any package loads
+  ;; Prefer Homebrew curl (newer) for better streaming support in gptel
   (setq gptel-use-curl "/opt/homebrew/opt/curl/bin/curl")
-  ;; Also prepend to exec-path and PATH so gptel-bedrock--curl-version finds it
   (add-to-list 'exec-path "/opt/homebrew/opt/curl/bin")
   (setenv "PATH" (concat "/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
 
@@ -796,12 +795,12 @@ you should place your code here."
   (with-eval-after-load 'lsp-mode
     (add-to-list 'lsp-enabled-clients 'pylsp))
 
-  ;; ── gptel: Bedrock Sonnet 4.6 via Appfleet Agentic inference profiles ──
+  ;; ── gptel: Claude via OAuth (claude.ai subscription) ─────────────────────
   (use-package gptel
     :ensure t
     :defer t
     :init
-    ;; Must be set before gptel loads — Bedrock needs curl >= 8.9 for sigv4
+    ;; Prefer Homebrew curl for better streaming; set before gptel loads
     (setq gptel-use-curl (or (executable-find "/opt/homebrew/opt/curl/bin/curl")
                              (executable-find "/usr/local/opt/curl/bin/curl")
                              t))
@@ -823,7 +822,7 @@ you should place your code here."
             (switch-to-buffer buf))
         (gptel "*Claude*"))))
 
-  ;; gptel-bedrock, MCP, and tool config in ~/.local/emacs/work.el
+  ;; gptel Bedrock backend and work-specific MCP/tool config in ~/.local/emacs/work.el
 
   (use-package mcp
     :ensure t

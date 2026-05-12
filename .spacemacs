@@ -809,7 +809,7 @@ you should place your code here."
     (global-set-key (kbd "C-c g") #'gptel)
     (global-set-key (kbd "C-c G") #'gptel-send)
     (global-set-key (kbd "C-c M-g") #'gptel-menu)
-    (global-set-key (kbd "C-\"") #'my/gptel-switch-to-claude))
+    (global-set-key (kbd "C-\"") #'my/claude-code-ide-switch-to-any))
 
   (defun my/gptel-switch-to-claude ()
     "Switch to the *Claude* gptel buffer, creating it if needed."

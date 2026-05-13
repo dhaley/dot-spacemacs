@@ -1138,11 +1138,11 @@ This function is called at the very end of Spacemacs initialization."
    '(org-agenda-log-mode-items '(closed clock state))
    '(org-agenda-persistent-filter t)
    '(org-agenda-prefix-format
-     '((agenda . "  %-11c% s") (timeline . "  % s") (todo . "  %-11c")
+     '((agenda . "  %-11c%-5s") (timeline . "  % s") (todo . "  %-11c")
        (tags . "  %-11c")))
    '(org-agenda-repeating-timestamp-show-all t)
    '(org-agenda-restriction-lock-highlight-subtree nil)
-   '(org-agenda-scheduled-leaders '("" "S%d: "))
+   '(org-agenda-scheduled-leaders '("" "S%-3d"))
    '(org-agenda-show-all-dates t)
    '(org-agenda-skip-additional-timestamps-same-entry t)
    '(org-agenda-skip-deadline-if-done t)

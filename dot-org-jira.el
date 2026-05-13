@@ -482,7 +482,8 @@ or an alist with a 'name' key."
   "Change the sprint of the issue at point with completion."
   (interactive)
   (require 'org-jira)
-  (let* ((issue-id (org-entry-get nil "ID"))
+  (let* ((jiralib-complete-callback nil)  ;; force synchronous calls
+         (issue-id (org-entry-get nil "ID"))
          (boards (jiralib--rest-call-it
                   "/rest/agile/1.0/board?projectKeyOrId=CO&type=scrum" :type "GET"))
          (board-id (cdr (assoc 'id (aref (cdr (assoc 'values boards)) 0))))

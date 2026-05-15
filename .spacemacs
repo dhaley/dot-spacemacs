@@ -96,13 +96,15 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode ob-php
+   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode
                                                          gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
                                                          websocket web-server
                                                          ;; From JW's config
                                                          olivetti restclient
                                                          helpful org-appear org-modern
                                                          magit-todos pdf-tools direnv sudo-edit crux backup-each-save
+                                                         ;; Readability & navigation
+                                                         pulsar move-text org-sticky-header
                                                          ;; Already installed but pinned explicitly to prevent pruning
                                                          vundo string-inflection free-keys)
    ;; A list of packages that cannot be updated.
@@ -135,7 +137,7 @@ values."
    ;; (default t)
    dotspacemacs-elpa-https t
    ;; Maximum allowed time in seconds to contact an ELPA repository.
-   dotspacemacs-elpa-timeout 5
+   dotspacemacs-elpa-timeout 30
    ;; If non nil then spacemacs will check for updates at startup
    ;; when the current branch is not `develop'. Note that checking for
    ;; new versions works via git commands, thus it calls GitHub services
@@ -411,7 +413,7 @@ you should place your code here."
   (global-set-key (kbd "C-c f") (lambda () (interactive) (let ((path (or (buffer-file-name) default-directory))) (kill-new path) (message "%s" path))))
 
   (require 'org-tempo)
-  (require 'ob-php)
+  ;; ob-php removed — package no longer available
   (global-set-key (kbd "H-M-S-<return>") 'org-smart-capture)
 
   (require 'dot-org-jira)
@@ -1177,7 +1179,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-archive-save-context-info '(time category itags))
    '(org-attach-method 'mv)
    '(org-babel-load-languages
-     '((php . t) (python . t) (js . t) (ruby . t) (shell . t) (sql . t)
+     '((python . t) (js . t) (ruby . t) (shell . t) (sql . t)
        (emacs-lisp . t)))
    '(org-babel-results-keyword "results")
    '(org-beamer-frame-default-options "fragile")

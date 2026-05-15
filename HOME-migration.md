@@ -123,6 +123,35 @@ If missing, copy from `elpa/`:
 cp -r ~/.emacs.d/elpa/orgit-2.1.2 ~/.emacs.d/elpa/develop/
 ```
 
+## Org Mode from Source
+
+Org-mode is loaded from `~/src/org-mode` (not ELPA/MELPA) to avoid version mismatch issues:
+
+```bash
+cd ~/src
+git clone https://git.savannah.gnu.org/git/emacs/org-mode.git
+cd org-mode
+git checkout release_9.8.4
+make compile
+```
+
+In `.spacemacs`:
+- `org` is in `dotspacemacs-excluded-packages` (prevents ELPA install)
+- `load-path` is set in `user-init` to `~/src/org-mode/lisp`
+
+To update org: `cd ~/src/org-mode && git pull && make compile`
+
+## Local Lisp Directory
+
+Custom packages live in `~/dot-spacemacs/lisp/` (tracked in git). No symlink needed — `load-path` in `.spacemacs` points directly to `~/dot-spacemacs/lisp`.
+
+After pulling the repo at home:
+```bash
+cd ~/dot-spacemacs && git pull
+```
+
+All local lisp packages (crosshairs, col-highlight, vline, org-sticky-header, orgit, dot-org) are included in the repo.
+
 ## Org Files Location
 
 All org files live in `~/Documents/org/`:
@@ -147,14 +176,12 @@ Using built-in Emacs undo with higher limit (no undo-fu-session):
 ## Post-Setup Checklist
 
 1. [ ] Clone nrel-certs: `git clone git@github.nrel.gov:TADA/nrel-certs.git ~/.nrel-certs && ~/.nrel-certs/setup`
-2. [ ] Copy `early-init.el` additions (gnutls, seq, package-archives)
-3. [ ] Set `dotspacemacs-elpa-timeout 30`
-4. [ ] Set `dotspacemacs-install-packages 'used-but-keep-unused`
-5. [ ] Download crosshairs/col-highlight/vline to `~/.emacs.d/lisp/`
-6. [ ] Copy org-sticky-header.el to `~/.emacs.d/lisp/`
-7. [ ] First start: let all packages install (takes ~5 min)
-8. [ ] If "unavailable" errors: check gnutls-trustfiles is set, increase timeout
-9. [ ] If seq-empty-p errors: ensure `(require 'seq)` is in early-init
-10. [ ] If org mismatch: ensure no `(require 'org*)` in work.el
-11. [ ] Copy `~/Documents/org/todo.txt` from backup/sync
-12. [ ] Verify `C-c a a` shows agenda, `C-c a j d` shows jira (after first C-c a)
+2. [ ] Pull dot-spacemacs: `cd ~/dot-spacemacs && git pull` (includes lisp/, .spacemacs, dot-org.el, HOME-migration.md)
+3. [ ] Copy `early-init.el` additions (gnutls, seq, package-archives) — see early-init section above
+4. [ ] Clone org-mode: `cd ~/src && git clone https://git.savannah.gnu.org/git/emacs/org-mode.git && cd org-mode && git checkout release_9.8.4 && make compile`
+5. [ ] First start: let all packages install (takes ~5 min)
+6. [ ] If "unavailable" errors: check gnutls-trustfiles is set, increase timeout
+7. [ ] If seq-empty-p errors: ensure `(require 'seq)` is in early-init
+8. [ ] Copy `~/Documents/org/todo.txt` from backup/sync
+9. [ ] Verify `C-c a a` shows agenda, `C-c a j d` shows jira
+10. [ ] Ensure `~/.emacs.d/elpa/` only contains `archives/` and `develop/` — no package dirs in root

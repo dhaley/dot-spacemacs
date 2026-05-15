@@ -5,7 +5,6 @@
 (defconst user-site-lisp-directory
   (expand-file-name "site-lisp/" user-emacs-directory))
 
-(add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'load-path "~/dot-spacemacs")
 (add-to-list 'load-path "~/dot-spacemacs/lisp/claude-code-ide")
 (add-to-list 'load-path "~/dot-spacemacs/lisp")
@@ -110,7 +109,7 @@ values."
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben org)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -338,6 +337,26 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
+
+  (require 'gnutls)
+  (setq gnutls-trustfiles '("~/.certs/ssl/cacert.pem"))
+
+  ;; Fix seq-empty-p compatibility with Emacs 30 package autoloads
+  (require 'seq)
+
+  ;; Suppress byte-compile warnings from third-party packages
+  (setq native-comp-async-report-warnings-errors 'silent)
+  (setq byte-compile-warnings '(not obsolete))
+
+  ;; Ensure MELPA is available for package installs
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("gnu" . "https://elpa.gnu.org/packages/")
+                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+
+  ;; Use org-mode from source (~/src/org-mode) instead of ELPA
+  (add-to-list 'load-path (expand-file-name "~/src/org-mode/lisp"))
+  (add-to-list 'load-path (expand-file-name "~/src/org-mode/contrib/lisp") t)
+
   ;; Ensure exec-path-from-shell copies SSL cert vars
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
@@ -570,7 +589,7 @@ you should place your code here."
 
   (use-package dot-org
     :pin gnu
-    :load-path "~/.emacs.d/lisp"
+    :load-path "~/dot-spacemacs/lisp"
     ;; :ensure org-contrib
     :commands my-org-startup
     :bind (("M-C"   . jump-to-org-agenda)
@@ -796,7 +815,7 @@ you should place your code here."
            (?B (file . "~/.bashrc"))
            (?e (file . "~/.spacemacs"))
            (?j (file . "~/src/dot-emacs"))
-           (?o (file . "~/.emacs.d/lisp/dot-org.el"))))
+           (?o (file . "~/dot-spacemacs/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 
   (setq w3m-home-page "https://www.google.com")

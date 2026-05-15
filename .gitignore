@@ -2,3 +2,4 @@
 *.elc
 *.elc
 .agent-shell/
+.DS_Store

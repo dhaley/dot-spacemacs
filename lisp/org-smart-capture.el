@@ -1,0 +1,1 @@
+/Users/dhaley/dot-spacemacs/org-smart-capture.el

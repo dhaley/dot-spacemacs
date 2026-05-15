@@ -71,7 +71,7 @@ values."
             latex-enable-auto-fill t
             latex-enable-folding t)
      markdown
-     org
+     (org :variables org-enable-github-support t)
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
@@ -107,9 +107,9 @@ values."
                                                          ;; Already installed but pinned explicitly to prevent pruning
                                                          vundo string-inflection free-keys)
    ;; A list of packages that cannot be updated.
-   dotspacemacs-frozen-packages '()
+   dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben org)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -400,6 +400,34 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+
+  ;; ── Readability & navigation aids ───────────────────────────────────────────
+  ;; Show current org heading in header line when scrolled off-screen
+  (use-package org-sticky-header
+    :load-path "~/dot-spacemacs/lisp"
+    :hook (org-mode . org-sticky-header-mode))
+  ;; Larger font for better readability (override .spacemacs size 13)
+  (set-face-attribute 'default nil :height 150)
+
+  ;; Higher undo limit for more history in memory
+  (setq undo-limit 800000)
+
+  ;; Pulsar: briefly highlight line after scrolling/jumping (M-x pulsar-global-mode to try)
+  (use-package pulsar
+    :ensure t
+    :commands pulsar-global-mode)
+
+  ;; Crosshairs: horizontal + vertical cursor tracking lines (from EmacsWiki)
+  (use-package crosshairs
+    :load-path "~/dot-spacemacs/lisp"
+    :bind ("C-|" . crosshairs-mode))
+
+  ;; Scale up org headings for visual hierarchy
+  (with-eval-after-load 'org
+    (set-face-attribute 'org-level-1 nil :height 1.3)
+    (set-face-attribute 'org-level-2 nil :height 1.15)
+    (set-face-attribute 'org-level-3 nil :height 1.05))
 
   ;; Move lines up/down with M-up/M-down
   (use-package move-text

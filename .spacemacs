@@ -96,7 +96,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(persistent-scratch shift-text geben writeroom-mode
+   dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
                                                          gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
                                                          websocket web-server
                                                          ;; From JW's config
@@ -104,13 +104,13 @@ values."
                                                          helpful org-appear org-modern
                                                          magit-todos pdf-tools direnv sudo-edit crux backup-each-save
                                                          ;; Readability & navigation
-                                                         pulsar move-text org-sticky-header
+                                                         pulsar move-text
                                                          ;; Already installed but pinned explicitly to prevent pruning
                                                          vundo string-inflection free-keys)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -118,7 +118,7 @@ values."
    ;; `used-but-keep-unused' installs only the used packages but won't uninstall
    ;; them if they become unused. `all' installs *all* packages supported by
    ;; Spacemacs and never uninstall them. (default is `used-only')
-   dotspacemacs-install-packages 'used-only))
+   dotspacemacs-install-packages 'used-but-keep-unused))
 
 (defun dotspacemacs/init ()
   "Initialization function.

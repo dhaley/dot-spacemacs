@@ -361,7 +361,8 @@ before packages are loaded. If you are unsure, you should try in setting them in
                            (executable-find "/usr/local/opt/curl/bin/curl")
                            t))
   (add-to-list 'exec-path "/opt/homebrew/opt/curl/bin")
-  (setenv "PATH" (concat "/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
+  (add-to-list 'exec-path "/opt/homebrew/bin")
+  (setenv "PATH" (concat "/opt/homebrew/bin:/opt/homebrew/opt/curl/bin:" (getenv "PATH")))
 
   ;; Load optional local config (work-specific, not in public repo)
   ;; Loaded here in user-init so variables are set BEFORE use-package :config blocks run
@@ -378,6 +379,11 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+  ;; Move lines up/down with M-up/M-down
+  (use-package move-text
+    :ensure t
+    :config (move-text-default-bindings))
 
   ;; Load beamer export backend so C-c C-e l B/P are available
   (require 'ox-beamer)
@@ -787,7 +793,7 @@ you should place your code here."
            (?b (file . "~/.bash_profile"))
            (?B (file . "~/.bashrc"))
            (?e (file . "~/.spacemacs"))
-           (?j (file . "~/dot-spacemacs/dot-org.el"))
+           (?j (file . "~/src/dot-emacs"))
            (?o (file . "~/.emacs.d/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 

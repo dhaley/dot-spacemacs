@@ -26,18 +26,20 @@ This eliminates the `~/.spacemacs` symlink — Spacemacs loads
 
 ## Critical: .spacemacs user-init
 
-The custom emacs-mac build uses GnuTLS directly (not macOS Security framework),
-so it can't see certs from Keychain Access. These settings are in
-`dotspacemacs/user-init` in `.spacemacs` (NOT early-init.el which is
-managed by Spacemacs and gets overwritten):
+The shared `.spacemacs` `user-init` contains machine-independent setup only
+(`seq` compat, native-comp warning suppression, package-archives, org source
+load-path). GnuTLS cert config is **machine-specific** and belongs in
+`~/.local/emacs/work.el`, not in `.spacemacs`.
+
+### What stays in .spacemacs user-init (both machines)
 
 ```elisp
-;; CA bundle for GnuTLS — must be set before any TLS connections
-(require 'gnutls)
-(setq gnutls-trustfiles '("/Users/<username>/.certs/ssl/cacert.pem"))
-
 ;; Fix seq-empty-p compatibility with Emacs 30 package autoloads
 (require 'seq)
+
+;; Suppress byte-compile warnings from third-party packages
+(setq native-comp-async-report-warnings-errors 'silent)
+(setq byte-compile-warnings '(not obsolete))
 
 ;; Ensure MELPA is available for package installs
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -45,13 +47,32 @@ managed by Spacemacs and gets overwritten):
                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 ```
 
-Without this:
+### What goes in ~/.local/emacs/work.el (work machine only)
+
+The work emacs-mac build uses GnuTLS directly (not macOS Security framework)
+and can't see certs from Keychain Access. These lines must be in `work.el`
+and are loaded during `dotspacemacs/user-init` before any TLS connections:
+
+```elisp
+;; CA bundle for GnuTLS — must be set before any TLS connections
+(require 'gnutls)
+(setq gnutls-trustfiles '("~/.certs/ssl/cacert.pem"))
+```
+
+Without this at work:
 - MELPA downloads silently fail (TLS cert verification fails through corporate proxy)
-- Package autoloads generation crashes with `cl-no-applicable-method seq-empty-p`
 - All packages show "unavailable" on every restart
 
 **IMPORTANT:** Never modify `~/.emacs.d/early-init.el` — it is managed by
 Spacemacs and will be overwritten on updates.
+
+## Pulling master at Work
+
+After any `git pull` on the work machine, verify `~/.local/emacs/work.el`
+still contains the gnutls lines above. Commit `d983637` removed them from
+`.spacemacs` (they were never correct there — home has no corporate proxy).
+If they are missing from `work.el`, MELPA will silently time out and all
+packages will show as unavailable on the next restart.
 
 ## .spacemacs Settings
 
@@ -219,7 +240,7 @@ user-config — no action needed.
 5. [ ] Clone org-mode: `cd ~/src && git clone https://git.savannah.gnu.org/git/emacs/org-mode.git && cd org-mode && git checkout release_9.8.4 && make compile`
 6. [ ] Clone org-jira: `cd ~/src && git clone <org-jira-repo> org-jira`
 7. [ ] First start: let all packages install (takes ~5 min)
-8. [ ] If "unavailable" errors: check gnutls-trustfiles is set, increase timeout
+8. [ ] If "unavailable" errors at work: check `~/.local/emacs/work.el` has gnutls-trustfiles set (see "Pulling master at Work" section)
 9. [ ] If seq-empty-p errors: ensure `(require 'seq)` is in user-init
 10. [ ] Copy `~/Documents/org/todo.txt` from backup/sync
 11. [ ] Verify `C-c a a` shows agenda, `C-c a j d` shows jira with deadlines

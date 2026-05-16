@@ -9,19 +9,32 @@ the home machine to avoid repeating these issues.
 ## Prerequisites
 
 1. Custom emacs-mac build installed (uses GnuTLS, not macOS native TLS)
-2. NLR certs at `~/.nrel-certs/ssl/cacert.pem` (from TADA/nrel-certs repo)
+2. Certs at `~/.certs/ssl/cacert.pem` (from internal certs repo)
 3. Spacemacs develop branch at `~/.emacs.d/`
 
-## Critical: early-init.el
+## Shell Environment
+
+Add to `~/.bash_profile` (or `~/.zprofile` for zsh):
+
+```bash
+# Spacemacs: load dotfile from git-tracked directory instead of ~/
+export SPACEMACSDIR="$HOME/dot-spacemacs"
+```
+
+This eliminates the `~/.spacemacs` symlink — Spacemacs loads
+`~/dot-spacemacs/.spacemacs` directly via this env var.
+
+## Critical: .spacemacs user-init
 
 The custom emacs-mac build uses GnuTLS directly (not macOS Security framework),
-so it can't see certs from Keychain Access. This MUST be in `~/.emacs.d/early-init.el`
-BEFORE the `(setq package-enable-at-startup nil)` line:
+so it can't see certs from Keychain Access. These settings are in
+`dotspacemacs/user-init` in `.spacemacs` (NOT early-init.el which is
+managed by Spacemacs and gets overwritten):
 
 ```elisp
-;; NLR CA bundle for GnuTLS — must be set before any TLS connections
+;; CA bundle for GnuTLS — must be set before any TLS connections
 (require 'gnutls)
-(setq gnutls-trustfiles '("/Users/<username>/.nrel-certs/ssl/cacert.pem"))
+(setq gnutls-trustfiles '("/Users/<username>/.certs/ssl/cacert.pem"))
 
 ;; Fix seq-empty-p compatibility with Emacs 30 package autoloads
 (require 'seq)
@@ -33,9 +46,12 @@ BEFORE the `(setq package-enable-at-startup nil)` line:
 ```
 
 Without this:
-- MELPA downloads silently fail (TLS cert verification fails through NLR proxy)
+- MELPA downloads silently fail (TLS cert verification fails through corporate proxy)
 - Package autoloads generation crashes with `cl-no-applicable-method seq-empty-p`
 - All packages show "unavailable" on every restart
+
+**IMPORTANT:** Never modify `~/.emacs.d/early-init.el` — it is managed by
+Spacemacs and will be overwritten on updates.
 
 ## .spacemacs Settings
 
@@ -84,24 +100,24 @@ for dir in */; do
 done
 ```
 
-## Packages Not on MELPA (loaded from ~/.emacs.d/lisp/)
+## Packages Not on MELPA (loaded from ~/dot-spacemacs/lisp/)
 
-These packages are downloaded manually and loaded via `use-package :load-path`:
+These packages are tracked in the `dot-spacemacs` git repo under `lisp/`:
 
-- `crosshairs.el` — from EmacsWiki (horizontal + vertical cursor tracking)
+- `crosshairs.el` — horizontal + vertical cursor tracking
 - `col-highlight.el` — dependency of crosshairs
 - `vline.el` — dependency of crosshairs
 - `org-sticky-header.el` — shows current heading in header line
 
-Download:
+Source (if re-downloading needed):
 ```bash
-mkdir -p ~/.emacs.d/lisp
-cd ~/.emacs.d/lisp
-curl -sO https://www.emacswiki.org/emacs/download/crosshairs.el
-curl -sO https://www.emacswiki.org/emacs/download/col-highlight.el
-curl -sO https://www.emacswiki.org/emacs/download/vline.el
-# org-sticky-header: copy from elpa after first install, or download from GitHub
+cd ~/dot-spacemacs/lisp
+curl -sLO https://raw.githubusercontent.com/emacsmirror/crosshairs/master/crosshairs.el
+curl -sLO https://raw.githubusercontent.com/emacsmirror/col-highlight/master/col-highlight.el
+curl -sLO https://raw.githubusercontent.com/emacsmirror/vline/master/vline.el
 ```
+
+**NOTE:** EmacsWiki download URLs return HTML — always use emacsmirror GitHub raw URLs.
 
 Do NOT put these in `dotspacemacs-additional-packages` — Spacemacs will
 delete/reinstall them in a loop due to dependency conflicts.
@@ -136,21 +152,36 @@ make compile
 ```
 
 In `.spacemacs`:
-- `org` is in `dotspacemacs-excluded-packages` (prevents ELPA install)
-- `load-path` is set in `user-init` to `~/src/org-mode/lisp`
+- `org` is in `dotspacemacs-frozen-packages` (keeps ELPA copy but prevents updates)
+- `load-path` is set in `user-init` to prioritize `~/src/org-mode/lisp`
+- Do NOT delete the ELPA org directory — Spacemacs needs it to satisfy dependencies
+- Do NOT byte-recompile the ELPA org `.elc` files — they'll compile against wrong version
 
 To update org: `cd ~/src/org-mode && git pull && make compile`
 
+## org-jira from Source
+
+```bash
+cd ~/src
+git clone <org-jira-repo-url> org-jira
+```
+
+Load-path set in `.spacemacs` user-init. Custom commands in `~/dot-spacemacs/dot-org-jira.el`.
+
 ## Local Lisp Directory
 
-Custom packages live in `~/dot-spacemacs/lisp/` (tracked in git). No symlink needed — `load-path` in `.spacemacs` points directly to `~/dot-spacemacs/lisp`.
+Custom packages live in `~/dot-spacemacs/lisp/` (tracked in git). Load-path in
+`.spacemacs` points directly to `~/dot-spacemacs/lisp`.
+
+**NEVER add files to `~/.emacs.d/`** — that directory is entirely managed by
+Spacemacs (the syl20bnr/spacemacs repo) and may be overwritten.
 
 After pulling the repo at home:
 ```bash
 cd ~/dot-spacemacs && git pull
 ```
 
-All local lisp packages (crosshairs, col-highlight, vline, org-sticky-header, orgit, dot-org) are included in the repo.
+All local lisp packages (crosshairs, col-highlight, vline, org-sticky-header) are included in the repo.
 
 ## Org Files Location
 
@@ -173,15 +204,24 @@ Using built-in Emacs undo with higher limit (no undo-fu-session):
 (setq undo-limit 800000)
 ```
 
+## magit-todos
+
+The `magit-todos` scanner (ripgrep) may error in repos where all files are
+gitignored. This is silenced with `ignore-errors` advice in `.spacemacs`
+user-config — no action needed.
+
 ## Post-Setup Checklist
 
-1. [ ] Clone nrel-certs: `git clone git@github.nrel.gov:TADA/nrel-certs.git ~/.nrel-certs && ~/.nrel-certs/setup`
-2. [ ] Pull dot-spacemacs: `cd ~/dot-spacemacs && git pull` (includes lisp/, .spacemacs, dot-org.el, HOME-migration.md)
-3. [ ] Copy `early-init.el` additions (gnutls, seq, package-archives) — see early-init section above
-4. [ ] Clone org-mode: `cd ~/src && git clone https://git.savannah.gnu.org/git/emacs/org-mode.git && cd org-mode && git checkout release_9.8.4 && make compile`
-5. [ ] First start: let all packages install (takes ~5 min)
-6. [ ] If "unavailable" errors: check gnutls-trustfiles is set, increase timeout
-7. [ ] If seq-empty-p errors: ensure `(require 'seq)` is in early-init
-8. [ ] Copy `~/Documents/org/todo.txt` from backup/sync
-9. [ ] Verify `C-c a a` shows agenda, `C-c a j d` shows jira
-10. [ ] Ensure `~/.emacs.d/elpa/` only contains `archives/` and `develop/` — no package dirs in root
+1. [ ] Clone certs: `git clone <internal-certs-repo> ~/.certs && ~/.certs/setup`
+2. [ ] Add `export SPACEMACSDIR="$HOME/dot-spacemacs"` to `~/.bash_profile`
+3. [ ] Pull dot-spacemacs: `cd ~/dot-spacemacs && git pull` (includes lisp/, .spacemacs, dot-org.el, dot-org-jira.el, HOME-migration.md)
+4. [ ] Remove `~/.spacemacs` symlink if it exists (SPACEMACSDIR replaces it)
+5. [ ] Clone org-mode: `cd ~/src && git clone https://git.savannah.gnu.org/git/emacs/org-mode.git && cd org-mode && git checkout release_9.8.4 && make compile`
+6. [ ] Clone org-jira: `cd ~/src && git clone <org-jira-repo> org-jira`
+7. [ ] First start: let all packages install (takes ~5 min)
+8. [ ] If "unavailable" errors: check gnutls-trustfiles is set, increase timeout
+9. [ ] If seq-empty-p errors: ensure `(require 'seq)` is in user-init
+10. [ ] Copy `~/Documents/org/todo.txt` from backup/sync
+11. [ ] Verify `C-c a a` shows agenda, `C-c a j d` shows jira with deadlines
+12. [ ] Ensure `~/.emacs.d/elpa/` only contains `archives/` and `develop/` — no package dirs in root
+13. [ ] Do NOT run `byte-recompile-directory` on `elpa/develop/` — it recompiles ELPA org against wrong version

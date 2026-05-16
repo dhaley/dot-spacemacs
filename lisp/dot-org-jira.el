@@ -162,6 +162,7 @@
           ("Cancelled" . "CANCELLED")
           ("Rejected" . "CANCELLED")))
   (setq org-jira-verbosity 'debug)
+  (setq org-jira-update-issue-details-include-reporter nil)
 
   ;; Map Jira custom fields to org properties
   (setq org-jira-custom-field-mappings
@@ -249,14 +250,9 @@ Patched for Jira Server: uses 'name' instead of 'accountId' for assignee."
       ticket-struct))
 
   (setq org-jira-custom-jqls
-        '(;; Active/future sprints + backlog
-          (:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC"
+        '((:jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC"
                 :limit 200
-                :filename "co-dhaley")
-          ;; Closed sprints this FY (separate file) - ordered by sprint for reverse-chrono grouping
-          (:jql "project = CO AND assignee = dhaley AND sprint in closedSprints() AND updated >= 2025-10-01 ORDER BY sprint DESC, updated DESC"
-                :limit 200
-                :filename "co-dhaley-closed")))
+                :filename "co-dhaley")))
 
   (setq org-jira-default-jql "project = CO AND assignee = dhaley AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY updated DESC")
 
@@ -496,6 +492,19 @@ or an alist with a 'name' key."
     (org-entry-put nil "assignee" user)
     (message "Assigned %s to %s" issue-id user)))
 
+(defun org-jira-set-reporter ()
+  "Change the reporter of the issue at point with completion."
+  (interactive)
+  (require 'org-jira)
+  (let* ((issue-id (org-entry-get nil "ID"))
+         (project (replace-regexp-in-string "-[0-9]+" "" issue-id))
+         (users (org-jira-get-assignable-users project))
+         (user (completing-read "Reporter: " (mapcar #'car users) nil t))
+         (username (cdr (assoc user users))))
+    (jiralib-update-issue issue-id `((reporter (name . ,username))))
+    (org-entry-put nil "reporter" user)
+    (message "Set reporter of %s to %s" issue-id user)))
+
 (defun org-jira-set-sprint ()
   "Change the sprint of the issue at point with completion."
   (interactive)
@@ -620,6 +629,16 @@ or an alist with a 'name' key."
          '((:jql "project = CO AND statusCategory != Done AND sprint IN openSprints() ORDER BY priority DESC"
                  :limit 100
                  :filename "co-current-sprint"))))
+    (org-jira-get-issues-from-custom-jql)))
+
+(defun org-jira-sync-closed-sprints ()
+  "Sync closed sprint issues to co-dhaley-closed.org."
+  (interactive)
+  (require 'org-jira)
+  (let ((org-jira-custom-jqls
+         '((:jql "project = CO AND assignee = dhaley AND sprint in closedSprints() AND updated >= 2025-10-01 ORDER BY sprint DESC, updated DESC"
+                 :limit 200
+                 :filename "co-dhaley-closed"))))
     (org-jira-get-issues-from-custom-jql)))
 
 (defun org-jira-sync-deputies ()
@@ -888,6 +907,12 @@ Shows closed issues, open/carried-over issues, and story point totals."
               (push `(customfield_10005 . ,sprint-id) fields)
               (push (format "  sprint: %s" sprint) changes))
           (error nil))))
+    ;; Duedate from DEADLINE
+    (let ((dl (org-get-deadline-time (point))))
+      (when dl
+        (let ((date-str (format-time-string "%Y-%m-%d" dl)))
+          (push `(duedate . ,date-str) fields)
+          (push (format "  duedate: %s" date-str) changes))))
     (if (null fields)
         (message "No fields to push for %s" issue-id)
       ;; Show changes and confirm
@@ -1004,6 +1029,14 @@ Shows closed issues, open/carried-over issues, and story point totals."
   (define-key org-mode-map (kbd "C-c j E") #'org-jira-set-epic)
   (define-key org-mode-map (kbd "C-c j w") #'org-jira-add-watcher)
   (define-key org-mode-map (kbd "C-c j u") #'org-jira-push-heading))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (when (and buffer-file-name
+                       (string-match-p "\\.org-jira/" buffer-file-name))
+              (require 'org-jira nil t)
+              (when (fboundp 'org-jira-mode)
+                (org-jira-mode 1)))))
 
 (provide 'dot-org-jira)
 

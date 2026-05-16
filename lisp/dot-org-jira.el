@@ -167,11 +167,15 @@
 
   ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
   (setq org-jira-priority-to-org-priority-alist
-        '(("Blocker"  . ?A)
-          ("Critical" . ?A)
-          ("Major"    . ?B)
-          ("Minor"    . ?C)
-          ("Trivial"  . ?C)))
+        '(("Blocker"   . ?A)
+          ("Critical"  . ?A)
+          ("Emergency" . ?A)
+          ("High"      . ?B)
+          ("Major"     . ?B)
+          ("Medium"    . ?C)
+          ("Minor"     . ?D)
+          ("Low"       . ?D)
+          ("Trivial"   . ?D)))
 
   ;; org-jira writes a :priority: property that clashes with org-mode's
   ;; built-in PRIORITY handling. When org-agenda scans deadlines, it calls

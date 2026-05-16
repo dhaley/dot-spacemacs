@@ -8,6 +8,7 @@
 (add-to-list 'load-path "~/dot-spacemacs")
 (add-to-list 'load-path "~/dot-spacemacs/lisp/claude-code-ide")
 (add-to-list 'load-path "~/dot-spacemacs/lisp")
+(add-to-list 'load-path "~/src/org-mode/lisp")
 
 (eval-and-compile
   (defvar use-package-verbose nil)
@@ -338,9 +339,6 @@ executes.
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
 
-  (require 'gnutls)
-  (setq gnutls-trustfiles '("~/.certs/ssl/cacert.pem"))
-
   ;; Fix seq-empty-p compatibility with Emacs 30 package autoloads
   (require 'seq)
 
@@ -354,7 +352,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
   ;; Use org-mode from source (~/src/org-mode) instead of ELPA
-  (add-to-list 'load-path (expand-file-name "~/src/org-mode/lisp"))
+  (push (expand-file-name "~/src/org-mode/lisp") load-path)
   (add-to-list 'load-path (expand-file-name "~/src/org-mode/contrib/lisp") t)
 
   ;; Ensure exec-path-from-shell copies SSL cert vars

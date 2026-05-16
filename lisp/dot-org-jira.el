@@ -56,6 +56,11 @@
   '((t :foreground "#30517f"))
   "Face for Jira label tags.")
 
+(defvar my/jira-epic-colors
+  '("cyan" "magenta" "green" "yellow" "orange" "deep sky blue"
+    "spring green" "violet" "salmon" "khaki" "turquoise" "plum")
+  "Colors for epic-short labels in agenda.")
+
 (defun my/org-jira-colorize-agenda ()
   "Colorize Jira agenda lines: sprint prefix, tags, active sprint emphasis."
   (save-excursion
@@ -73,6 +78,15 @@
             ;; Color the sprint prefix (first ~30 chars)
             (let ((prefix-end (min (+ bol 32) eol)))
               (add-face-text-property bol prefix-end 'my/jira-sprint-prefix t))
+            ;; Color the epic-short portion (chars 14-22 in prefix)
+            (let* ((epic (org-entry-get marker "epic-short"))
+                   (epic-start (+ bol 14))
+                   (epic-end (min (+ bol 22) eol)))
+              (when (and epic (not (string-empty-p epic)) (< epic-start eol))
+                (let* ((idx (mod (sxhash epic) (length my/jira-epic-colors)))
+                       (color (nth idx my/jira-epic-colors)))
+                  (add-face-text-property epic-start epic-end
+                                          `(:foreground ,color) nil))))
             ;; Color individual tags at end of line
             (save-excursion
               (goto-char bol)

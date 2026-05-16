@@ -1006,6 +1006,10 @@ Falls back to the sole active session or prompts when project has none."
   ;; ── magit-todos ─────────────────────────────────────────────────────────
   (with-eval-after-load 'magit
     (magit-todos-mode 1))
+  (with-eval-after-load 'magit-todos
+    (advice-add 'magit-todos--async-when-done :around
+                (lambda (fn &rest args)
+                  (ignore-errors (apply fn args)))))
 
   ;; ── direnv: auto-activate .envrc on directory change ────────────────────
   (when (executable-find "direnv")

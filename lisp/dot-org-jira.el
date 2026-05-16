@@ -616,8 +616,8 @@ or an alist with a 'name' key."
                           (mapcar #'car org-jira-team-members) nil t)))
   (require 'org-jira)
   (let ((org-jira-custom-jqls
-         `((:jql ,(format "project = CO AND assignee = %s AND statusCategory != Done ORDER BY updated DESC" username)
-                 :limit 50
+         `((:jql ,(format "project = CO AND assignee = %s AND (sprint in openSprints() OR sprint in futureSprints() OR sprint is EMPTY) ORDER BY sprint DESC, updated DESC" username)
+                 :limit 500
                  :filename ,(format "co-%s" username)))))
     (org-jira-get-issues-from-custom-jql)))
 

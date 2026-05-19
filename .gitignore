@@ -3,3 +3,4 @@
 *.elc
 .agent-shell/
 .DS_Store
+.spacemacs.env

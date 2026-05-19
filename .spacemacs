@@ -97,7 +97,7 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
-                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp shell-maker acp agent-shell eat request dash org-super-agenda
+                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat request dash org-super-agenda
                                                          websocket web-server
                                                          ;; From JW's config
                                                          olivetti restclient
@@ -399,6 +399,16 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
+
+  ;; ── Emacs server (for emacsclient + mcp-server-lib) ──────────────────────────
+  (use-package server
+    :config
+    (unless (server-running-p)
+      (server-start)))
+
+  (use-package edit-server
+    :config
+    (edit-server-start))
 
   ;; ── Markdown / Pandoc ─────────────────────────────────────────────────────────
   (setq markdown-command "/opt/homebrew/bin/pandoc")

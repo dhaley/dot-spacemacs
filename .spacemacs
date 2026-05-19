@@ -978,6 +978,10 @@ Falls back to the sole active session or prompts when project has none."
     :config
     (agent-shell-attention-mode 1))
 
+  (use-package magit-ai
+    :load-path "~/dot-spacemacs/lisp/magit-ai"
+    :after magit)
+
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat
     :config

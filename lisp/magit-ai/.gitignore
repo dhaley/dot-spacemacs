@@ -1,0 +1,4 @@
+*.elc
+.benchmark-baseline
+.coverage-baseline
+.format

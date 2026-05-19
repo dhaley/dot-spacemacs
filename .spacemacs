@@ -243,7 +243,7 @@ values."
    ;; Size (in MB) above which spacemacs will prompt to open the large file
    ;; literally to avoid performance issues. Opening a file literally means that
    ;; no major mode or minor modes are active. (default is 1)
-   dotspacemacs-large-file-size 3
+   dotspacemacs-large-file-size 5
    ;; Location where to auto-save files. Possible values are `original' to
    ;; auto-save the file in-place, `cache' to auto-save the file to another
    ;; file stored in the cache directory and `nil' to disable auto-saving.
@@ -945,7 +945,9 @@ Falls back to the sole active session or prompts when project has none."
     :defer t
     :custom
     (agent-shell-session-strategy 'latest)
-    (agent-shell-prefer-session-resume t))
+    (agent-shell-prefer-session-resume t)
+    (agent-shell-show-usage-at-turn-end t)
+    (agent-shell-show-context-usage-indicator t))
 
   (use-package agent-shell-macext
     :load-path "~/dot-spacemacs/lisp/agent-shell-macext"
@@ -969,6 +971,12 @@ Falls back to the sole active session or prompts when project has none."
     :after agent-shell
     :commands (agent-shell-manager-toggle)
     :bind ("C-c M-u" . agent-shell-manager-toggle))
+
+  (use-package agent-shell-attention
+    :load-path "~/dot-spacemacs/lisp/agent-shell-attention"
+    :after agent-shell
+    :config
+    (agent-shell-attention-mode 1))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat

@@ -97,7 +97,7 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
-                                                         gptel mcp shell-maker acp agent-shell eat request dash org-super-agenda
+                                                         gptel mcp mcp-server-lib shell-maker acp agent-shell eat request dash org-super-agenda
                                                          websocket web-server
                                                          ;; From JW's config
                                                          olivetti restclient
@@ -981,6 +981,12 @@ Falls back to the sole active session or prompts when project has none."
   (use-package magit-ai
     :load-path "~/dot-spacemacs/lisp/magit-ai"
     :after magit)
+
+  (use-package mcp-server-lib
+    :after agent-shell
+    :config
+    (require 'mcp-server-lib-commands)
+    (mcp-server-lib-start))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# agent-shell-ask-project - Ask a question to an agent by project name
+# Usage: agent-shell-ask-project "project-name" "question"
+
+if [ $# -lt 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-ask-project \"project-name\" \"question\"" >&2
+    exit 1
+fi
+
+project="$1"
+question="$2"
+
+me=$(emacsclient --eval "(meta-agent-shell-whoami $$)" | tr -d '"')
+if [ "$me" = "nil" ]; then
+    echo "Error: Could not determine sender identity" >&2
+    exit 1
+fi
+
+# Escape for elisp: backslashes first, then quotes
+escaped_project=$(printf '%s' "$project" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_question=$(printf '%s' "$question" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_me=$(printf '%s' "$me" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+emacsclient --eval "(meta-agent-shell-ask-project \"$escaped_project\" \"$escaped_question\" \"$escaped_me\")"

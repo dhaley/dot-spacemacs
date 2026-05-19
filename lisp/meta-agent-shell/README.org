@@ -1,0 +1,215 @@
+#+TITLE: meta-agent-shell
+#+AUTHOR: Elle Najt
+
+Multi-agent coordination for [[https://github.com/xenodium/agent-shell][agent-shell]].
+
+[[file:docs/multi-agent-session.png]]
+
+[[file:docs/icc-graph.png]]
+
+* What This Does
+
+Two levels of coordination:
+
+1. *Project Dispatchers* - coordinate multiple agents within a single project
+2. *Meta-Agent* - oversees all your projects, receives status heartbeats, monitors everything
+
+Plus:
+- *Inter-agent communication* via CLI tools (~agent-shell-send~, ~agent-shell-ask~, ~agent-shell-search~)
+- *Task tracking* in org files that show up in your Emacs agenda
+- *ICC logging* - all agent-to-agent messages logged as JSONL
+- *Big red button* - ~M-x meta-agent-shell-big-red-button~ stops everything
+
+* Setup
+
+#+begin_src bash
+./setup.sh
+#+end_src
+
+This:
+1. Creates =~/.claude-meta/= directory
+2. Links the meta-agent CLAUDE.md
+3. Tells you what to add to your shell config and =~/.claude/CLAUDE.md=
+
+Then add to your Emacs config:
+
+#+begin_src elisp
+(use-package meta-agent-shell
+  :after agent-shell
+  :config
+  (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
+  (setq meta-agent-shell-start-function #'agent-shell)  ; or your custom start function
+
+  ;; Recommended keybindings under SPC o m
+  ;; Unbind existing SPC o m (mu4e in Doom) first if needed
+  (define-key doom-leader-map "om" nil)
+  (map! :leader
+        (:prefix ("o m" . "meta-agent")
+         :desc "Meta-agent session" "m" #'meta-agent-shell-start
+         :desc "Project dispatcher" "d" #'meta-agent-shell-jump-to-dispatcher
+         :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
+         :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
+         :desc "Send heartbeat now" "s" #'meta-agent-shell-heartbeat-send-now
+         :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button)))
+#+end_src
+
+| Keybinding  | Command                              | Description                     |
+|-------------+--------------------------------------+---------------------------------|
+| =SPC o m m= | ~meta-agent-shell-start~             | Meta-agent session (start/switch) |
+| =SPC o m d= | ~meta-agent-shell-jump-to-dispatcher~ | Project dispatcher (start/switch) |
+| =SPC o m h= | ~meta-agent-shell-heartbeat-start~   | Start heartbeat timer           |
+| =SPC o m H= | ~meta-agent-shell-heartbeat-stop~    | Stop heartbeat timer            |
+| =SPC o m s= | ~meta-agent-shell-heartbeat-send-now~ | Send heartbeat immediately      |
+| =SPC o m != | ~meta-agent-shell-big-red-button~    | STOP ALL AGENTS                 |
+
+* Workflow 1: Project Dispatchers
+
+Use dispatchers when you want multiple agents working on a single project.
+
+** Start a dispatcher
+
+#+begin_example
+M-x meta-agent-shell-start-dispatcher
+#+end_example
+
+The dispatcher runs in your project directory and can spawn agents, assign tasks, and coordinate work.
+
+** Jump to dispatcher
+
+#+begin_example
+M-x meta-agent-shell-jump-to-dispatcher
+#+end_example
+
+Jumps to the dispatcher for the current buffer's project. If none exists, offers to create one.
+
+** CLI tools for agents
+
+Agents communicate with each other using these shell commands:
+
+#+begin_src bash
+agent-shell-spawn "AgentName" "initial task"  # spawn a new named agent
+agent-shell-send "buffer-name" "message"
+agent-shell-ask "buffer-name" "question"      # reply routed back automatically
+agent-shell-whoami                            # print own buffer name
+agent-shell-search "pattern"                  # search all sessions for regexp
+agent-shell-search "pattern" projectname      # search specific project
+agent-shell-note desc "note text"             # leave timestamped note in .tasks/
+#+end_src
+
+Agents are taught these tools via =agent-overview.md= (included in setup).
+
+** How agent identity works
+
+The CLI tools pass the shell's PID (~$$~), and the system walks up the process tree to find the ACP client:
+
+#+begin_example
+$$ (shell) → zsh → claude → node (ACP client)
+#+end_example
+
+Each agent-shell buffer owns an ACP client process. Match the PID, find the buffer. So agents identify themselves without knowing their buffer name.
+
+** Notes for later
+
+Agents can leave timestamped notes for themselves or others:
+
+#+begin_src bash
+agent-shell-note refactor "Edge case in parse_args needs handling"
+#+end_src
+
+Notes go to =.tasks/agent_<desc>.org= and persist across sessions. Add =.tasks/= to your =org-agenda-files= to see them in your agenda.
+
+* Workflow 2: Meta-Agent
+
+Use the meta-agent when you want oversight across multiple projects.
+
+** Start the meta-agent
+
+#+begin_example
+M-x meta-agent-shell-start
+#+end_example
+
+This starts a dedicated agent in =~/.claude-meta/= that can see all your active sessions.
+
+** Heartbeat
+
+The meta-agent receives periodic heartbeats with status updates from all your projects.
+
+*** Setup
+
+1. Create a file with standing instructions:
+
+#+begin_src bash
+echo "Check on agent progress. Alert me if any seem stuck." > ~/heartbeat.org
+#+end_src
+
+2. Configure:
+
+#+begin_src elisp
+(setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
+(setq meta-agent-shell-heartbeat-interval 900)  ; seconds between heartbeats (default 15 min)
+(setq meta-agent-shell-heartbeat-cooldown 300)  ; delay after you message the meta-agent
+#+end_src
+
+3. Start:
+
+#+begin_example
+M-x meta-agent-shell-heartbeat-start
+#+end_example
+
+*** What it sends
+
+Each heartbeat includes:
+- List of all active sessions with status (working/idle)
+- Recent output from watched projects (if configured)
+- Your standing instructions from the heartbeat file
+
+*** Other commands
+
+- ~M-x meta-agent-shell-heartbeat-stop~ - stop the timer
+- ~M-x meta-agent-shell-heartbeat-send-now~ - send one immediately
+
+** Config File
+
+Edit =~/.meta-agent-shell/config.org= to give the meta-agent persistent context. Use =@file= references (same syntax as =heartbeat.org=) to pull in external files:
+
+#+begin_example
+# ~/.meta-agent-shell/config.org
+@/Users/you/notes/priorities.org
+@/Users/you/notes/team-conventions.org
+#+end_example
+
+Contents are expanded and included in each heartbeat message, so the meta-agent always sees the latest version.
+
+* Logging
+
+All inter-agent communication logged to =~/.meta-agent-shell/logs/YYYY-MM-DD-icc.jsonl=:
+
+#+begin_src json
+{"timestamp":"2026-02-06T10:00:15","type":"ask","from":"Dispatcher Agent @ myproject","to":"Refactor Agent @ myproject","message":"..."}
+#+end_src
+
+Event types: =send=, =ask=, =view=, =close=, =interrupt=
+
+** Logs Visualization
+
+#+begin_example
+./tools/icc-viz.py -o graph.png     # communication graph
+./tools/icc-viz.py --timeline       # activity over time
+./tools/icc-viz.py --stats          # summary statistics
+#+end_example
+
+* Testing
+
+See [[file:tests/test-instructions.md][tests/test-instructions.md]] for a manual test workflow you can give to an agent. Each test includes expected behavior so the agent can verify things work correctly.
+
+* Sandboxed Workflow (WIP)
+
+These workflows generally require using =bypassPermissions= mode to be effective.
+
+One option is to run everything (including your emacs) in a VM with limited credentials. 
+
+For a sketch of a VMless solutions, see [[file:docs/sandboxing.org][docs/sandboxing.org]] for running workers in containers with restricted dispatcher permissions. Note: Still needs a tunnel from containerized agents back to the host dispatcher.
+
+* License
+
+GPL-3.0

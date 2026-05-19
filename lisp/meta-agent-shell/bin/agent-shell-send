@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# agent-shell-send - Send a message to another agent
+# Usage: agent-shell-send "target-buffer" "message"
+#
+# Automatically detects sender from process hierarchy.
+# Includes reply instructions so recipient knows how to respond.
+
+if [ $# -lt 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-send \"target-buffer\" \"message\"" >&2
+    exit 1
+fi
+
+target="$1"
+message="$2"
+
+# Get sender identity
+sender=$(emacsclient --eval "(meta-agent-shell-whoami $$)" 2>/dev/null | tr -d '"')
+if [ "$sender" = "nil" ] || [ -z "$sender" ]; then
+    sender="unknown"
+fi
+
+# Format message with reply instructions
+formatted_message="Message from $sender:
+
+$message
+
+Reply with: agent-shell-send \"$sender\" \"your response\""
+
+# Escape for elisp: backslashes first, then quotes
+escaped_message=$(printf '%s' "$formatted_message" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_target=$(printf '%s' "$target" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+# Send the message and check result
+result=$(emacsclient --eval "(meta-agent-shell-send-to-session \"$escaped_target\" \"$escaped_message\" nil $$)" 2>&1)
+
+# Check for errors (emacsclient error or nil return)
+if echo "$result" | grep -q "^error\|^Lisp error"; then
+    echo "ERROR: $result" >&2
+    exit 1
+fi
+
+if [ "$result" = "nil" ]; then
+    echo "ERROR: Failed to send message - buffer '$target' not found or not an agent-shell buffer" >&2
+    exit 1
+fi
+
+echo "Message sent to $target"

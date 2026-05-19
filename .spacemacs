@@ -970,7 +970,34 @@ Falls back to the sole active session or prompts when project has none."
         (command . ,(expand-file-name "~/.emacs.d/emacs-mcp-stdio.sh"))
         (args . ("--init-function=org-mcp-enable"
                  "--server-id=org-mcp"))
-        (env . (((name . "EDITOR") (value . "emacsclient"))))))))
+        (env . (((name . "EDITOR") (value . "emacsclient")))))))
+    :config
+    ;; emacs-agent: elisp-dev-mcp + org-mcp (lightweight, general purpose)
+    (add-to-list 'agent-shell-agent-configs
+                 (agent-shell-make-agent-config
+                  :identifier 'emacs-agent
+                  :mode-line-name "Emacs"
+                  :buffer-name "Emacs Agent"
+                  :shell-prompt "claude> "
+                  :shell-prompt-regexp "claude> "
+                  :client-maker (lambda (buffer)
+                                  (let ((agent-shell-mcp-servers
+                                         `(((name . "elisp-dev-mcp")
+                                            (command . ,(expand-file-name "~/.emacs.d/emacs-mcp-stdio.sh"))
+                                            (args . ("--init-function=elisp-dev-mcp-enable"
+                                                     "--server-id=elisp-dev-mcp"))
+                                            (env . (((name . "EDITOR") (value . "emacsclient")))))
+                                           ((name . "org-mcp")
+                                            (command . ,(expand-file-name "~/.emacs.d/emacs-mcp-stdio.sh"))
+                                            (args . ("--init-function=org-mcp-enable"
+                                                     "--server-id=org-mcp"))
+                                            (env . (((name . "EDITOR") (value . "emacsclient"))))))))
+                                    (agent-shell--make-acp-client
+                                     :command "claude-agent-acp"
+                                     :environment-variables
+                                     (agent-shell-make-environment-variables :inherit-env t)
+                                     :context-buffer buffer)))
+                  :install-instructions "npm install -g @agentclientprotocol/claude-agent-acp")))
 
   (use-package agent-shell-macext
     :load-path "~/dot-spacemacs/lisp/agent-shell-macext"
@@ -1006,6 +1033,23 @@ Falls back to the sole active session or prompts when project has none."
     :after agent-shell
     :config
     (agent-shell-attention-mode 1))
+
+  (use-package meta-agent-shell
+    :load-path "~/dot-spacemacs/lisp/meta-agent-shell"
+    :after agent-shell
+    :custom
+    (meta-agent-shell-heartbeat-file "~/.meta-agent-shell/heartbeat.org")
+    (meta-agent-shell-heartbeat-interval 900)
+    (meta-agent-shell-start-function #'agent-shell)
+    :bind-keymap ("M-m o m" . meta-agent-shell-command-map)
+    :config
+    (define-prefix-command 'meta-agent-shell-command-map)
+    (define-key meta-agent-shell-command-map (kbd "m") #'meta-agent-shell-start)
+    (define-key meta-agent-shell-command-map (kbd "d") #'meta-agent-shell-jump-to-dispatcher)
+    (define-key meta-agent-shell-command-map (kbd "h") #'meta-agent-shell-heartbeat-start)
+    (define-key meta-agent-shell-command-map (kbd "H") #'meta-agent-shell-heartbeat-stop)
+    (define-key meta-agent-shell-command-map (kbd "s") #'meta-agent-shell-heartbeat-send-now)
+    (define-key meta-agent-shell-command-map (kbd "!") #'meta-agent-shell-big-red-button))
 
   (use-package magit-ai
     :load-path "~/dot-spacemacs/lisp/magit-ai"

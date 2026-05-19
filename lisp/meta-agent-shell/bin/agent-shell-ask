@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# agent-shell-ask - Ask another agent a question (they'll reply back to you)
+# Usage: agent-shell-ask "target-buffer" "question"
+#
+# Automatically detects sender from process hierarchy.
+# The target agent will receive instructions to reply back to you.
+
+if [ $# -lt 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-ask \"target-buffer\" \"question\"" >&2
+    exit 1
+fi
+
+target="$1"
+question="$2"
+me=$(emacsclient --eval "(meta-agent-shell-whoami $$)" | tr -d '"')
+
+if [ -z "$me" ] || [ "$me" = "nil" ]; then
+    echo "Error: Could not determine caller buffer" >&2
+    exit 1
+fi
+
+# Escape for elisp: backslashes first, then quotes
+escaped_target=$(printf '%s' "$target" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_question=$(printf '%s' "$question" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_me=$(printf '%s' "$me" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+# Send the question and check result
+result=$(emacsclient --eval "(meta-agent-shell-ask-session \"$escaped_target\" \"$escaped_question\" \"$escaped_me\")" 2>&1)
+
+# Check for errors (emacsclient error or nil return)
+if echo "$result" | grep -q "^error\|^Lisp error"; then
+    echo "ERROR: $result" >&2
+    exit 1
+fi
+
+if [ "$result" = "nil" ]; then
+    echo "ERROR: Failed to ask question - buffer '$target' not found or not an agent-shell buffer" >&2
+    exit 1
+fi
+
+echo "Question sent to $target"

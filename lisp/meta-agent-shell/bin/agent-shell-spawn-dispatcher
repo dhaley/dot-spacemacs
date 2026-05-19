@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# agent-shell-spawn-dispatcher - Create a dispatcher for a project
+# Usage: agent-shell-spawn-dispatcher "path"
+
+if [ $# -lt 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-spawn-dispatcher \"path\"" >&2
+    exit 1
+fi
+
+project_path="$1"
+
+# Escape for elisp: backslashes first, then quotes
+escaped_path=$(printf '%s' "$project_path" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+emacsclient --eval "(meta-agent-shell-start-dispatcher \"$escaped_path\")"

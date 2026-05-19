@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# agent-shell-send-project - Send a message to an agent by project name
+# Usage: agent-shell-send-project "project-name" "message"
+
+if [ $# -lt 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-send-project \"project-name\" \"message\"" >&2
+    exit 1
+fi
+
+project="$1"
+message="$2"
+
+me=$(emacsclient --eval "(meta-agent-shell-whoami $$)" | tr -d '"')
+if [ "$me" = "nil" ]; then
+    me="an agent"
+fi
+
+# Escape for elisp: backslashes first, then quotes
+escaped_project=$(printf '%s' "$project" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_message=$(printf '%s' "$message" | sed 's/\\/\\\\/g; s/"/\\"/g')
+escaped_me=$(printf '%s' "$me" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+emacsclient --eval "(meta-agent-shell-send-to-project \"$escaped_project\" \"$escaped_message\" \"$escaped_me\")"

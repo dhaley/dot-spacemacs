@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# agent-shell-whoami - Print this agent's buffer name
+# Usage: agent-shell-whoami
+
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "Usage: agent-shell-whoami" >&2
+    exit 1
+fi
+
+emacsclient --eval "(meta-agent-shell-whoami $$)" | tr -d '"'

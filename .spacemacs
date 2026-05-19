@@ -1036,20 +1036,25 @@ Falls back to the sole active session or prompts when project has none."
 
   (use-package meta-agent-shell
     :load-path "~/dot-spacemacs/lisp/meta-agent-shell"
-    :after agent-shell
+    :commands (meta-agent-shell-start
+               meta-agent-shell-jump-to-dispatcher
+               meta-agent-shell-heartbeat-start
+               meta-agent-shell-heartbeat-stop
+               meta-agent-shell-heartbeat-send-now
+               meta-agent-shell-big-red-button)
     :custom
     (meta-agent-shell-heartbeat-file "~/.meta-agent-shell/heartbeat.org")
     (meta-agent-shell-heartbeat-interval 900)
     (meta-agent-shell-start-function #'agent-shell)
-    :bind-keymap ("M-m o m" . meta-agent-shell-command-map)
-    :config
+    :init
     (define-prefix-command 'meta-agent-shell-command-map)
     (define-key meta-agent-shell-command-map (kbd "m") #'meta-agent-shell-start)
     (define-key meta-agent-shell-command-map (kbd "d") #'meta-agent-shell-jump-to-dispatcher)
     (define-key meta-agent-shell-command-map (kbd "h") #'meta-agent-shell-heartbeat-start)
     (define-key meta-agent-shell-command-map (kbd "H") #'meta-agent-shell-heartbeat-stop)
     (define-key meta-agent-shell-command-map (kbd "s") #'meta-agent-shell-heartbeat-send-now)
-    (define-key meta-agent-shell-command-map (kbd "!") #'meta-agent-shell-big-red-button))
+    (define-key meta-agent-shell-command-map (kbd "!") #'meta-agent-shell-big-red-button)
+    (global-set-key (kbd "M-m o m") meta-agent-shell-command-map))
 
   (use-package magit-ai
     :load-path "~/dot-spacemacs/lisp/magit-ai"

@@ -957,7 +957,18 @@ Falls back to the sole active session or prompts when project has none."
     (agent-shell-session-strategy 'latest)
     (agent-shell-prefer-session-resume t)
     (agent-shell-show-usage-at-turn-end t)
-    (agent-shell-show-context-usage-indicator t))
+    (agent-shell-show-context-usage-indicator t)
+    (agent-shell-mcp-servers
+     `(((name . "elisp-dev-mcp")
+        (command . ,(expand-file-name "~/.emacs.d/emacs-mcp-stdio.sh"))
+        (args . ("--init-function=elisp-dev-mcp-enable"
+                 "--server-id=elisp-dev-mcp"))
+        (env . (((name . "EDITOR") (value . "emacsclient")))))
+       ((name . "org-mcp")
+        (command . ,(expand-file-name "~/.emacs.d/emacs-mcp-stdio.sh"))
+        (args . ("--init-function=org-mcp-enable"
+                 "--server-id=org-mcp"))
+        (env . (((name . "EDITOR") (value . "emacsclient"))))))))
 
   (use-package agent-shell-macext
     :load-path "~/dot-spacemacs/lisp/agent-shell-macext"
@@ -975,6 +986,12 @@ Falls back to the sole active session or prompts when project has none."
     (add-to-list 'org-src-lang-modes '("agent-shell" . text))
     (add-to-list 'org-babel-load-languages '(agent-shell . t))
     (setq ob-agent-shell-convert-markdown t))
+
+  (use-package agent-shell-org-transcript
+    :load-path "~/dot-spacemacs/lisp/agent-shell-org-transcript"
+    :after agent-shell
+    :custom
+    (agent-shell-org-transcript-directory "~/Documents/org/agent-transcripts/"))
 
   (use-package agent-shell-manager
     :load-path "~/dot-spacemacs/lisp/agent-shell-manager"
@@ -1006,6 +1023,11 @@ Falls back to the sole active session or prompts when project has none."
   (use-package org-mcp
     :after mcp-server-lib
     :config
+    (setq org-mcp-allowed-files
+          '("~/Documents/org/todo.txt"
+            "~/Documents/org/from-mobile.org"
+            "~/Documents/org/diary.org"
+            "~/Documents/org/todo.txt_archive"))
     (org-mcp-enable))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──

@@ -400,6 +400,9 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
 
+  ;; ── Markdown / Pandoc ─────────────────────────────────────────────────────────
+  (setq markdown-command "/opt/homebrew/bin/pandoc")
+
   ;; ── Readability & navigation aids ───────────────────────────────────────────
   ;; Show current org heading in header line when scrolled off-screen
   (use-package org-sticky-header
@@ -940,6 +943,23 @@ Falls back to the sole active session or prompts when project has none."
   ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
     :defer t)
+
+  (use-package agent-shell-macext
+    :load-path "~/dot-spacemacs/lisp/agent-shell-macext"
+    :after agent-shell
+    :hook (agent-shell-mode . agent-shell-macext-setup)
+    :custom
+    (agent-shell-macext-file-copy-policy 'auto)
+    (agent-shell-macext-notifications t)
+    (agent-shell-macext-notify-current-buffer nil))
+
+  (use-package ob-agent-shell
+    :load-path "~/dot-spacemacs/lisp/ob-agent-shell"
+    :after (agent-shell org)
+    :config
+    (add-to-list 'org-src-lang-modes '("agent-shell" . text))
+    (add-to-list 'org-babel-load-languages '(agent-shell . t))
+    (setq ob-agent-shell-convert-markdown t))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat

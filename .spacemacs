@@ -999,10 +999,14 @@ Falls back to the sole active session or prompts when project has none."
     (mcp-server-lib-start))
 
   (use-package elisp-dev-mcp
-    :after mcp-server-lib)
+    :after mcp-server-lib
+    :config
+    (elisp-dev-mcp-enable))
 
   (use-package org-mcp
-    :after mcp-server-lib)
+    :after mcp-server-lib
+    :config
+    (org-mcp-enable))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat

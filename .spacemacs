@@ -852,6 +852,8 @@ you should place your code here."
       (r '((?i (file . "~/dot-spacemacs/.spacemacs"))
            (?b (file . "~/.bash_profile"))
            (?B (file . "~/.bashrc"))
+           (?c (file . "~/.claude"))
+           (?C (file . "~/.claude.json"))
            (?e (file . "~/dot-spacemacs/.spacemacs"))
            (?d (file . "~/dot-spacemacs"))
            (?j (file . "~/src/dot-emacs"))

@@ -942,7 +942,10 @@ Falls back to the sole active session or prompts when project has none."
   ;; NOTE: Requires agent-client-protocol > 0.9.0 (SessionConfigOption).
   ;; Until then, use my/af-agent via vterm as a workaround.
   (use-package agent-shell
-    :defer t)
+    :defer t
+    :custom
+    (agent-shell-session-strategy 'latest)
+    (agent-shell-prefer-session-resume t))
 
   (use-package agent-shell-macext
     :load-path "~/dot-spacemacs/lisp/agent-shell-macext"
@@ -960,6 +963,12 @@ Falls back to the sole active session or prompts when project has none."
     (add-to-list 'org-src-lang-modes '("agent-shell" . text))
     (add-to-list 'org-babel-load-languages '(agent-shell . t))
     (setq ob-agent-shell-convert-markdown t))
+
+  (use-package agent-shell-manager
+    :load-path "~/dot-spacemacs/lisp/agent-shell-manager"
+    :after agent-shell
+    :commands (agent-shell-manager-toggle)
+    :bind ("C-c M-u" . agent-shell-manager-toggle))
 
   ;; ── eat: full terminal emulator (iTerm-like) ──
   (use-package eat

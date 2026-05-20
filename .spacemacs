@@ -1054,6 +1054,8 @@ Falls back to the sole active session or prompts when project has none."
     (define-key meta-agent-shell-command-map (kbd "H") #'meta-agent-shell-heartbeat-stop)
     (define-key meta-agent-shell-command-map (kbd "s") #'meta-agent-shell-heartbeat-send-now)
     (define-key meta-agent-shell-command-map (kbd "!") #'meta-agent-shell-big-red-button)
+    (define-key meta-agent-shell-command-map (kbd "f")
+                (lambda () (interactive) (require 'agent-shell) (my/ops-fleet)))
     (global-set-key (kbd "M-m o m") meta-agent-shell-command-map))
 
   (use-package magit-ai

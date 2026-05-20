@@ -1034,6 +1034,21 @@ Falls back to the sole active session or prompts when project has none."
     :config
     (agent-shell-attention-mode 1))
 
+  (use-package agent-shell-pet
+    :load-path "~/dot-spacemacs/lisp/agent-shell-pet"
+    :after agent-shell
+    :custom
+    (agent-shell-pet-renderer 'macos-native)
+    (agent-shell-pet-size 'medium)
+    (agent-shell-pet-speech-bubble-theme 'dark)
+    :config
+    (global-agent-shell-pet-mode 1))
+
+  (use-package agent-shell-workspace
+    :load-path "~/dot-spacemacs/lisp/agent-shell-workspace"
+    :commands (agent-shell-workspace-toggle)
+    :bind ("C-M-z" . agent-shell-workspace-toggle))
+
   (use-package meta-agent-shell
     :load-path "~/dot-spacemacs/lisp/meta-agent-shell"
     :commands (meta-agent-shell-start

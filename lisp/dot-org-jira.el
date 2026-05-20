@@ -182,15 +182,17 @@
 
   ;; Map Jira priorities to org priority cookies so org-agenda doesn't choke
   (setq org-jira-priority-to-org-priority-alist
-        '(("Blocker"   . ?A)
+        '(("Highest"   . ?A)
+          ("Blocker"   . ?A)
           ("Critical"  . ?A)
           ("Emergency" . ?A)
           ("High"      . ?B)
           ("Major"     . ?B)
           ("Medium"    . ?C)
-          ("Minor"     . ?D)
           ("Low"       . ?D)
-          ("Trivial"   . ?D)))
+          ("Minor"     . ?D)
+          ("Lowest"    . ?E)
+          ("Trivial"   . ?E)))
 
   ;; org-jira writes a :priority: property that clashes with org-mode's
   ;; built-in PRIORITY handling. When org-agenda scans deadlines, it calls
@@ -206,7 +208,7 @@
     (advice-add 'org-agenda-get-scheduled :around #'my/org-agenda-fix-nil-priority))
   :config
   ;; Jira Server doesn't have /rest/api/2/label endpoint (Cloud-only).
-  (defun org-jira-read-labels ()
+  (defun org-jira-read-labels (&optional initial-input)
     (condition-case nil
         (let* ((response (jiralib-do-jql-search
                           "project = CO AND labels is not EMPTY" 100))
@@ -214,7 +216,7 @@
           (dolist (issue response)
             (dolist (label (org-jira-find-value issue 'fields 'labels))
               (puthash label t labels)))
-          (hash-table-keys labels))
+          (completing-read-multiple "Labels: " (hash-table-keys labels) nil nil initial-input))
       (error nil)))
 
   ;; Jira Server expects assignee as {"name": "username"} not {"accountId": "..."}
@@ -934,9 +936,11 @@ Shows closed issues, open/carried-over issues, and story point totals."
 ;;; ── org-shiftup/down priority sync for org-jira buffers ──
 
 (defvar my/org-jira-org-to-jira-priority-alist
-  '((?A . "Blocker")
-    (?B . "Major")
-    (?C . "Minor"))
+  '((?A . "Highest")
+    (?B . "High")
+    (?C . "Medium")
+    (?D . "Low")
+    (?E . "Lowest"))
   "Reverse mapping from org priority cookie to Jira priority name.")
 
 (defun my/org-jira-after-priority-change (&rest _)

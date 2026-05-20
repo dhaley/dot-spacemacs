@@ -1039,10 +1039,13 @@ Falls back to the sole active session or prompts when project has none."
     :after agent-shell
     :custom
     (agent-shell-pet-renderer 'macos-native)
-    (agent-shell-pet-size 'medium)
+    (agent-shell-pet-size 'small)
     (agent-shell-pet-speech-bubble-theme 'dark)
+    (agent-shell-pet-scope 'buffer)
     :config
-    (global-agent-shell-pet-mode 1))
+    ;; Only enable manually with M-x global-agent-shell-pet-mode
+    ;; (global-agent-shell-pet-mode 1)
+    )
 
   (use-package agent-shell-workspace
     :load-path "~/dot-spacemacs/lisp/agent-shell-workspace"

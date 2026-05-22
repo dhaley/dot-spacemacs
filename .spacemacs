@@ -400,6 +400,7 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
+  (setq bookmark-save-flag 1)  ; don't auto-save bookmarks on every change
 
   ;; ── Dired: eat terminal binding handled by global C-c t (my/eat-toggle) ──
 

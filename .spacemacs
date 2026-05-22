@@ -97,7 +97,7 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
-                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat request dash org-super-agenda
+                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat eshell-toggle request dash org-super-agenda
                                                          websocket web-server
                                                          ;; From JW's config
                                                          olivetti restclient

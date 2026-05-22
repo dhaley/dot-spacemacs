@@ -1137,7 +1137,9 @@ Falls back to the sole active session or prompts when project has none."
       "Set process query flag to nil so killing eat buffer doesn't prompt."
       (when-let ((proc (get-buffer-process (current-buffer))))
         (set-process-query-on-exit-flag proc nil)))
-    (add-hook 'eat-mode-hook #'my/eat-no-confirm-kill)
+    (add-hook 'eat-exec-hook
+              (lambda (_process)
+                (set-process-query-on-exit-flag (get-buffer-process (current-buffer)) nil)))
 
     ;; Toggle eat for current project (C-c t from anywhere)
     (defvar my/eat-return-buffer nil
@@ -1155,6 +1157,14 @@ If not in eat, open/switch to the project's eat terminal."
         (eat-project)))
 
     (global-set-key (kbd "C-c t") #'my/eat-toggle))
+
+  ;; ── eshell-toggle: IDE-style eshell panel at bottom ──
+  (use-package eshell-toggle
+    :ensure t
+    :bind ("C-c e" . eshell-toggle)
+    :custom
+    (eshell-toggle-size-fraction 3)
+    (eshell-toggle-run-command nil))
 
   ;; ── agent + terminal workspace ──
   (defun my/find-buffer-by-prefix (prefix)

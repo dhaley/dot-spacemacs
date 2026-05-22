@@ -401,6 +401,10 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
 
+  ;; ── Dired: open eat terminal in current directory ────────────────────────────
+  (with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "C-c t") #'eat))
+
 
   ;; ── Emacs server (for emacsclient + mcp-server-lib) ──────────────────────────
   (use-package server

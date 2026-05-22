@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ops-scheduledtagging__system_health",
+      "mcp__ops-scheduledtagging__untagged_cost_report",
+      "mcp__ops-scheduledtagging__untagged_daily_trend"
+    ]
+  }
+}

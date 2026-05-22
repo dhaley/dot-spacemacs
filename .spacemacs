@@ -402,6 +402,13 @@ you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
   (setq bookmark-save-flag 1)  ; don't auto-save bookmarks on every change
 
+  ;; Auto-recompile work.el if source is newer than bytecode
+  (let ((el (expand-file-name "~/.local/emacs/work.el"))
+        (elc (expand-file-name "~/.local/emacs/work.elc")))
+    (when (and (file-exists-p el)
+               (file-newer-than-file-p el elc))
+      (byte-compile-file el)))
+
   ;; ── Dired: eat terminal binding handled by global C-c t (my/eat-toggle) ──
 
 

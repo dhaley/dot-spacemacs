@@ -1174,6 +1174,19 @@ If not in eat, open/switch to the project's eat terminal."
     (eshell-toggle-size-fraction 3)
     (eshell-toggle-run-command nil))
 
+  ;; ── eshell: Wiegley's config ──
+  (use-package eshell
+    :defer t
+    :custom
+    (eshell-prompt-function
+     (lambda nil
+       (concat (abbreviate-file-name (eshell/pwd))
+               (if (= (user-uid) 0) " # " " $ "))))
+    (eshell-save-history-on-exit t)
+    (eshell-stringify-t nil)
+    (eshell-term-name "ansi")
+    (eshell-visual-commands '("vi" "top" "screen" "less" "lynx" "terraform")))
+
   ;; ── agent + terminal workspace ──
   (defun my/find-buffer-by-prefix (prefix)
     "Find first buffer whose name starts with PREFIX."

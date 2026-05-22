@@ -276,3 +276,36 @@ Then delete any existing stale installation and sync:
 rm -rf ~/.emacs.d/elpa/develop/modus-themes-*/
 # then M-m f e R in Emacs
 ```
+
+### agent-shell-workspace sidebar leaks into non-Agents tab
+
+**Symptom:** After pressing `C-M-z` to toggle the workspace, the sidebar buffer (`agent-shell-workspace-sidebar-mode`) appears in your main editing tab and persists even after toggling back.
+
+**Root cause:** When `agent-shell-workspace-toggle` is called while an agent-shell buffer is already visible in the current tab, the sidebar window gets created in the current frame before the tab switch fully completes. The window configuration leaks into both tabs.
+
+**Workaround:** Kill the sidebar window in the wrong tab:
+- `q` with point in the sidebar window, OR
+- `C-x 0` with point in the sidebar window, OR
+- `M-x kill-buffer RET *Agent Sidebar* RET`
+
+**Upstream:** File at https://github.com/gveres/agent-shell-workspace/issues
+
+**Sidebar keybindings (in the Agents tab):**
+
+| Key | Action |
+|-----|--------|
+| `RET` | Focus agent in main area |
+| `s` | Toggle quick-switch (peek on cursor move) |
+| `a` | Add agent to tiled view |
+| `x` | Remove agent from tiled view |
+| `t` | Un-tile back to single focus |
+| `c` | Create new agent |
+| `k` | Kill agent process |
+| `r` | Restart agent |
+| `d` | Delete all killed buffers |
+| `m` | Set session mode |
+| `M` | Cycle session mode |
+| `R` | Rename agent buffer |
+| `C-c C-c` | Interrupt agent |
+| `g` | Refresh sidebar |
+| `q` | Close sidebar |

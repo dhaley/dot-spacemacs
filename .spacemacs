@@ -169,7 +169,8 @@ values."
    ;; `recents' `bookmarks' `projects' `agenda' `todos'."
    ;; List sizes may be nil, in which case
    ;; `spacemacs-buffer-startup-lists-length' takes effect.
-   dotspacemacs-startup-lists '((recents . 5)
+   dotspacemacs-startup-lists '((recents . 15)
+                                (bookmarks . 5)
                                 (projects . 7))
    ;; True if the home buffer should respond to resize events.
    dotspacemacs-startup-buffer-responsive t
@@ -398,6 +399,7 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+  (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
 
 
   ;; ── Emacs server (for emacsclient + mcp-server-lib) ──────────────────────────
@@ -860,6 +862,20 @@ you should place your code here."
            (?o (file . "~/dot-spacemacs/lisp/dot-org.el"))))
     (set-register (car r) (cadr r)))
 
+  ;; Bookmarks for the same locations (persist across sessions)
+  (with-eval-after-load 'bookmark
+    (dolist (bm '(("spacemacs" . "~/dot-spacemacs/.spacemacs")
+                  ("bash-profile" . "~/.bash_profile")
+                  ("bashrc" . "~/.bashrc")
+                  ("claude-dir" . "~/.claude")
+                  ("claude-json" . "~/.claude.json")
+                  ("dot-spacemacs" . "~/dot-spacemacs")
+                  ("dot-emacs-ref" . "~/src/dot-emacs")
+                  ("org-config" . "~/dot-spacemacs/lisp/dot-org.el")))
+      (bookmark-store (car bm)
+                      `((filename . ,(expand-file-name (cdr bm))))
+                      nil)))
+
   (setq w3m-home-page "https://www.google.com")
   ;; W3M Home Page
   (setq w3m-default-display-inline-images t)
@@ -1006,7 +1022,14 @@ Falls back to the sole active session or prompts when project has none."
     :custom
     (agent-shell-macext-file-copy-policy 'auto)
     (agent-shell-macext-notifications t)
-    (agent-shell-macext-notify-current-buffer nil))
+    (agent-shell-macext-notify-current-buffer nil)
+    :config
+    ;; Fix: copy-file errors on directories — pass them through as-is
+    ;; TODO: file upstream at https://github.com/xenodium/agent-shell/issues
+    (define-advice agent-shell-macext--resolve-file-path (:around (orig-fn file-path) handle-directories)
+      (if (file-directory-p file-path)
+          file-path
+        (funcall orig-fn file-path))))
 
   (use-package ob-agent-shell
     :load-path "~/dot-spacemacs/lisp/ob-agent-shell"
@@ -1476,7 +1499,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-priority-lowest 69)
    '(org-refile-allow-creating-parent-nodes 'confirm)
    '(org-refile-target-verify-function 'my/verify-refile-target)
-   '(org-refile-targets '((org-agenda-files :level . 1)))
+   '(org-refile-targets '((org-agenda-files :maxlevel . 2)))
    '(org-refile-use-cache t)
    '(org-refile-use-outline-path 'file)
    '(org-remove-highlights-with-change t)

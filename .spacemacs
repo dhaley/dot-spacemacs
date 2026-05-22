@@ -401,9 +401,7 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
 
-  ;; ── Dired: open eat terminal in current directory ────────────────────────────
-  (with-eval-after-load 'dired
-    (define-key dired-mode-map (kbd "C-c t") #'eat))
+  ;; ── Dired: eat terminal binding handled by global C-c t (my/eat-toggle) ──
 
 
   ;; ── Emacs server (for emacsclient + mcp-server-lib) ──────────────────────────
@@ -1132,7 +1130,31 @@ Falls back to the sole active session or prompts when project has none."
   (use-package eat
     :config
     (setq eat-term-name "xterm-256color")
-    (setq eat-kill-buffer-on-exit t))
+    (setq eat-kill-buffer-on-exit t)
+
+    ;; Don't ask to confirm when killing eat buffers with live processes
+    (defun my/eat-no-confirm-kill ()
+      "Set process query flag to nil so killing eat buffer doesn't prompt."
+      (when-let ((proc (get-buffer-process (current-buffer))))
+        (set-process-query-on-exit-flag proc nil)))
+    (add-hook 'eat-mode-hook #'my/eat-no-confirm-kill)
+
+    ;; Toggle eat for current project (C-c t from anywhere)
+    (defvar my/eat-return-buffer nil
+      "Buffer to return to when toggling away from eat.")
+
+    (defun my/eat-toggle ()
+      "Toggle an eat terminal for the current project.
+If in an eat buffer, switch back to the previous buffer.
+If not in eat, open/switch to the project's eat terminal."
+      (interactive)
+      (if (derived-mode-p 'eat-mode)
+          (when (buffer-live-p my/eat-return-buffer)
+            (switch-to-buffer my/eat-return-buffer))
+        (setq my/eat-return-buffer (current-buffer))
+        (eat-project)))
+
+    (global-set-key (kbd "C-c t") #'my/eat-toggle))
 
   ;; ── agent + terminal workspace ──
   (defun my/find-buffer-by-prefix (prefix)

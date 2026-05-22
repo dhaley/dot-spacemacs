@@ -99,7 +99,7 @@ values."
    dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
                                                          gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat eshell-toggle request dash org-super-agenda
                                                          websocket web-server
-                                                         ;; From JW's config
+                                                         ;; Additional packages
                                                          olivetti restclient
                                                          helpful org-appear org-modern
                                                          magit-todos pdf-tools direnv sudo-edit crux backup-each-save
@@ -1174,7 +1174,7 @@ If not in eat, open/switch to the project's eat terminal."
     (eshell-toggle-size-fraction 3)
     (eshell-toggle-run-command nil))
 
-  ;; ── eshell: Wiegley's config ──
+  ;; ── eshell config ──
   (use-package eshell
     :defer t
     :custom

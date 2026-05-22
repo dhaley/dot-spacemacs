@@ -1185,7 +1185,7 @@ If not in eat, open/switch to the project's eat terminal."
     (eshell-save-history-on-exit t)
     (eshell-stringify-t nil)
     (eshell-term-name "ansi")
-    (eshell-visual-commands '("vi" "top" "screen" "less" "lynx" "terraform")))
+    (eshell-visual-commands '("vi" "top" "screen" "less" "lynx")))
 
   ;; ── agent + terminal workspace ──
   (defun my/find-buffer-by-prefix (prefix)

@@ -97,7 +97,7 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(persistent-scratch shift-text writeroom-mode
-                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat eshell-toggle request dash org-super-agenda
+                                                         gptel mcp mcp-server-lib elisp-dev-mcp org-mcp edit-server shell-maker acp agent-shell eat eshell-toggle keyfreq request dash org-super-agenda
                                                          websocket web-server
                                                          ;; Additional packages
                                                          olivetti restclient
@@ -1210,6 +1210,13 @@ If not in eat, open/switch to the project's eat terminal."
   (use-package free-keys
     :ensure t
     :commands free-keys)
+
+  ;; ── keyfreq: track command usage frequency ─────────────────────────────
+  (use-package keyfreq
+    :ensure t
+    :config
+    (keyfreq-mode 1)
+    (keyfreq-autosave-mode 1))
 
 
   ;; ── helpful: replace standard help buffers ──────────────────────────────

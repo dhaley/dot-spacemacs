@@ -105,12 +105,14 @@ values."
                                                          magit-todos pdf-tools direnv sudo-edit crux backup-each-save
                                                          ;; Readability & navigation
                                                          pulsar move-text
+                                                         ;; Themes
+                                                         zenburn-theme catppuccin-theme solarized-theme
                                                          ;; Already installed but pinned explicitly to prevent pruning
                                                          vundo string-inflection free-keys)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes info+ undo-fu-session geben)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -355,6 +357,15 @@ before packages are loaded. If you are unsure, you should try in setting them in
   ;; Use org-mode from source (~/src/org-mode) instead of ELPA
   (push (expand-file-name "~/src/org-mode/lisp") load-path)
   (add-to-list 'load-path (expand-file-name "~/src/org-mode/contrib/lisp") t)
+
+  ;; Use modus-themes and ef-themes from source (MELPA versions have broken byte-compilation on Emacs 30)
+  (push (expand-file-name "~/dot-spacemacs/lisp/modus-themes") load-path)
+  (push (expand-file-name "~/dot-spacemacs/lisp/ef-themes") load-path)
+  ;; Override built-in modus-themes (Emacs 30 ships v4.x, we need v5.2.0)
+  (push (expand-file-name "~/dot-spacemacs/lisp/modus-themes") custom-theme-load-path)
+  (push (expand-file-name "~/dot-spacemacs/lisp/ef-themes") custom-theme-load-path)
+  (setq features (delq 'modus-themes features))
+  (load (expand-file-name "~/dot-spacemacs/lisp/modus-themes/modus-themes.el") nil t)
 
   ;; Ensure exec-path-from-shell copies SSL cert vars
   (setq exec-path-from-shell-variables
@@ -1289,7 +1300,10 @@ This function is called at the very end of Spacemacs initialization."
    '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
    '(browse-url-browser-function 'browse-url-default-browser)
    '(custom-safe-themes
-     '("967c23e9ba179b80560774419f081df22e7674aac23c5c550b817e4a1ce7d058"
+     '("5cb84685a211fb46e47ca355dc91e52adf0c185dc0603cfe27c63855f200dd1f"
+       "6b2ea4799329a8d62f0aee57e3c1252e25840c164ffca1ed2e1e74da7535ea3b"
+       "0206a1960f04896d7f5144e2e8ac0119bb63df78deec362337e7cc3003b946e9"
+       "967c23e9ba179b80560774419f081df22e7674aac23c5c550b817e4a1ce7d058"
        "dde7fb0b1ed1bb5b61e62bf1a00696cf099a2b290718aee9b377365b3ed992f0"
        "2b0fcc7cc9be4c09ec5c75405260a85e41691abb1ee28d29fcd5521e4fca575b"
        "a75fc55d480accd6f651d1bae492b7ab4c5b28894350b63ef39bf947bb8fd453"
@@ -1398,8 +1412,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-archive-save-context-info '(time category itags))
    '(org-attach-method 'mv)
    '(org-babel-load-languages
-     '((python . t) (js . t) (ruby . t) (shell . t) (sql . t)
-       (emacs-lisp . t)))
+     '((python . t) (js . t) (ruby . t) (shell . t) (sql . t) (emacs-lisp . t)))
    '(org-babel-results-keyword "results")
    '(org-beamer-frame-default-options "fragile")
    '(org-blank-before-new-entry '((heading) (plain-list-item . auto)))
@@ -1430,7 +1443,7 @@ This function is called at the very end of Spacemacs initialization."
        ("J" "Jira Task" entry
         (file+headline "~/Documents/org/todo.txt" "Org Jira")
         "* TODO %^{Summary}\12SCHEDULED: %t\12:PROPERTIES:\12:ID:       %(shell-command-to-string \"uuidgen\"):CREATED:  %U\12:jira-project: CO\12:jira-type: Task\12:jira-priority: Major\12:jira-assignee: dhaley\12:jira-epic: OPS INT - Misc\12:jira-sprint: %(org-jira--capture-default-sprint)\12:jira-component: Ops\12:jira-labels: maintenance\12:jira-story-points: 1\12:jira-due-date: %(org-jira--capture-default-due-date)\12:jira-servicenow-link:\12:jira-task-number:\12:jira-contact-email:\12:jira-fix-version:\12:END:\12%?"
-        :prepend t)))
+        :prepend t)) t)
    '(org-clock-auto-clock-resolution 'when-no-clock-is-running)
    '(org-clock-clocked-in-display nil)
    '(org-clock-history-length 23)
@@ -1443,7 +1456,7 @@ This function is called at the very end of Spacemacs initialization."
    '(org-clock-out-switch-to-state nil)
    '(org-clock-out-when-done t)
    '(org-clock-persist t)
-   '(org-clock-persist-file "~/.emacs.d/.cache/org-clock-save.el")
+   '(org-clock-persist-file "~/.emacs.d/.cache/org-clock-save.el" t)
    '(org-clock-persist-query-resume nil)
    '(org-clock-report-include-clocking-task t)
    '(org-clock-resolve-expert t)

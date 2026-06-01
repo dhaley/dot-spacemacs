@@ -1,0 +1,13 @@
+*.elc
+*-autoloads.el
+*-pkg.el
+.agent-shell/
+.DS_Store
+
+# Local tooling
+.claude/
+.env
+.env.example
+.mcp.json
+.taskmaster/
+/CLAUDE.md

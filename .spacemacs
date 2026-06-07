@@ -434,7 +434,7 @@ you should place your code here."
     (edit-server-start))
 
   ;; ── Markdown / Pandoc ─────────────────────────────────────────────────────────
-  (setq markdown-command "/opt/homebrew/bin/pandoc")
+  (setq markdown-command (or (executable-find "pandoc") "pandoc"))
 
   ;; ── Readability & navigation aids ───────────────────────────────────────────
   ;; Show current org heading in header line when scrolled off-screen

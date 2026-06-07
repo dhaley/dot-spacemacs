@@ -1300,7 +1300,8 @@ This function is called at the very end of Spacemacs initialization."
    '(bmkp-last-as-first-bookmark-file "/Users/dhaley/spacemacs/.emacs.d/.cache/bookmarks")
    '(browse-url-browser-function 'browse-url-default-browser)
    '(custom-safe-themes
-     '("5cb84685a211fb46e47ca355dc91e52adf0c185dc0603cfe27c63855f200dd1f"
+     '("333b0cc0f985744d97beebf433542bb93b314b331117aa57e91103dbec9c29fe"
+       "5cb84685a211fb46e47ca355dc91e52adf0c185dc0603cfe27c63855f200dd1f"
        "6b2ea4799329a8d62f0aee57e3c1252e25840c164ffca1ed2e1e74da7535ea3b"
        "0206a1960f04896d7f5144e2e8ac0119bb63df78deec362337e7cc3003b946e9"
        "967c23e9ba179b80560774419f081df22e7674aac23c5c550b817e4a1ce7d058"

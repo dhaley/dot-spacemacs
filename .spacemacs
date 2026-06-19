@@ -106,13 +106,15 @@ values."
                                                          ;; Readability & navigation
                                                          pulsar move-text
                                                          ;; Themes
-                                                         zenburn-theme catppuccin-theme solarized-theme
+                                                         zenburn-theme solarized-theme
                                                          ;; Already installed but pinned explicitly to prevent pruning
-                                                         vundo string-inflection free-keys)
+                                                         vundo string-inflection free-keys
+                                                         ;; Markdown enhancements
+                                                         edit-indirect markdown-preview-mode)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -434,7 +436,37 @@ you should place your code here."
     (edit-server-start))
 
   ;; ── Markdown / Pandoc ─────────────────────────────────────────────────────────
-  (setq markdown-command (or (executable-find "pandoc") "pandoc"))
+  (setq markdown-command (concat (or (executable-find "pandoc") "pandoc")
+                                 " -f markdown_github+smart")
+        markdown-command-needs-filename t
+        markdown-enable-math t
+        markdown-open-command "open -a Marked")
+
+  (with-eval-after-load 'markdown-mode
+    ;; Scaled header faces for visual hierarchy
+    (set-face-attribute 'markdown-header-face-1 nil :inherit 'markdown-header-face :height 2.0)
+    (set-face-attribute 'markdown-header-face-2 nil :inherit 'markdown-header-face :height 1.6)
+    (set-face-attribute 'markdown-header-face-3 nil :inherit 'markdown-header-face :height 1.4)
+    (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.2))
+
+  ;; Live browser preview with GitHub CSS
+  (use-package markdown-preview-mode
+    :after markdown-mode
+    :config
+    (setq markdown-preview-stylesheets
+          (list (concat "https://github.com/dmarcotte/github-markdown-preview/"
+                        "blob/master/data/css/github.css"))))
+
+  ;; Edit code blocks in their native major mode (C-c ')
+  (use-package edit-indirect
+    :bind ("C-c '" . edit-indirect-region))
+
+  ;; Pandoc conversion hydra
+  (use-package pandoc-mode
+    :load-path "~/dot-spacemacs/lisp/"
+    :hook (markdown-mode . pandoc-mode)
+    :config
+    (pandoc-load-default-settings))
 
   ;; ── Readability & navigation aids ───────────────────────────────────────────
   ;; Show current org heading in header line when scrolled off-screen
@@ -467,6 +499,25 @@ you should place your code here."
   (use-package move-text
     :ensure t
     :config (move-text-default-bindings))
+
+  ;; ── Frame navigation by name ─────────────────────────────────────────────────
+  (global-set-key (kbd "M-F") #'select-frame-by-name)
+  (global-set-key (kbd "M-N") #'set-frame-name)
+
+  ;; Auto-name frames by projectile project when switching projects
+  (defun my/name-frame-by-project ()
+    "Name the current frame after the projectile project."
+    (when-let ((proj (projectile-project-name)))
+      (unless (string= proj "-")
+        (set-frame-name proj))))
+  (add-hook 'projectile-after-switch-project-hook #'my/name-frame-by-project)
+
+  ;; Auto-name agent-shell frame
+  (advice-add 'agent-shell-workspace-toggle :after
+              (lambda (&rest _)
+                (when (get-buffer "*Agent Sidebar*")
+                  (set-frame-name "Agent")
+                  (set-face-background 'default "#f5f5f0" (selected-frame)))))
 
   ;; Load beamer export backend so C-c C-e l B/P are available
   (require 'ox-beamer)
@@ -563,7 +614,23 @@ you should place your code here."
         (if (and wt-path (file-directory-p wt-path))
             (magit-status-setup-buffer wt-path)
           (message "No worktree found for branch %s" (or branch "none")))))
-    (global-set-key (kbd "C-x G") #'my/magit-worktree-status))
+    (global-set-key (kbd "C-x G") #'my/magit-worktree-status)
+
+    ;; Show worktrees section in magit-status
+    (magit-add-section-hook 'magit-status-sections-hook
+                            'magit-insert-worktrees
+                            nil t)
+
+    ;; Prune orphaned worktrees (no built-in magit command for this)
+    (defun my/git-worktree-prune ()
+      "Run git worktree prune in the current repo."
+      (interactive)
+      (magit-run-git "worktree" "prune")
+      (message "Worktrees pruned"))
+
+    ;; Add prune to the Z worktree transient
+    (transient-append-suffix 'magit-worktree "k"
+      '("p" "Prune" my/git-worktree-prune)))
 
   (bind-key "C-c n" #'insert-user-timestamp)
   (bind-key "C-c o" #'customize-option)
@@ -1125,7 +1192,6 @@ Falls back to the sole active session or prompts when project has none."
     :after magit)
 
   (use-package mcp-server-lib
-    :after agent-shell
     :config
     (require 'mcp-server-lib-commands)
     (mcp-server-lib-start))
@@ -1301,6 +1367,19 @@ This function is called at the very end of Spacemacs initialization."
    '(browse-url-browser-function 'browse-url-default-browser)
    '(custom-safe-themes
      '("333b0cc0f985744d97beebf433542bb93b314b331117aa57e91103dbec9c29fe"
+       "6dcc66a60dce37a5817d46e7b1f838ac5d95a79061119adeb7c04c7ae9f511d0"
+       "725195e919c94667dfbe186161d63f11799b93d74e846ec1404900f34d320c79"
+       "138ed99a323c1b93c52f4b3726caf2bc634b79a76fa63a3d3aff76394db5f28f"
+       "efcecf09905ff85a7c80025551c657299a4d18c5fcfedd3b2f2b6287e4edd659"
+       "c447273b05cabc107821984806ed20a3dbf17f1b4d46ebf71bfde9b7aed39382"
+       "e1b246d32c38e05c3c050796c03f3b679b8f202914195d3661aa65819585853e"
+       "0ef0c3e24c8f704430e2b2f473101c08fb8bab93d09a80dbc2ea2dbb799aa861"
+       "c4df9006b9eb32599d758800a32f3487c2cdf13826084511783b47d419024af2"
+       "f76e34f676ac1fbce608c5f38033c35e370509619b9a3acd02a518ef58b01107"
+       "ada7b780e915804925661f00591653d3f41bdaff0f0b56cb4e9301e40325426a"
+       "67ee9bc95c8a208111b3dc7390eebbc9405a2b181cf770d2d2150fd7c0245801"
+       "b5bb7aa81d5457dfe9d82188ce18dcb38fb308cfa4d4042d871de0a2abf4b9af"
+       "f2f42f0b7c53736840fc3ff5751235e3b87cc535b04ddaf3423e2926548bfbb4"
        "5cb84685a211fb46e47ca355dc91e52adf0c185dc0603cfe27c63855f200dd1f"
        "6b2ea4799329a8d62f0aee57e3c1252e25840c164ffca1ed2e1e74da7535ea3b"
        "0206a1960f04896d7f5144e2e8ac0119bb63df78deec362337e7cc3003b946e9"
@@ -1720,26 +1799,29 @@ This function is called at the very end of Spacemacs initialization."
                  orgit osx-trash outorg outshine ov owdriver ox-gfm ox-twbs
                  pabbrev package-build packed pacmacs page-break-lines pandoc-mode
                  parent-mode parsebib pcache pcre2el peep-dired persistent-scratch
-                 persistent-soft persp-mode perspective php-auto-yasnippets
-                 php-boris php-boris-minor-mode php-eldoc php-extras php-mode
-                 phpcbf phpunit pip-requirements pipenv pippel pkg-info po-mode
-                 popup popwin pos-tip powerline pretty-mode prodigy projectile
-                 pug-mode puppet-mode py-isort pyenv-mode python-mode pythonic
-                 pyvenv quelpa rainbow-delimiters rainbow-mode rake rbenv redshank
-                 request restart-emacs restclient robe rspec-mode rubocop
-                 ruby-test-mode ruby-tools runner rvm s sass-mode scss-mode seq
-                 session shift-text simple-httpd slim-mode slime smart-compile
-                 smart-cursor-color smart-dash smart-forward smart-mode-line
-                 smart-shift smartparens smex sort-words spaceline spacemacs-theme
-                 spinner sql-indent ssass-mode stickyfunc-enhance stripe-buffer
-                 sublimity sudden-death swiper tagedit tbx2org tern theme-changer
-                 tiny toc-org transpose-mark twittering-mode undo-tree
-                 unicode-enbox use-package uuidgen vi-tilde-fringe vimish-fold
-                 visible-mark visual-fill-column visual-regexp volatile-highlights
-                 wand web-beautify web-completion-data web-mode weblogger wgrep
-                 which-key window-numbering workgroups workgroups2 wrap-region
-                 writeroom-mode ws-butler xcscope yaml-mode yapfify yasnippet
-                 ztree))
+                 persistent-soft persp-mode perspective pg pgmacs
+                 php-auto-yasnippets php-boris php-boris-minor-mode php-eldoc
+                 php-extras php-mode phpcbf phpunit pip-requirements pipenv pippel
+                 pkg-info po-mode popup popwin pos-tip powerline pretty-mode
+                 prodigy projectile pug-mode puppet-mode py-isort pyenv-mode
+                 python-mode pythonic pyvenv quelpa rainbow-delimiters
+                 rainbow-mode rake rbenv redshank request restart-emacs restclient
+                 robe rspec-mode rubocop ruby-test-mode ruby-tools runner rvm s
+                 sass-mode scss-mode seq session shift-text simple-httpd slim-mode
+                 slime smart-compile smart-cursor-color smart-dash smart-forward
+                 smart-mode-line smart-shift smartparens smex sort-words spaceline
+                 spacemacs-theme spinner sql-indent ssass-mode stickyfunc-enhance
+                 stripe-buffer sublimity sudden-death swiper tagedit tbx2org tern
+                 theme-changer tiny toc-org transpose-mark twittering-mode
+                 undo-tree unicode-enbox use-package uuidgen vi-tilde-fringe
+                 vimish-fold visible-mark visual-fill-column visual-regexp
+                 volatile-highlights wand web-beautify web-completion-data
+                 web-mode weblogger wgrep which-key window-numbering workgroups
+                 workgroups2 wrap-region writeroom-mode ws-butler xcscope
+                 yaml-mode yapfify yasnippet ztree))
+   '(package-vc-selected-packages
+     '((pgmacs :vc-backend Git :url "https://github.com/emarsden/pgmacs")
+       (pg :vc-backend Git :url "https://github.com/emarsden/pg-el")))
    '(php-mode-coding-style 'pear)
    '(user-full-name "Damon Haley")
    '(user-initials "dkh")

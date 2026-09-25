@@ -351,6 +351,16 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq native-comp-async-report-warnings-errors 'silent)
   (setq byte-compile-warnings '(not obsolete))
 
+  ;; Move eyebrowse off its default C-c C-w prefix so it stops shadowing
+  ;; org-refile (C-c C-w in org-mode). Empty the built-in prefix (so eyebrowse
+  ;; installs its keys at the top level of eyebrowse-mode-map) and expose the
+  ;; map under C-\ instead (matching jwiegley/dot-emacs).
+  ;; Must be set before the eyebrowse package loads, hence user-init.
+  ;; Note: C-\ is normally toggle-input-method; reclaiming it here.
+  (setq eyebrowse-keymap-prefix (kbd ""))
+  (with-eval-after-load 'eyebrowse
+    (global-set-key (kbd "C-\\") eyebrowse-mode-map))
+
   ;; Ensure MELPA is available for package installs
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("gnu" . "https://elpa.gnu.org/packages/")

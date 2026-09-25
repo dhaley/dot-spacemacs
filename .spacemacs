@@ -112,6 +112,9 @@ values."
                                                          ;; Markdown enhancements
                                                          edit-indirect markdown-preview-mode)
    ;; A list of packages that cannot be updated.
+   ;; org is frozen at the ELPA 9.8.4 to avoid the org 9.7-vs-9.8 version-mismatch
+   ;; churn. KEEP frozen on Emacs 30. On the Emacs 31 upgrade, unfreeze so the
+   ;; bundled org 9.8.7 is used (see ~/.kiro/plans/upgrade-emacs-31.md Step 3).
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode)
@@ -351,14 +354,32 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq native-comp-async-report-warnings-errors 'silent)
   (setq byte-compile-warnings '(not obsolete))
 
+  ;; Move eyebrowse off its default C-c C-w prefix so it stops shadowing
+  ;; org-refile (C-c C-w in org-mode). Give it a real single-key prefix, C-\,
+  ;; so all of eyebrowse's built-in keys work under it automatically:
+  ;;   C-\ 1..0 switch workspace, C-\ c create, C-\ , rename,
+  ;;   C-\ < / C-\ > prev/next, C-\ C-\ last-config.
+  ;; Do NOT empty the prefix and rebind number keys at top level: H-1..H-9 are
+  ;; owned by Spacemacs (spacemacs/winum-select-window-N), and emacs-mac has no
+  ;; super key (Command = hyper), so Wiegley's s-1..s-4 scheme can't transfer.
+  ;; A real C-\ prefix avoids fighting Spacemacs/winum entirely.
+  ;; Must be set before eyebrowse loads, hence user-init.
+  ;; Note: C-\ is normally toggle-input-method; reclaiming it here.
+  ;; Wiegley's two extra settings included: single-space mode-line separator and
+  ;; a clean scratch buffer for new workspaces.
+  (setq eyebrowse-keymap-prefix (kbd "C-\\")
+        eyebrowse-mode-line-separator " "
+        eyebrowse-new-workspace t)
+
   ;; Ensure MELPA is available for package installs
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("gnu" . "https://elpa.gnu.org/packages/")
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
-  ;; Use org-mode from source (~/src/org-mode) instead of ELPA
-  (push (expand-file-name "~/src/org-mode/lisp") load-path)
-  (add-to-list 'load-path (expand-file-name "~/src/org-mode/contrib/lisp") t)
+  ;; org-mode loads from ELPA (elpa/develop/org-*), not from ~/src/org-mode.
+  ;; The source load-path push here was dead: Spacemacs adds the ELPA org path
+  ;; with higher priority, so (locate-library "org") always resolved to ELPA.
+  ;; Removed to avoid confusion. On Emacs 31 the bundled org (9.8.7) is used.
 
   ;; Use modus-themes and ef-themes from source (MELPA versions have broken byte-compilation on Emacs 30)
   (push (expand-file-name "~/dot-spacemacs/lisp/modus-themes") load-path)
@@ -374,11 +395,40 @@ before packages are loaded. If you are unsure, you should try in setting them in
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
           "JENKINS_API_USER" "JENKINS_API_TOKEN"))
   (setq insert-directory-program "/opt/homebrew/bin/gls")
-  ;; libgccjit needs GCC runtime libs for native-comp at runtime
+  ;; libgccjit needs GCC runtime libs for native-comp at runtime.
+  ;; Build LIBRARY_PATH dynamically so it survives Homebrew gcc upgrades
+  ;; (minor 15.2->15.3 and major gcc-15->gcc-16) and macOS SDK bumps:
+  ;;  - the stable Homebrew symlink /opt/homebrew/lib/gcc/current
+  ;;  - the versioned libgcc dir, derived by asking the newest installed gcc
+  ;;    for its own libgcc.a location (-print-libgcc-file-name)
+  ;;  - the macOS SDK usr/lib (via xcrun) so the linker finds libSystem;
+  ;;    without it native-comp fails: "ld: library 'System' not found".
   (setenv "LIBRARY_PATH"
-          (string-join '("/opt/homebrew/lib/gcc/current"
-                         "/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/15")
-                       ":"))
+          (string-join
+           (delq nil
+                 (list
+                  "/opt/homebrew/lib/gcc/current"
+                  ;; versioned libgcc dir from the newest gcc-N on PATH
+                  (let* ((gcc (car (last (sort (file-expand-wildcards "/opt/homebrew/bin/gcc-[0-9]*")
+                                               #'string-version-lessp))))
+                         (libgcc (and gcc
+                                      (ignore-errors
+                                        (string-trim
+                                         (shell-command-to-string
+                                          (format "%s -print-libgcc-file-name 2>/dev/null"
+                                                  (shell-quote-argument gcc))))))))
+                    (when (and libgcc (not (string-empty-p libgcc)))
+                      (let ((dir (file-name-directory libgcc)))
+                        (when (file-directory-p dir)
+                          (directory-file-name dir)))))
+                  ;; macOS SDK lib dir (libSystem)
+                  (let ((sdk (ignore-errors
+                               (string-trim
+                                (shell-command-to-string "xcrun --show-sdk-path 2>/dev/null")))))
+                    (when (and sdk (not (string-empty-p sdk))
+                               (file-directory-p (expand-file-name "usr/lib" sdk)))
+                      (expand-file-name "usr/lib" sdk)))))
+           ":"))
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; Add nvm node bin dirs so GUI Emacs finds `claude` and other node tools
@@ -414,6 +464,16 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
   (setq bookmark-save-flag nil)  ; only save bookmarks on exit, not every modification
+
+  ;; ── ace-window: jump to a window by overlay letter (matching jwiegley) ──
+  ;; Complements Spacemacs's winum (H-1..H-9 by number); ace-window is letter-
+  ;; based and handy with many windows. bind-key* (override map) so it beats
+  ;; local maps, matching Wiegley's :bind*. The old other-window bindings on
+  ;; C-return (.spacemacs bind-key* and dot-org.el) are commented out.
+  (with-eval-after-load 'ace-window
+    (setq aw-dispatch-when-more-than 3
+          aw-scope 'frame))
+  (bind-key* "<C-return>" #'ace-window)
 
   ;; Auto-recompile work.el if source is newer than bytecode
   (let ((el (expand-file-name "~/.local/emacs/work.el"))
@@ -644,7 +704,8 @@ you should place your code here."
 
   (bind-key "C-c v" #'ffap)
 
-  (bind-key* "<C-return>" #'other-window)
+  ;; C-return was other-window; now ace-window (see user-config). Uncomment to restore.
+  ;; (bind-key* "<C-return>" #'other-window)
 
 
   (bind-key "M-s f" #'consult-ripgrep)

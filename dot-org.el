@@ -600,7 +600,8 @@ end tell" (match-string 1))))
 
 (org-defkey org-mode-map [(control meta return)]
             'org-insert-heading-after-current)
-(org-defkey org-mode-map [(control return)] 'other-window)
+;; C-return in org was other-window; now ace-window (bound globally). Uncomment to restore.
+;; (org-defkey org-mode-map [(control return)] 'other-window)
 (org-defkey org-mode-map [return] (lambda () (interactive) (org-return t)))
 (org-defkey org-mode-map
             [(control ?c) (control ?x) ?@] 'visible-mode)

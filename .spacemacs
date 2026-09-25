@@ -434,12 +434,13 @@ you should place your code here."
 
   ;; ── ace-window: replaces winum for window navigation (matching jwiegley) ──
   ;; winum is excluded (dotspacemacs-excluded-packages); ace-window overlays a
-  ;; letter on each window and you press it to jump. C-return binding + Wiegley's
-  ;; settings (only prompt when >3 windows, frame-scoped).
+  ;; letter on each window and you press it to jump. bind-key* (override map)
+  ;; so it beats local maps, matching Wiegley's :bind*. The old other-window
+  ;; bindings on C-return (.spacemacs bind-key* and dot-org.el) are commented out.
   (with-eval-after-load 'ace-window
     (setq aw-dispatch-when-more-than 3
           aw-scope 'frame))
-  (global-set-key (kbd "<C-return>") #'ace-window)
+  (bind-key* "<C-return>" #'ace-window)
 
   ;; Auto-recompile work.el if source is newer than bytecode
   (let ((el (expand-file-name "~/.local/emacs/work.el"))
@@ -670,7 +671,8 @@ you should place your code here."
 
   (bind-key "C-c v" #'ffap)
 
-  (bind-key* "<C-return>" #'other-window)
+  ;; C-return was other-window; now ace-window (see user-config). Uncomment to restore.
+  ;; (bind-key* "<C-return>" #'other-window)
 
 
   (bind-key "M-s f" #'consult-ripgrep)

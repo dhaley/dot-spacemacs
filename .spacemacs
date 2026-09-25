@@ -391,11 +391,24 @@ before packages are loaded. If you are unsure, you should try in setting them in
         '("PATH" "MANPATH" "NODE_OPTIONS" "NODE_EXTRA_CA_CERTS" "SSL_CERT_FILE" "SSL_CERT_DIR"
           "JENKINS_API_USER" "JENKINS_API_TOKEN"))
   (setq insert-directory-program "/opt/homebrew/bin/gls")
-  ;; libgccjit needs GCC runtime libs for native-comp at runtime
+  ;; libgccjit needs GCC runtime libs for native-comp at runtime.
+  ;; Also include the macOS SDK lib dir so the linker can find libSystem
+  ;; (the 'System' library). Setting LIBRARY_PATH overrides ld's default
+  ;; search paths, so the SDK path must be added explicitly or native-comp
+  ;; fails with "ld: library 'System' not found". Resolve the SDK path via
+  ;; xcrun so it survives Command Line Tools / SDK version changes.
   (setenv "LIBRARY_PATH"
-          (string-join '("/opt/homebrew/lib/gcc/current"
-                         "/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/15")
-                       ":"))
+          (string-join
+           (append
+            '("/opt/homebrew/lib/gcc/current"
+              "/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/15")
+            (let ((sdk (ignore-errors
+                         (string-trim
+                          (shell-command-to-string "xcrun --show-sdk-path 2>/dev/null")))))
+              (when (and sdk (not (string-empty-p sdk))
+                         (file-directory-p (expand-file-name "usr/lib" sdk)))
+                (list (expand-file-name "usr/lib" sdk)))))
+           ":"))
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
   ;; Add nvm node bin dirs so GUI Emacs finds `claude` and other node tools

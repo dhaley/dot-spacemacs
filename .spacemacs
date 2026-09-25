@@ -112,6 +112,9 @@ values."
                                                          ;; Markdown enhancements
                                                          edit-indirect markdown-preview-mode)
    ;; A list of packages that cannot be updated.
+   ;; org is frozen at the ELPA 9.8.4 to avoid the org 9.7-vs-9.8 version-mismatch
+   ;; churn. KEEP frozen on Emacs 30. On the Emacs 31 upgrade, unfreeze so the
+   ;; bundled org 9.8.7 is used (see ~/.kiro/plans/upgrade-emacs-31.md Step 3).
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode winum)
@@ -373,9 +376,10 @@ before packages are loaded. If you are unsure, you should try in setting them in
                            ("gnu" . "https://elpa.gnu.org/packages/")
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
-  ;; Use org-mode from source (~/src/org-mode) instead of ELPA
-  (push (expand-file-name "~/src/org-mode/lisp") load-path)
-  (add-to-list 'load-path (expand-file-name "~/src/org-mode/contrib/lisp") t)
+  ;; org-mode loads from ELPA (elpa/develop/org-*), not from ~/src/org-mode.
+  ;; The source load-path push here was dead: Spacemacs adds the ELPA org path
+  ;; with higher priority, so (locate-library "org") always resolved to ELPA.
+  ;; Removed to avoid confusion. On Emacs 31 the bundled org (9.8.7) is used.
 
   ;; Use modus-themes and ef-themes from source (MELPA versions have broken byte-compilation on Emacs 30)
   (push (expand-file-name "~/dot-spacemacs/lisp/modus-themes") load-path)

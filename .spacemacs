@@ -114,7 +114,7 @@ values."
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode winum)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -352,14 +352,21 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq byte-compile-warnings '(not obsolete))
 
   ;; Move eyebrowse off its default C-c C-w prefix so it stops shadowing
-  ;; org-refile (C-c C-w in org-mode). Empty the built-in prefix (so eyebrowse
-  ;; installs its keys at the top level of eyebrowse-mode-map) and expose the
-  ;; map under C-\ instead (matching jwiegley/dot-emacs).
-  ;; Must be set before the eyebrowse package loads, hence user-init.
+  ;; org-refile (C-c C-w in org-mode). Follow jwiegley/dot-emacs: empty the
+  ;; built-in prefix and bind switch keys explicitly. We use hyper (H-) instead
+  ;; of Wiegley's super (s-) because on emacs-mac the Command key is hyper.
+  ;; winum (which owned H-1..H-9 for window jumping) is disabled via
+  ;; dotspacemacs-excluded-packages; ace-window (C-return) replaces it.
+  ;; Must be set before eyebrowse loads, hence user-init.
   ;; Note: C-\ is normally toggle-input-method; reclaiming it here.
   (setq eyebrowse-keymap-prefix (kbd ""))
   (with-eval-after-load 'eyebrowse
-    (global-set-key (kbd "C-\\") eyebrowse-mode-map))
+    (global-set-key (kbd "C-\\") eyebrowse-mode-map)
+    (define-key eyebrowse-mode-map (kbd "C-\\ C-\\") #'eyebrowse-last-window-config)
+    (global-set-key (kbd "H-1") #'eyebrowse-switch-to-window-config-1)
+    (global-set-key (kbd "H-2") #'eyebrowse-switch-to-window-config-2)
+    (global-set-key (kbd "H-3") #'eyebrowse-switch-to-window-config-3)
+    (global-set-key (kbd "H-4") #'eyebrowse-switch-to-window-config-4))
 
   ;; Ensure MELPA is available for package installs
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -424,6 +431,15 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
   (setq bookmark-save-flag nil)  ; only save bookmarks on exit, not every modification
+
+  ;; ── ace-window: replaces winum for window navigation (matching jwiegley) ──
+  ;; winum is excluded (dotspacemacs-excluded-packages); ace-window overlays a
+  ;; letter on each window and you press it to jump. C-return binding + Wiegley's
+  ;; settings (only prompt when >3 windows, frame-scoped).
+  (with-eval-after-load 'ace-window
+    (setq aw-dispatch-when-more-than 3
+          aw-scope 'frame))
+  (global-set-key (kbd "<C-return>") #'ace-window)
 
   ;; Auto-recompile work.el if source is newer than bytecode
   (let ((el (expand-file-name "~/.local/emacs/work.el"))

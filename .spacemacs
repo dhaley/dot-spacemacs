@@ -392,22 +392,38 @@ before packages are loaded. If you are unsure, you should try in setting them in
           "JENKINS_API_USER" "JENKINS_API_TOKEN"))
   (setq insert-directory-program "/opt/homebrew/bin/gls")
   ;; libgccjit needs GCC runtime libs for native-comp at runtime.
-  ;; Also include the macOS SDK lib dir so the linker can find libSystem
-  ;; (the 'System' library). Setting LIBRARY_PATH overrides ld's default
-  ;; search paths, so the SDK path must be added explicitly or native-comp
-  ;; fails with "ld: library 'System' not found". Resolve the SDK path via
-  ;; xcrun so it survives Command Line Tools / SDK version changes.
+  ;; Build LIBRARY_PATH dynamically so it survives Homebrew gcc upgrades
+  ;; (minor 15.2->15.3 and major gcc-15->gcc-16) and macOS SDK bumps:
+  ;;  - the stable Homebrew symlink /opt/homebrew/lib/gcc/current
+  ;;  - the versioned libgcc dir, derived by asking the newest installed gcc
+  ;;    for its own libgcc.a location (-print-libgcc-file-name)
+  ;;  - the macOS SDK usr/lib (via xcrun) so the linker finds libSystem;
+  ;;    without it native-comp fails: "ld: library 'System' not found".
   (setenv "LIBRARY_PATH"
           (string-join
-           (append
-            '("/opt/homebrew/lib/gcc/current"
-              "/opt/homebrew/Cellar/gcc/15.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/15")
-            (let ((sdk (ignore-errors
-                         (string-trim
-                          (shell-command-to-string "xcrun --show-sdk-path 2>/dev/null")))))
-              (when (and sdk (not (string-empty-p sdk))
-                         (file-directory-p (expand-file-name "usr/lib" sdk)))
-                (list (expand-file-name "usr/lib" sdk)))))
+           (delq nil
+                 (list
+                  "/opt/homebrew/lib/gcc/current"
+                  ;; versioned libgcc dir from the newest gcc-N on PATH
+                  (let* ((gcc (car (last (sort (file-expand-wildcards "/opt/homebrew/bin/gcc-[0-9]*")
+                                               #'string-version-lessp))))
+                         (libgcc (and gcc
+                                      (ignore-errors
+                                        (string-trim
+                                         (shell-command-to-string
+                                          (format "%s -print-libgcc-file-name 2>/dev/null"
+                                                  (shell-quote-argument gcc))))))))
+                    (when (and libgcc (not (string-empty-p libgcc)))
+                      (let ((dir (file-name-directory libgcc)))
+                        (when (file-directory-p dir)
+                          (directory-file-name dir)))))
+                  ;; macOS SDK lib dir (libSystem)
+                  (let ((sdk (ignore-errors
+                               (string-trim
+                                (shell-command-to-string "xcrun --show-sdk-path 2>/dev/null")))))
+                    (when (and sdk (not (string-empty-p sdk))
+                               (file-directory-p (expand-file-name "usr/lib" sdk)))
+                      (expand-file-name "usr/lib" sdk)))))
            ":"))
   ;; Ensure uv-installed tools (deepagents-cli) are found
   (add-to-list 'exec-path (expand-file-name "~/.local/bin"))

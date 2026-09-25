@@ -117,7 +117,7 @@ values."
    ;; bundled org 9.8.7 is used (see ~/.kiro/plans/upgrade-emacs-31.md Step 3).
    dotspacemacs-frozen-packages '(org)
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode winum)
+   dotspacemacs-excluded-packages '(org-bullets dap-mode modus-themes ef-themes info+ undo-fu-session geben pandoc-mode)
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
    ;; `used-only' installs only explicitly used packages and uninstall any
@@ -355,21 +355,21 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq byte-compile-warnings '(not obsolete))
 
   ;; Move eyebrowse off its default C-c C-w prefix so it stops shadowing
-  ;; org-refile (C-c C-w in org-mode). Follow jwiegley/dot-emacs: empty the
-  ;; built-in prefix and bind switch keys explicitly. We use hyper (H-) instead
-  ;; of Wiegley's super (s-) because on emacs-mac the Command key is hyper.
-  ;; winum (which owned H-1..H-9 for window jumping) is disabled via
-  ;; dotspacemacs-excluded-packages; ace-window (C-return) replaces it.
+  ;; org-refile (C-c C-w in org-mode). Give it a real single-key prefix, C-\,
+  ;; so all of eyebrowse's built-in keys work under it automatically:
+  ;;   C-\ 1..0 switch workspace, C-\ c create, C-\ , rename,
+  ;;   C-\ < / C-\ > prev/next, C-\ C-\ last-config.
+  ;; Do NOT empty the prefix and rebind number keys at top level: H-1..H-9 are
+  ;; owned by Spacemacs (spacemacs/winum-select-window-N), and emacs-mac has no
+  ;; super key (Command = hyper), so Wiegley's s-1..s-4 scheme can't transfer.
+  ;; A real C-\ prefix avoids fighting Spacemacs/winum entirely.
   ;; Must be set before eyebrowse loads, hence user-init.
   ;; Note: C-\ is normally toggle-input-method; reclaiming it here.
-  (setq eyebrowse-keymap-prefix (kbd ""))
-  (with-eval-after-load 'eyebrowse
-    (global-set-key (kbd "C-\\") eyebrowse-mode-map)
-    (define-key eyebrowse-mode-map (kbd "C-\\ C-\\") #'eyebrowse-last-window-config)
-    (global-set-key (kbd "H-1") #'eyebrowse-switch-to-window-config-1)
-    (global-set-key (kbd "H-2") #'eyebrowse-switch-to-window-config-2)
-    (global-set-key (kbd "H-3") #'eyebrowse-switch-to-window-config-3)
-    (global-set-key (kbd "H-4") #'eyebrowse-switch-to-window-config-4))
+  ;; Wiegley's two extra settings included: single-space mode-line separator and
+  ;; a clean scratch buffer for new workspaces.
+  (setq eyebrowse-keymap-prefix (kbd "C-\\")
+        eyebrowse-mode-line-separator " "
+        eyebrowse-new-workspace t)
 
   ;; Ensure MELPA is available for package installs
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -465,11 +465,11 @@ you should place your code here."
   (setq tab-bar-show 1)  ; only show tab bar when frame has >1 tab
   (setq bookmark-save-flag nil)  ; only save bookmarks on exit, not every modification
 
-  ;; ── ace-window: replaces winum for window navigation (matching jwiegley) ──
-  ;; winum is excluded (dotspacemacs-excluded-packages); ace-window overlays a
-  ;; letter on each window and you press it to jump. bind-key* (override map)
-  ;; so it beats local maps, matching Wiegley's :bind*. The old other-window
-  ;; bindings on C-return (.spacemacs bind-key* and dot-org.el) are commented out.
+  ;; ── ace-window: jump to a window by overlay letter (matching jwiegley) ──
+  ;; Complements Spacemacs's winum (H-1..H-9 by number); ace-window is letter-
+  ;; based and handy with many windows. bind-key* (override map) so it beats
+  ;; local maps, matching Wiegley's :bind*. The old other-window bindings on
+  ;; C-return (.spacemacs bind-key* and dot-org.el) are commented out.
   (with-eval-after-load 'ace-window
     (setq aw-dispatch-when-more-than 3
           aw-scope 'frame))

@@ -9,6 +9,10 @@
 (add-to-list 'load-path "~/dot-spacemacs/lisp/claude-code-ide")
 (add-to-list 'load-path "~/dot-spacemacs/lisp")
 (add-to-list 'load-path "~/src/org-mode/lisp")
+;; Work-specific org-jira config lives in a private GHE repo, not this public
+;; one. Add it to load-path so (require 'dot-org-jira) below still resolves.
+(when (file-directory-p (expand-file-name "~/.local/emacs/dot-org-jira"))
+  (add-to-list 'load-path (expand-file-name "~/.local/emacs/dot-org-jira")))
 
 (eval-and-compile
   (defvar use-package-verbose nil)
